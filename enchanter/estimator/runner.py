@@ -93,6 +93,7 @@ class BaseRunner(BaseEstimator):
                     self.logger.log_train(epoch, i, {"loss": loss.detach().cpu()})
 
             if val_loader and self.logger:
+                self.model.eval()
                 for j, (x_val, y_val) in enumerate(tqdm(val_loader, desc="Validation", leave=False)):
                     val_results = self.validate(x_val, y_val)
                     self.logger.log_val(epoch, j, val_results)
