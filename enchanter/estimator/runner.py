@@ -25,6 +25,15 @@ class BaseRunner(BaseEstimator):
         self.optimizer = optimizer(self.model.parameters(), **optim_conf)
 
     def one_cycle(self, data: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        """
+
+        Args:
+            data: Training Data
+            target: Training Label for supervised learning.
+
+        Returns:
+            loss: loss value which calculated by self.criterion.
+        """
         data = data.to(self.device)
         target = target.to(self.device)
 
@@ -34,6 +43,18 @@ class BaseRunner(BaseEstimator):
         return loss
 
     def fit(self, dataset: Dataset, epochs: int, batch_size: int, shuffle: bool = True, checkpoint: str = False):
+        """
+
+        Args:
+            dataset:
+            epochs:
+            batch_size:
+            shuffle:
+            checkpoint:
+
+        Returns:
+
+        """
         train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
         for epoch in tqdm(range(epochs), desc="Epochs", leave=True):
             self.model.train()
@@ -48,8 +69,17 @@ class BaseRunner(BaseEstimator):
         return self
 
     def predict(self, x: torch.Tensor) -> np.ndarray:
+        """
+
+        Args:
+            x:
+
+        Returns:
+
+        """
         self.model.eval()
         with torch.no_grad():
+            x = x.to(self.device)
             out = self.model(x).cpu().numpy()
         return out
 
@@ -64,10 +94,27 @@ class BaseRunner(BaseEstimator):
         return checkpoint
 
     def load_checkpoint(self, checkpoint: dict):
+        """
+
+        Args:
+            checkpoint:
+
+        Returns:
+
+        """
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
 
     def save(self, directory: str, epoch: int = None) -> None:
+        """
+
+        Args:
+            directory:
+            epoch:
+
+        Returns:
+
+        """
         if not os.path.isdir(directory):
             os.mkdir(directory)
         checkpoint = self.save_checkpoint()
@@ -80,17 +127,43 @@ class BaseRunner(BaseEstimator):
         torch.save(checkpoint, filename)
 
     def load(self, filename: str, map_location: str = "cpu") -> None:
+        """
+
+        Args:
+            filename:
+            map_location:
+
+        Returns:
+
+        """
         checkpoint = torch.load(filename, map_location=map_location)
         self.load_checkpoint(checkpoint)
 
 
 class ClassificationRunner(BaseRunner):
     def predict(self, x: torch.Tensor) -> np.ndarray:
+        """
+
+        Args:
+            x:
+
+        Returns:
+
+        """
         out = super(ClassificationRunner, self).predict(x)
         predict = np.argmax(out, axis=-1)
         return predict
 
     def evaluate(self, dataset: Dataset, batch_size: int = 1) -> Tuple[float, float]:
+        """
+
+        Args:
+            dataset:
+            batch_size:
+
+        Returns:
+
+        """
         correct = 0.0
         total = 0.0
         losses = 0.0
@@ -99,6 +172,9 @@ class ClassificationRunner(BaseRunner):
         with torch.no_grad():
             for x, y in tqdm(loader, desc="Evaluating"):
                 total += y.shape[0]
+
+                x = x.to(self.device)
+                y = y.to(self.device)
 
                 out = self.model(x)
                 loss = self.criterion(out, y).cpu().item()
