@@ -159,8 +159,8 @@ class BaseRunner(BaseEstimator):
             epoch = time.ctime().replace(" ", "_")
 
         filename = "checkpoint_epoch_{}.pth".format(epoch)
-        filename = directory + filename
-        torch.save(checkpoint, filename)
+        path = directory + filename
+        torch.save(checkpoint, path)
 
         if self.logger:
             buffer = io.BytesIO()
