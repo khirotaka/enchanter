@@ -32,9 +32,9 @@ def main():
     train_ds = MNIST("../../data", train=True, download=False, transform=ToTensor())
     test_ds = MNIST("../../data", train=False, download=False, transform=ToTensor())
 
-    runner1 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_conf={"lr": 0.001})
-    runner2 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_conf={"lr": 0.002})
-    runner3 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_conf={"lr": 0.003})
+    runner1 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.001})
+    runner2 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.002})
+    runner3 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.003})
 
     ensemble = SoftEnsemble([runner1, runner2, runner3], "classification")
     ensemble.fit(
