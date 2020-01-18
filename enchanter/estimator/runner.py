@@ -20,7 +20,7 @@ class BaseRunner(BaseEstimator):
     def __init__(self, model, criterion, optimizer, optim_conf: dict, device: str = None) -> None:
         self.device = torch.device(device) if device else torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        self.model = model.to(self.device)
+        self.model: torch.nn.Module = model.to(self.device)
         self.criterion = criterion
         self.optimizer = optimizer(self.model.parameters(), **optim_conf)
 
@@ -47,13 +47,13 @@ class BaseRunner(BaseEstimator):
 
         return self
 
-    def predict(self, x: torch.Tensor) -> torch.Tensor:
+    def predict(self, x: torch.Tensor) -> np.ndarray:
         self.model.eval()
         with torch.no_grad():
-            out = self.model(x).cpu()
+            out = self.model(x).cpu().numpy()
         return out
 
-    def evaluate(self, dataset: Dataset):
+    def evaluate(self, dataset: Dataset, batch_size: int):
         raise NotImplementedError
 
     def save_checkpoint(self) -> dict:
@@ -87,15 +87,15 @@ class BaseRunner(BaseEstimator):
 class ClassificationRunner(BaseRunner):
     def predict(self, x: torch.Tensor) -> np.ndarray:
         out = super(ClassificationRunner, self).predict(x)
-        _, predict = torch.max(out, dim=1)
-        return predict.numpy()
+        predict = np.argmax(out, axis=-1)
+        return predict
 
-    def evaluate(self, dataset: Dataset) -> Tuple[float, float]:
+    def evaluate(self, dataset: Dataset, batch_size: int = 1) -> Tuple[float, float]:
         correct = 0.0
         total = 0.0
         losses = 0.0
 
-        loader = DataLoader(dataset)
+        loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
         with torch.no_grad():
             for x, y in tqdm(loader, desc="Evaluating"):
                 total += y.shape[0]

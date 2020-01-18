@@ -32,9 +32,9 @@ def main():
     model = Model()
     runner = ClassificationRunner(model, nn.CrossEntropyLoss(), optim.Adam, optim_conf={"lr": 0.001})
     runner.fit(train_ds, epochs=2, batch_size=64, checkpoint="../data/checkpoint/")
-    loss, accuracy = runner.evaluate(test_ds)
+    loss, accuracy = runner.evaluate(test_ds, batch_size=64)
 
-    img, label = next(iter(DataLoader(test_ds, batch_size=1)))
+    img, label = next(iter(DataLoader(test_ds, batch_size=32)))
     print(runner.predict(img))
     print(label)
     print("Loss: {:.4f}".format(loss))
