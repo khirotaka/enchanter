@@ -35,7 +35,14 @@ def main():
     runner3 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_conf={"lr": 0.003})
 
     ensemble = SoftEnsemble([runner1, runner2, runner3], "classification")
-    ensemble.fit(train_ds, epochs=1, batch_size=32)
+    ensemble.fit(
+        train_ds,
+        epochs=1,
+        batch_size=32,
+        checkpoints=[
+            "../../data/checkpoints/runner1/", "../../data/checkpoints/runner2/", "../../data/checkpoints/runner3/"
+        ]
+    )
 
     img, label = next(iter(DataLoader(test_ds, batch_size=32)))
     print("predict: ", ensemble.predict(img).astype("int"))
