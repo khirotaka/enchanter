@@ -1,7 +1,7 @@
 import os
 import time
-from typing import Tuple
 from copy import deepcopy
+from typing import Tuple, Dict
 
 import torch
 import numpy as np
@@ -17,12 +17,23 @@ else:
 
 
 class BaseRunner(BaseEstimator):
-    def __init__(self, model, criterion, optimizer, optim_conf: dict, device: str = None) -> None:
+    def __init__(self, model, criterion, optimizer, optim_config, device=None, experiment=None) -> None:
+        """
+
+        Args:
+            model (nn.Module):
+            criterion:
+            optimizer:
+            optim_config (dict):
+            device (str):
+            experiment:
+        """
         self.device = torch.device(device) if device else torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.model: torch.nn.Module = model.to(self.device)
         self.criterion = criterion
-        self.optimizer = optimizer(self.model.parameters(), **optim_conf)
+        self.optimizer = optimizer(self.model.parameters(), **optim_config)
+        self.logger = modules.CometLogger(experiment) if experiment else None
 
     def one_cycle(self, data: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         """
@@ -42,37 +53,60 @@ class BaseRunner(BaseEstimator):
         loss = self.criterion(out, target)
         return loss
 
-    def fit(self, dataset: Dataset, epochs: int, batch_size: int, shuffle: bool = True, checkpoint: str = False):
+    def validate(self, data: torch.Tensor, target: torch.Tensor) -> Dict[str, torch.Tensor]:
+        results = {}
+        with torch.no_grad():
+            data = data.to(self.device)
+            target = target.to(self.device)
+
+            out = self.model(data)
+            loss = self.criterion(out, target)
+            results["loss"] = loss.cpu()
+
+        return results
+
+    def fit(self, dataset, epochs, batch_size, shuffle=True, checkpoint=False, validation=None, **loader_config):
         """
 
         Args:
-            dataset:
-            epochs:
-            batch_size:
-            shuffle:
-            checkpoint:
+            dataset (Dataset):
+            epochs (int):
+            batch_size (int):
+            shuffle (bool):
+            checkpoint (str):
+            validation (Dataset):
 
         Returns:
 
         """
-        train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+        train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, **loader_config)
+        val_loader = DataLoader(validation, batch_size, shuffle=False, **loader_config) if validation else None
+
         for epoch in tqdm(range(epochs), desc="Epochs", leave=True):
             self.model.train()
-            for x, y in tqdm(train_loader, desc="Training", leave=False):
+            for i, (x, y) in enumerate(tqdm(train_loader, desc="Training", leave=False)):
                 loss = self.one_cycle(x, y)
                 loss.backward()
                 self.optimizer.step()
+
+                if self.logger:
+                    self.logger.log_train(epoch, i, {"loss": loss.detach().cpu()})
+
+            if val_loader and self.logger:
+                for j, (x_val, y_val) in enumerate(tqdm(val_loader, desc="Validation", leave=False)):
+                    val_results = self.validate(x_val, y_val)
+                    self.logger.log_val(epoch, j, val_results)
 
             if checkpoint:
                 self.save(checkpoint, epoch=epoch+1)
 
         return self
 
-    def predict(self, x: torch.Tensor) -> np.ndarray:
+    def predict(self, x) -> np.ndarray:
         """
 
         Args:
-            x:
+            x (torch.Tensor):
 
         Returns:
 
@@ -182,4 +216,13 @@ class ClassificationRunner(BaseRunner):
                 correct += np.sum(predict == y.cpu().numpy()).item()
                 losses += loss
 
-        return losses / total, correct / total
+        losses = losses / total
+        accuracy = correct / total
+
+        if self.logger:
+            self.logger.log_test({
+                "loss": losses,
+                "accuracy": accuracy
+            })
+
+        return losses, accuracy

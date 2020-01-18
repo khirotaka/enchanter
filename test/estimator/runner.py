@@ -1,3 +1,4 @@
+import comet_ml
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -30,8 +31,11 @@ def main():
     test_ds = MNIST("../data", train=False, download=True, transform=ToTensor())
 
     model = Model()
-    runner = ClassificationRunner(model, nn.CrossEntropyLoss(), optim.Adam, optim_conf={"lr": 0.001})
-    runner.fit(train_ds, epochs=2, batch_size=64, checkpoint="../data/checkpoint/")
+    runner = ClassificationRunner(
+        model, nn.CrossEntropyLoss(), optim.Adam,
+        optim_config={"lr": 0.001}, experiment=comet_ml.Experiment(project_name="testflight")
+    )
+    runner.fit(train_ds, epochs=2, batch_size=64, checkpoint="../data/checkpoint/", num_workers=2, validation=test_ds)
     loss, accuracy = runner.evaluate(test_ds, batch_size=64)
 
     img, label = next(iter(DataLoader(test_ds, batch_size=32)))
