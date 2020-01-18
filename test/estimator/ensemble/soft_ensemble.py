@@ -1,9 +1,11 @@
 import torch
+import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 from torchvision.datasets import MNIST
-from torchvision.transforms import ToTensor
 from torch.utils.data import DataLoader
+from torchvision.transforms import ToTensor
+from sklearn.metrics import accuracy_score
 
 from enchanter.estimator.ensemble import SoftEnsemble
 from enchanter.estimator.runner import ClassificationRunner
@@ -45,8 +47,22 @@ def main():
     )
 
     img, label = next(iter(DataLoader(test_ds, batch_size=32)))
-    print("predict: ", ensemble.predict(img).astype("int"))
-    print("label", label)
+    pred = ensemble.predict(img)
+    print("predict: ", pred)
+    print("label", label.numpy())
+
+    total = 0.0
+    correct = 0.0
+    for data, label in DataLoader(test_ds, batch_size=32, shuffle=False):
+        total += label.shape[0]
+
+        predicts = ensemble.predict(data)
+        correct += np.sum(predicts == label.numpy()).item()
+
+    print("ens", correct / total)
+    print("r1", ensemble.runners[0].evaluate(test_ds, 32))
+    print("r2", ensemble.runners[1].evaluate(test_ds, 32))
+    print("r3", ensemble.runners[2].evaluate(test_ds, 32))
 
 
 if __name__ == '__main__':
