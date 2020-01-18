@@ -31,7 +31,7 @@ def main():
 
     model = Model()
     runner = ClassificationRunner(model, nn.CrossEntropyLoss(), optim.Adam, optim_conf={"lr": 0.001})
-    runner.fit(train_ds, epochs=1, batch_size=64)
+    runner.fit(train_ds, epochs=2, batch_size=64, checkpoint="../data/checkpoint/")
     loss, accuracy = runner.evaluate(test_ds)
 
     img, label = next(iter(DataLoader(test_ds, batch_size=1)))
@@ -39,6 +39,12 @@ def main():
     print(label)
     print("Loss: {:.4f}".format(loss))
     print("Accuracy: {:.4%}".format(accuracy))
+
+    print("Save")
+    runner.save("../data/checkpoint/")
+
+    print("load")
+    runner.load("../data/checkpoint/checkpoint_epoch_1.pth")
 
 
 if __name__ == '__main__':

@@ -1,4 +1,7 @@
+import os
+import time
 from typing import Tuple
+from copy import deepcopy
 
 import torch
 import numpy as np
@@ -30,7 +33,7 @@ class BaseRunner(BaseEstimator):
         loss = self.criterion(out, target)
         return loss
 
-    def fit(self, dataset: Dataset, epochs: int, batch_size: int, shuffle: bool = True):
+    def fit(self, dataset: Dataset, epochs: int, batch_size: int, shuffle: bool = True, checkpoint: str = False):
         train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
         for epoch in tqdm(range(epochs), desc="Epochs", leave=True):
             self.model.train()
@@ -38,6 +41,9 @@ class BaseRunner(BaseEstimator):
                 loss = self.one_cycle(x, y)
                 loss.backward()
                 self.optimizer.step()
+
+            if checkpoint:
+                self.save(checkpoint, epoch=epoch+1)
 
         return self
 
@@ -49,6 +55,33 @@ class BaseRunner(BaseEstimator):
 
     def evaluate(self, dataset: Dataset):
         raise NotImplementedError
+
+    def save_checkpoint(self) -> dict:
+        checkpoint = {
+            "model_state_dict": deepcopy(self.model.state_dict()),
+            "optimizer_state_dict": deepcopy(self.optimizer.state_dict())
+        }
+        return checkpoint
+
+    def load_checkpoint(self, checkpoint: dict):
+        self.model.load_state_dict(checkpoint["model_state_dict"])
+        self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+
+    def save(self, directory: str, epoch: int = None) -> None:
+        if not os.path.isdir(directory):
+            os.mkdir(directory)
+        checkpoint = self.save_checkpoint()
+
+        if epoch is None:
+            epoch = time.ctime().replace(" ", "_")
+
+        filename = "checkpoint_epoch_{}.pth".format(epoch)
+        filename = directory + filename
+        torch.save(checkpoint, filename)
+
+    def load(self, filename: str, map_location: str = "cpu") -> None:
+        checkpoint = torch.load(filename, map_location=map_location)
+        self.load_checkpoint(checkpoint)
 
 
 class ClassificationRunner(BaseRunner):
