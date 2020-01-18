@@ -21,9 +21,23 @@ class BaseEnsembleEstimator(BaseEstimator):
         self.mode: str = mode
         self.do_fit: bool = False
 
-    def fit(self, dataset: Dataset, epochs: int, batch_size: int, shuffle: bool = True, checkpoint: str = False):
+    def fit(self, dataset: Dataset, epochs: int, batch_size: int, shuffle: bool = True, checkpoints: List[str] = None):
+        """
+
+        Args:
+            dataset:
+            epochs:
+            batch_size:
+            shuffle:
+            checkpoints:
+
+        Returns:
+
+        """
         self.do_fit = True
-        for runner in tqdm(self.runners, desc="Runner"):
+        for i, runner in enumerate(tqdm(self.runners, desc="Runner")):
+            checkpoint = checkpoints[i] if checkpoints else None
+
             runner.fit(dataset, epochs, batch_size, shuffle, checkpoint)
             self.weights.append(runner.save_checkpoint()["model_state_dict"])
 
@@ -41,6 +55,14 @@ class SoftEnsemble(BaseEnsembleEstimator):
         super(SoftEnsemble, self).__init__(models, mode)
 
     def predict(self, x) -> np.ndarray:
+        """
+
+        Args:
+            x:
+
+        Returns:
+
+        """
         if isinstance(x, np.ndarray):
             x = torch.from_numpy(x)
 
@@ -67,6 +89,14 @@ class HardEnsemble(BaseEnsembleEstimator):
         super(HardEnsemble, self).__init__(models, mode="classification")
 
     def predict(self, x) -> np.ndarray:
+        """
+
+        Args:
+            x:
+
+        Returns:
+
+        """
         if isinstance(x, np.ndarray):
             x = torch.from_numpy(x)
 
