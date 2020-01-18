@@ -67,7 +67,7 @@ class SoftEnsemble(BaseEnsembleEstimator):
             x = torch.from_numpy(x)
 
         predicts = []
-        for i, runner in enumerate(tqdm(self.runners, desc="Runner")):
+        for i, runner in enumerate(self.runners):
             if self.do_fit:
                 runner.model.load_state_dict(self.weights[i])
             predicts.append(runner.predict(x))
