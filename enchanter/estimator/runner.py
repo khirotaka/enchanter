@@ -1,3 +1,4 @@
+import io
 import os
 import time
 from copy import deepcopy
@@ -160,6 +161,11 @@ class BaseRunner(BaseEstimator):
         filename = "checkpoint_epoch_{}.pth".format(epoch)
         filename = directory + filename
         torch.save(checkpoint, filename)
+
+        if self.logger:
+            buffer = io.BytesIO()
+            torch.save(checkpoint, buffer)
+            self.logger.experiment.log_asset_data(buffer.getvalue(), filename)
 
     def load(self, filename: str, map_location: str = "cpu") -> None:
         """
