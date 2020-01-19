@@ -51,7 +51,6 @@ class BaseRunner(BaseEstimator):
         data = data.to(self.device)
         target = target.to(self.device)
 
-        self.optimizer.zero_grad()
         out = self.model(data)
         loss = self.criterion(out, target)
         return loss
@@ -88,6 +87,8 @@ class BaseRunner(BaseEstimator):
         for epoch in tqdm(range(epochs), desc="Epochs", leave=True):
             self.model.train()
             for i, (x, y) in enumerate(tqdm(train_loader, desc="Training", leave=False)):
+
+                self.optimizer.zero_grad()
                 loss = self.one_cycle(x, y)
                 loss.backward()
                 self.optimizer.step()
