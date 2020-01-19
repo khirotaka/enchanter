@@ -8,5 +8,6 @@ setup(
     license='Apache-2.0',
     author='Hirotaka Kawashima',
     author_email='',
-    description='Machine Learning Pipeline, Training and Logging for Me.'
+    description='Machine Learning Pipeline, Training and Logging for Me.',
+    install_requires=['torch', 'numpy', 'scikit-learn', 'tqdm']
 )
