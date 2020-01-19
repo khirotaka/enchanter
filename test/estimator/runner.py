@@ -33,7 +33,8 @@ def main():
     model = Model()
     runner = ClassificationRunner(
         model, nn.CrossEntropyLoss(), optim.Adam,
-        optim_config={"lr": 0.001}, experiment=comet_ml.Experiment(project_name="testflight")
+        optim_config={"lr": 0.001}, experiment=comet_ml.Experiment(project_name="testflight"),
+        scheduler={"algorithm": optim.lr_scheduler.CosineAnnealingLR, "config": {"T_max": 50}}
     )
     runner.fit(train_ds, epochs=2, batch_size=64, checkpoint="../data/checkpoint/", num_workers=2, validation=test_ds)
     loss, accuracy = runner.evaluate(test_ds, batch_size=64)

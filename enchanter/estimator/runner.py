@@ -2,7 +2,7 @@ import io
 import os
 import time
 from copy import deepcopy
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List, Union
 
 import torch
 import numpy as np
@@ -18,7 +18,7 @@ else:
 
 
 class BaseRunner(BaseEstimator):
-    def __init__(self, model, criterion, optimizer, optim_config, device=None, experiment=None) -> None:
+    def __init__(self, model, criterion, optimizer, optim_config, device=None, experiment=None, scheduler=None):
         """
 
         Args:
@@ -26,8 +26,9 @@ class BaseRunner(BaseEstimator):
             criterion:
             optimizer:
             optim_config (dict):
-            device (str):
+            device:
             experiment:
+            scheduler (Dict[str, Union]):
         """
         self.device = torch.device(device) if device else torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -35,6 +36,7 @@ class BaseRunner(BaseEstimator):
         self.criterion = criterion
         self.optimizer = optimizer(self.model.parameters(), **optim_config)
         self.logger = modules.CometLogger(experiment) if experiment else None
+        self.scheduler = scheduler["algorithm"](self.optimizer, **scheduler["config"]) if scheduler else None
 
     def one_cycle(self, data: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         """
@@ -90,8 +92,13 @@ class BaseRunner(BaseEstimator):
                 loss.backward()
                 self.optimizer.step()
 
+                if self.scheduler:
+                    self.scheduler.step()
+
                 if self.logger:
                     self.logger.log_train(epoch, i, {"loss": loss.detach().cpu()})
+                    if self.scheduler:
+                        self.logger.log_train(epoch, i, {"lr": self.scheduler.get_lr()})
 
             if val_loader and self.logger:
                 self.model.eval()
