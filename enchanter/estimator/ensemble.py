@@ -43,7 +43,7 @@ class BaseEnsembleEstimator(BaseEstimator):
 
         return self
 
-    def predict(self, x):
+    def predict(self, x) -> List[np.ndarray]:
         if isinstance(x, np.ndarray):
             x = torch.from_numpy(x)
 
