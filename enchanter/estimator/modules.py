@@ -1,4 +1,3 @@
-import comet_ml
 from typing import Dict
 
 
@@ -13,7 +12,7 @@ def is_jupyter() -> bool:
 
 class CometLogger:
     def __init__(self, experiment):
-        self.experiment: comet_ml.Experiment = experiment
+        self.experiment = experiment
 
     def log_train(self, epoch: int, step: int, values: Dict):
         with self.experiment.train():
