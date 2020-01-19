@@ -44,15 +44,22 @@ class BaseEnsembleEstimator(BaseEstimator):
         return self
 
     def predict(self, x):
-        raise NotImplementedError
+        if isinstance(x, np.ndarray):
+            x = torch.from_numpy(x)
+
+        predicts = []
+        for i, runner in enumerate(self.runners):
+            if self.do_fit:
+                runner.model.load_state_dict(self.weights[i])
+            predicts.append(runner.predict(x))
+
+        return predicts
 
 
 class SoftEnsemble(BaseEnsembleEstimator):
     """
     確率の平均をとるアンサンブル
     """
-    def __init__(self, models: List[BaseRunner], mode: str = None):
-        super(SoftEnsemble, self).__init__(models, mode)
 
     def predict(self, x) -> np.ndarray:
         """
@@ -63,14 +70,7 @@ class SoftEnsemble(BaseEnsembleEstimator):
         Returns:
 
         """
-        if isinstance(x, np.ndarray):
-            x = torch.from_numpy(x)
-
-        predicts = []
-        for i, runner in enumerate(self.runners):
-            if self.do_fit:
-                runner.model.load_state_dict(self.weights[i])
-            predicts.append(runner.predict(x))
+        predicts = super(SoftEnsemble, self).predict(x)
 
         predicts = sum(predicts)
         probs = predicts / len(self.runners)
@@ -97,13 +97,7 @@ class HardEnsemble(BaseEnsembleEstimator):
         Returns:
 
         """
-        if isinstance(x, np.ndarray):
-            x = torch.from_numpy(x)
-
-        predicts = []
-        for runner in self.runners:
-            predicts.append(runner.predict(x))
-
+        predicts = super(HardEnsemble, self).predict(x)
         predicts = np.stack(predicts)
 
         return np.ravel(predicts[0])
