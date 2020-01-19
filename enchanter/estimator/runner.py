@@ -2,7 +2,7 @@ import io
 import os
 import time
 from copy import deepcopy
-from typing import Tuple, Dict, List, Union
+from typing import Tuple, Dict
 
 import torch
 import numpy as np
