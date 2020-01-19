@@ -9,5 +9,5 @@ setup(
     author='Hirotaka Kawashima',
     author_email='',
     description='Machine Learning Pipeline, Training and Logging for Me.',
-    install_requires=['torch', 'numpy', 'scikit-learn', 'tqdm']
+    install_requires=['torch', 'numpy', 'scikit-learn', 'tqdm', 'torchvision', 'comet-ml']
 )
