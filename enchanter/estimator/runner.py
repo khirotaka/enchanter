@@ -67,7 +67,7 @@ class BaseRunner(BaseEstimator):
 
         return results
 
-    def fit(self, dataset, epochs, batch_size, shuffle=True, checkpoint=False, validation=None, **loader_config):
+    def fit(self, dataset, epochs, batch_size, shuffle=False, checkpoint=False, validation=None, **loader_config):
         """
 
         Args:
@@ -76,13 +76,26 @@ class BaseRunner(BaseEstimator):
             batch_size (int):
             shuffle (bool):
             checkpoint (str):
-            validation (Dataset):
+            validation (Dict[str, Dataset]):
 
         Returns:
 
         """
+
+        # fir(
+        #    ..., 
+        #    validation={
+        #       "dataset": val_ds, 
+        #       "config": {
+        #           "sampler": val_sampler, 
+        #           "shuffle": shuffle, ...
+        #       }
+        #    }
+        # )
+
         train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, **loader_config)
-        val_loader = DataLoader(validation, batch_size, shuffle=False, **loader_config) if validation else None
+        
+        val_loader = DataLoader(validation["dataset"], batch_size=batch_size, shuffle=shuffle, **validation["config"]) if validation else None
 
         for epoch in tqdm(range(epochs), desc="Epochs", leave=True):
             self.model.train()
