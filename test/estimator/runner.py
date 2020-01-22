@@ -31,8 +31,9 @@ class Model(nn.Module):
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     train_ds = MNIST("../data", train=True, download=True, transform=ToTensor())
-    val_ds =  MNIST("../data", train=True, download=True, transform=ToTensor())
-    
+    val_ds = MNIST("../data", train=True, download=True, transform=ToTensor())
+    pin_memory = torch.cuda.is_available()
+
     val_size = 0.1
     n_trains = len(train_ds)
     indices = list(range(n_trains))
@@ -59,15 +60,14 @@ def main():
         checkpoint="../data/checkpoint/", 
         num_workers=1,
         sampler=train_sampler,
-        pin_memory=True,
-        shuffle=None,
+        pin_memory=pin_memory,
+        shuffle=False,
         validation={
             "dataset": val_ds, 
             "config": {
                 "num_workers": 1,
                 "sampler": val_sampler, 
-                "pin_memory": True, 
-                "num_workers": 1
+                "pin_memory": pin_memory
                 }
             }
     )

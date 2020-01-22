@@ -2,7 +2,7 @@ import io
 import os
 import time
 from copy import deepcopy
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Union
 
 import torch
 import numpy as np
@@ -40,9 +40,11 @@ class BaseRunner(BaseEstimator):
 
     def one_cycle(self, data: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         """
+        順伝搬・損失値の計算を行うメソッド。
+        算出した loss を返します。
 
         Args:
-            data: Training Data
+            data: Training Data.
             target: Training Label for supervised learning.
 
         Returns:
@@ -56,14 +58,21 @@ class BaseRunner(BaseEstimator):
         return loss
 
     def validate(self, data: torch.Tensor, target: torch.Tensor) -> Dict[str, torch.Tensor]:
-        results = {}
-        with torch.no_grad():
-            data = data.to(self.device)
-            target = target.to(self.device)
+        """
+        validationを行うメソッド。
+        各算出した値を格納した辞書を返します。
 
-            out = self.model(data)
-            loss = self.criterion(out, target)
-            results["loss"] = loss.cpu()
+        Args:
+            data: Validating Data.
+            target: Validating Label for supervised learning.
+
+        Returns:
+            results: dictionary which contained some results.
+        """
+        results = {}
+
+        loss = self.one_cycle(data, target)
+        results["loss"] = loss.cpu()
 
         return results
 
@@ -76,26 +85,25 @@ class BaseRunner(BaseEstimator):
             batch_size (int):
             shuffle (bool):
             checkpoint (str):
-            validation (Dict[str, Dataset]):
+            validation (Dict[str, Union[Dataset, Dict]]):
+
+        Examples:
+            >>> ds: Dataset = MNIST( ... )
+            >>> model: torch.nn.Module = torch.nn.Sequential(
+            >>>     ...
+            >>> )
+            >>> runner = ClassificationRunner(model, torch.nn.NLLLoss(), torch.optim.SGD, {"lr": 0.001})
+            >>> runner.fit(ds, epochs=10, batch_size=32, shuffle=True)
 
         Returns:
 
         """
 
-        # fir(
-        #    ..., 
-        #    validation={
-        #       "dataset": val_ds, 
-        #       "config": {
-        #           "sampler": val_sampler, 
-        #           "shuffle": shuffle, ...
-        #       }
-        #    }
-        # )
-
         train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, **loader_config)
-        
-        val_loader = DataLoader(validation["dataset"], batch_size=batch_size, shuffle=shuffle, **validation["config"]) if validation else None
+
+        val_loader = DataLoader(
+            validation["dataset"], batch_size=batch_size, shuffle=shuffle, **validation["config"]
+        ) if validation else None
 
         for epoch in tqdm(range(epochs), desc="Epochs", leave=True):
             self.model.train()
@@ -103,6 +111,7 @@ class BaseRunner(BaseEstimator):
 
                 self.optimizer.zero_grad()
                 loss = self.one_cycle(x, y)
+
                 loss.backward()
                 self.optimizer.step()
 
@@ -111,14 +120,16 @@ class BaseRunner(BaseEstimator):
 
                 if self.logger:
                     self.logger.log_train(epoch, i, {"loss": loss.detach().cpu()})
+
                     if self.scheduler:
                         self.logger.log_train(epoch, i, {"lr": self.scheduler.get_lr()})
 
             if val_loader and self.logger:
                 self.model.eval()
-                for j, (x_val, y_val) in enumerate(tqdm(val_loader, desc="Validation", leave=False)):
-                    val_results = self.validate(x_val, y_val)
-                    self.logger.log_val(epoch, j, val_results)
+                with torch.no_grad():
+                    for j, (x_val, y_val) in enumerate(tqdm(val_loader, desc="Validation", leave=False)):
+                        val_results = self.validate(x_val, y_val)
+                        self.logger.log_val(epoch, j, val_results)
 
             if checkpoint:
                 self.save(checkpoint, epoch=epoch+1)
@@ -131,8 +142,12 @@ class BaseRunner(BaseEstimator):
         Args:
             x (torch.Tensor):
 
-        Returns:
+        Examples:
+            >>> x = mnist_img    # [1, 1, 28, 28]
+            >>> prediction = runner.predict(x)
 
+        Returns:
+            prediction
         """
         self.model.eval()
         with torch.no_grad():
