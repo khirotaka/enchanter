@@ -5,7 +5,6 @@ import torch.optim as optim
 from torchvision.datasets import MNIST
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor
-from sklearn.metrics import accuracy_score
 
 from enchanter.estimator.ensemble import SoftEnsemble
 from enchanter.estimator.runner import ClassificationRunner
