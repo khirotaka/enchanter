@@ -4,7 +4,7 @@ import torch.nn as nn
 
 class Swish(nn.Module):
     def __init__(self, beta: bool = False):
-        super(Swish, self).__init__()
+        super().__init__()
         if beta:
             self.weight = nn.Parameter(torch.tensor([1.]), requires_grad=True)
         else:

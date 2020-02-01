@@ -70,7 +70,7 @@ class SoftEnsemble(BaseEnsembleEstimator):
         Returns:
 
         """
-        predicts = super(SoftEnsemble, self).predict(x)
+        predicts = super().predict(x)
 
         predicts = sum(predicts)
         probs = predicts / len(self.runners)
@@ -85,8 +85,8 @@ class HardEnsemble(BaseEnsembleEstimator):
     """
     多数決をとるアンサンブル
     """
-    def __init__(self, models: List[ClassificationRunner]):
-        super(HardEnsemble, self).__init__(models, mode="classification")
+    def __init__(self, runners: List[ClassificationRunner]):
+        super().__init__(runners, mode="classification")
 
     def predict(self, x) -> np.ndarray:
         """
@@ -97,7 +97,7 @@ class HardEnsemble(BaseEnsembleEstimator):
         Returns:
 
         """
-        predicts = super(HardEnsemble, self).predict(x)
+        predicts = super().predict(x)
         predicts = np.stack(predicts)
 
         return np.ravel(predicts[0])

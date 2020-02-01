@@ -2,7 +2,7 @@ import io
 import os
 import time
 from copy import deepcopy
-from typing import Tuple, Dict, Union
+from typing import Tuple, Dict
 
 import torch
 import numpy as np
@@ -26,7 +26,7 @@ class BaseRunner(BaseEstimator):
             criterion:
             optimizer:
             optim_config (dict):
-            device:
+            device: torch.device
             experiment:
             scheduler (Dict[str, Union]):
         """
@@ -124,12 +124,13 @@ class BaseRunner(BaseEstimator):
                     if self.scheduler:
                         self.logger.log_train(epoch, i, {"lr": self.scheduler.get_lr()})
 
-            if val_loader and self.logger:
+            if val_loader:
                 self.model.eval()
                 with torch.no_grad():
                     for j, (x_val, y_val) in enumerate(tqdm(val_loader, desc="Validation", leave=False)):
                         val_results = self.validate(x_val, y_val)
-                        self.logger.log_val(epoch, j, val_results)
+                        if self.logger:
+                            self.logger.log_val(epoch, j, val_results)
 
             if checkpoint:
                 self.save(checkpoint, epoch=epoch+1)
@@ -227,7 +228,7 @@ class ClassificationRunner(BaseRunner):
         Returns:
 
         """
-        out = super(ClassificationRunner, self).predict(x)
+        out = super().predict(x)
         predict = np.argmax(out, axis=-1)
         return predict
 
