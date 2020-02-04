@@ -122,7 +122,7 @@ class BaseRunner(BaseEstimator):
                     self.logger.log_train(epoch, i, {"loss": loss.detach().cpu()})
 
                     if self.scheduler:
-                        self.logger.log_train(epoch, i, {"lr": self.scheduler.get_lr()})
+                        self.logger.log_train(epoch, i, {"lr": self.scheduler.get_last_lr()})
 
             if val_loader:
                 self.model.eval()

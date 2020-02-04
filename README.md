@@ -13,13 +13,8 @@ Machine Learning Pipeline, Training and Logging for Me.
 ```python
 import torch
 import torch.nn as nn
-import torch.optim as optim
-from torchvision.datasets import MNIST
-from torch.utils.data import DataLoader
-from torchvision.transforms import ToTensor
-
-from enchanter.estimator.runner import ClassificationRunner
-
+from torch.utils.data import Dataset
+from enchanter import estimator
 
 class Model(nn.Module):
     def __init__(self):
@@ -38,30 +33,11 @@ class Model(nn.Module):
         return x
 
 
-def main():
-    train_ds = MNIST(".", train=True, download=True, transform=ToTensor())
-    test_ds = MNIST(".", train=False, download=True, transform=ToTensor())
+train_ds: Dataset = ...
 
-    model = Model()
-    runner = ClassificationRunner(model, nn.CrossEntropyLoss(), optim.Adam, optim_conf={"lr": 0.001})
-    runner.fit(train_ds, epochs=2, batch_size=64, checkpoint=".")
-    loss, accuracy = runner.evaluate(test_ds, batch_size=64)
+runner = estimator.ClassificationRunner(Model, nn.CrossEntropyLoss(), torch.optim.Adam, {"lr": 0.001})
+runner.fit(train_ds, epochs=10, batch_size=32, shuffle=True)
 
-    img, label = next(iter(DataLoader(test_ds, batch_size=32)))
-    print(runner.predict(img))
-    print(label)
-    print("Loss: {:.4f}".format(loss))
-    print("Accuracy: {:.4%}".format(accuracy))
-
-    print("Save")
-    runner.save("../data/checkpoint/")
-
-    print("load")
-    runner.load("../data/checkpoint/checkpoint_epoch_1.pth")
-
-
-if __name__ == '__main__':
-    main()
 ```
 
 ### Ensemble
