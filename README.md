@@ -3,134 +3,52 @@ Machine Learning Pipeline, Training and Logging for Me.
 
 ## System Requirements
 * Python 3.7 or later
-* PyTorch v1.3 or later
+* PyTorch v1.4 or later
 
 
 ## Example
 
 ### Runner
+Enchanter Runners has `train()` method and sklearn style `fit()` method.
 
+#### train()
 ```python
-import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchvision.datasets import MNIST
-from torch.utils.data import DataLoader
-from torchvision.transforms import ToTensor
 
-from enchanter.estimator.runner import ClassificationRunner
-
-
-class Model(nn.Module):
-    def __init__(self):
-        super(Model, self).__init__()
-        self.fc = nn.Sequential(
-            nn.Linear(28 * 28, 512),
-            nn.ReLU(),
-            nn.Linear(512, 256),
-            nn.ReLU(),
-            nn.Linear(256, 10)
-        )
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = x.view(-1, 28*28)
-        x = self.fc(x)
-        return x
+import enchanter
+import enchanter.addon as addon
 
 
-def main():
-    train_ds = MNIST(".", train=True, download=True, transform=ToTensor())
-    test_ds = MNIST(".", train=False, download=True, transform=ToTensor())
+model = nn.Sequential(
+    nn.Linear(4, 32),
+    addon.Swish(),
+    nn.Linear(32, 10)
+)
 
-    model = Model()
-    runner = ClassificationRunner(model, nn.CrossEntropyLoss(), optim.Adam, optim_conf={"lr": 0.001})
-    runner.fit(train_ds, epochs=2, batch_size=64, checkpoint=".")
-    loss, accuracy = runner.evaluate(test_ds, batch_size=64)
-
-    img, label = next(iter(DataLoader(test_ds, batch_size=32)))
-    print(runner.predict(img))
-    print(label)
-    print("Loss: {:.4f}".format(loss))
-    print("Accuracy: {:.4%}".format(accuracy))
-
-    print("Save")
-    runner.save("../data/checkpoint/")
-
-    print("load")
-    runner.load("../data/checkpoint/checkpoint_epoch_1.pth")
-
-
-if __name__ == '__main__':
-    main()
+ds = MNIST("./data", train=True)
+runner = enchanter.ClassificationRunner(model, nn.CrossEntropyLoss(), optim.Adam, {"lr": 0.001})
+runner.train(ds, epochs=10, batch_size=64)
 ```
 
-### Ensemble
-
+#### fit()
 ```python
-import torch
 import torch.nn as nn
 import torch.optim as optim
-from torchvision.datasets import MNIST
-from torchvision.transforms import ToTensor
-from torch.utils.data import DataLoader
+from sklearn.datasets import load_iris
 
-from enchanter.estimator.ensemble import SoftEnsemble, HardEnsemble
-from enchanter.estimator.runner import ClassificationRunner
+import enchanter
+import enchanter.addon as addon
 
 
-class Model(nn.Module):
-    def __init__(self):
-        super(Model, self).__init__()
-        self.fc = nn.Sequential(
-            nn.Linear(28 * 28, 512),
-            nn.ReLU(),
-            nn.Linear(512, 256),
-            nn.ReLU(),
-            nn.Linear(256, 10)
-        )
+model = nn.Sequential(
+    nn.Linear(4, 32),
+    addon.Swish(),
+    nn.Linear(32, 10)
+)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = x.view(-1, 28*28)
-        x = self.fc(x)
-        return x
-
-def create_ds():
-    train_ds = MNIST("../data", train=True, download=False, transform=ToTensor())
-    test_ds = MNIST("../data", train=False, download=False, transform=ToTensor())
-    return train_ds, test_ds
-
-def create_models():
-    runner1 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_conf={"lr": 0.001})
-    runner2 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_conf={"lr": 0.002})
-    runner3 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_conf={"lr": 0.003})
-    
-    return runner1, runner2, runner3
-
-def soft():
-    train_ds, test_ds = create_ds()
-    runner1, runner2, runner3 = create_models()
-
-    ensemble = SoftEnsemble([runner1, runner2, runner3], "classification")
-    ensemble.fit(train_ds, epochs=1, batch_size=32)
-
-    img, label = next(iter(DataLoader(test_ds, batch_size=32)))
-    print("predict: ", ensemble.predict(img).astype("int"))
-    print("label", label)
-
-def hard():
-    train_ds, test_ds = create_ds()
-    runner1, runner2, runner3 = create_models()
-
-    ensemble = HardEnsemble([runner1, runner2, runner3])
-    ensemble.fit(train_ds, epochs=1, batch_size=32)
-
-    img, label = next(iter(DataLoader(test_ds, batch_size=32)))
-    print("predict: ", ensemble.predict(img).astype("int"))
-    print("label", label)
-
-
-if __name__ == '__main__':
-    soft()
-    hard()
-
+x, y = load_iris(return_X_y=True)
+runner = enchanter.ClassificationRunner(model, nn.CrossEntropyLoss(), optim.Adam, {"lr": 0.001})
+runner.fit(x, y)
 ```
