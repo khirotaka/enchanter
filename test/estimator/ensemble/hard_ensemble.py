@@ -5,8 +5,8 @@ from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
 from torch.utils.data import DataLoader
 
-from enchanter.estimator.ensemble import HardEnsemble
-from enchanter.estimator.runner import ClassificationRunner
+from enchanter.ensemble.ensemble import HardEnsemble
+from enchanter.engine.runner import ClassificationRunner
 
 
 class Model(nn.Module):
@@ -35,7 +35,7 @@ def main():
     runner3 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.003})
 
     ensemble = HardEnsemble([runner1, runner2, runner3])
-    ensemble.fit(train_ds, epochs=1, batch_size=32)
+    ensemble.train(train_ds, epochs=1, batch_size=32)
 
     img, label = next(iter(DataLoader(test_ds, batch_size=32)))
     print("predict: ", ensemble.predict(img).astype("int"))

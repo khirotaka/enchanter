@@ -8,7 +8,7 @@ from torchvision.transforms import ToTensor
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 
-from enchanter.estimator.runner import ClassificationRunner
+import enchanter
 
 
 class Model(nn.Module):
@@ -46,7 +46,7 @@ def main():
     test_ds = MNIST("../data", train=False, download=True, transform=ToTensor())
 
     model = Model()
-    runner = ClassificationRunner(
+    runner = enchanter.ClassificationRunner(
         model, nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.001}, 
         experiment=comet_ml.Experiment(project_name="testflight"),
         scheduler={
@@ -55,7 +55,7 @@ def main():
         }, device=device
     )
 
-    runner.fit(
+    runner.train(
         train_ds, epochs=2, batch_size=128, 
         checkpoint="../data/checkpoint/", 
         num_workers=1,

@@ -5,10 +5,9 @@ import torch.optim as optim
 from torchvision.datasets import MNIST
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor
-from sklearn.metrics import accuracy_score
 
-from enchanter.estimator.ensemble import SoftEnsemble
-from enchanter.estimator.runner import ClassificationRunner
+from enchanter.ensemble.ensemble import SoftEnsemble
+from enchanter.engine.runner import ClassificationRunner
 
 
 class Model(nn.Module):
@@ -37,7 +36,7 @@ def main():
     runner3 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.003})
 
     ensemble = SoftEnsemble([runner1, runner2, runner3], "classification")
-    ensemble.fit(
+    ensemble.train(
         train_ds,
         epochs=1,
         batch_size=32,
