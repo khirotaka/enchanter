@@ -6,7 +6,7 @@ from torchvision.datasets import MNIST
 from torch.utils.data import SubsetRandomSampler
 from torchvision import transforms
 
-from enchanter.estimator import ClassificationRunner
+import enchanter
 
 
 class Network(nn.Module):
@@ -41,8 +41,8 @@ def main():
 
     model = Network()
 
-    runner = ClassificationRunner(model, nn.CrossEntropyLoss(), optim.Adam, {"lr": 0.001})
-    runner.fit(train_ds, 1, 64, sampler=train_sampler, validation={
+    runner = enchanter.ClassificationRunner(model, nn.CrossEntropyLoss(), optim.Adam, {"lr": 0.001})
+    runner.train(train_ds, 1, 64, sampler=train_sampler, validation={
         "dataset": val_ds,
         "config": {
             "sampler": val_sampler
