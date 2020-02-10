@@ -342,8 +342,8 @@ class ClassificationRunner(BaseRunner):
                 labels.append(y.cpu().numpy())
                 predicts.append(predict)
 
-        labels = np.vstack(labels)
-        predicts = np.vstack(predicts)
+        labels = np.hstack(labels)
+        predicts = np.hstack(predicts)
 
         for func in metrics:
             metric_values[func.__name__] = func(labels, predicts)
