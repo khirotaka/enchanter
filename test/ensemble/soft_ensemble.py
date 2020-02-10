@@ -28,8 +28,8 @@ class Model(nn.Module):
 
 
 def main():
-    train_ds = MNIST("../../data", train=True, download=False, transform=ToTensor())
-    test_ds = MNIST("../../data", train=False, download=False, transform=ToTensor())
+    train_ds = MNIST("../data", train=True, download=False, transform=ToTensor())
+    test_ds = MNIST("../data", train=False, download=False, transform=ToTensor())
 
     runner1 = enchanter.ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.001})
     runner2 = enchanter.ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.002})
