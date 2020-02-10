@@ -1,6 +1,6 @@
 import comet_ml
 import torch
-from enchanter.estimator.modules import CometLogger
+from enchanter.engine.modules import CometLogger
 
 
 def main():

@@ -6,8 +6,8 @@ from torchvision.datasets import MNIST
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor
 
-from enchanter.estimator.ensemble import SoftEnsemble
-from enchanter.estimator.runner import ClassificationRunner
+import enchanter
+import enchanter.ensemble as ensemble
 
 
 class Model(nn.Module):
@@ -31,12 +31,12 @@ def main():
     train_ds = MNIST("../../data", train=True, download=False, transform=ToTensor())
     test_ds = MNIST("../../data", train=False, download=False, transform=ToTensor())
 
-    runner1 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.001})
-    runner2 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.002})
-    runner3 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.003})
+    runner1 = enchanter.ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.001})
+    runner2 = enchanter.ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.002})
+    runner3 = enchanter.ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.003})
 
-    ensemble = SoftEnsemble([runner1, runner2, runner3], "classification")
-    ensemble.fit(
+    soft = ensemble.SoftEnsemble([runner1, runner2, runner3], "classification")
+    soft.train(
         train_ds,
         epochs=1,
         batch_size=32,
@@ -46,22 +46,22 @@ def main():
     )
 
     img, label = next(iter(DataLoader(test_ds, batch_size=32)))
-    pred = ensemble.predict(img)
+    pred = soft.predict(img)
     print("predict: ", pred)
-    print("label", label.numpy())
+    print("label:   ", label.numpy())
 
     total = 0.0
     correct = 0.0
     for data, label in DataLoader(test_ds, batch_size=32, shuffle=False):
         total += label.shape[0]
 
-        predicts = ensemble.predict(data)
+        predicts = soft.predict(data)
         correct += np.sum(predicts == label.numpy()).item()
 
     print("ens", correct / total)
-    print("r1", ensemble.runners[0].evaluate(test_ds, 32))
-    print("r2", ensemble.runners[1].evaluate(test_ds, 32))
-    print("r3", ensemble.runners[2].evaluate(test_ds, 32))
+    print("r1", soft.runners[0].evaluate(test_ds, y=None, batch_size=32))
+    print("r2", soft.runners[1].evaluate(test_ds, y=None, batch_size=32))
+    print("r3", soft.runners[2].evaluate(test_ds, y=None, batch_size=32))
 
 
 if __name__ == '__main__':

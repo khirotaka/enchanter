@@ -2,7 +2,7 @@ import torch
 import torch.jit
 import torch.nn as nn
 import torch.optim as optim
-from enchanter.nn.optim_wrapper import TransformerOptimizer
+from enchanter.addon.optim_wrapper import TransformerOptimizer
 
 
 def main():

@@ -5,8 +5,8 @@ from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
 from torch.utils.data import DataLoader
 
-from enchanter.estimator.ensemble import HardEnsemble
-from enchanter.estimator.runner import ClassificationRunner
+import enchanter
+import enchanter.ensemble as ensemble
 
 
 class Model(nn.Module):
@@ -30,15 +30,15 @@ def main():
     train_ds = MNIST("../../data", train=True, download=False, transform=ToTensor())
     test_ds = MNIST("../../data", train=False, download=False, transform=ToTensor())
 
-    runner1 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.001})
-    runner2 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.002})
-    runner3 = ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.003})
+    runner1 = enchanter.ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.001})
+    runner2 = enchanter.ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.002})
+    runner3 = enchanter.ClassificationRunner(Model(), nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.003})
 
-    ensemble = HardEnsemble([runner1, runner2, runner3])
-    ensemble.fit(train_ds, epochs=1, batch_size=32)
+    hard = ensemble.HardEnsemble([runner1, runner2, runner3])
+    hard.train(train_ds, epochs=1, batch_size=32)
 
     img, label = next(iter(DataLoader(test_ds, batch_size=32)))
-    print("predict: ", ensemble.predict(img).astype("int"))
+    print("predict: ", hard.predict(img).astype("int"))
     print("label", label)
 
 

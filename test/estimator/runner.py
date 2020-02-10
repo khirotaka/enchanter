@@ -7,8 +7,9 @@ from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
+from sklearn.metrics import accuracy_score
 
-from enchanter.estimator.runner import ClassificationRunner
+import enchanter
 
 
 class Model(nn.Module):
@@ -46,7 +47,7 @@ def main():
     test_ds = MNIST("../data", train=False, download=True, transform=ToTensor())
 
     model = Model()
-    runner = ClassificationRunner(
+    runner = enchanter.ClassificationRunner(
         model, nn.CrossEntropyLoss(), optim.Adam, optim_config={"lr": 0.001}, 
         experiment=comet_ml.Experiment(project_name="testflight"),
         scheduler={
@@ -55,7 +56,7 @@ def main():
         }, device=device
     )
 
-    runner.fit(
+    runner.train(
         train_ds, epochs=2, batch_size=128, 
         checkpoint="../data/checkpoint/", 
         num_workers=1,
@@ -71,13 +72,13 @@ def main():
                 }
             }
     )
-    loss, accuracy = runner.evaluate(test_ds, batch_size=64)
+    metrics = runner.evaluate(test_ds, batch_size=64, metrics=[accuracy_score])
 
     img, label = next(iter(DataLoader(test_ds, batch_size=32)))
     print(runner.predict(img))
     print(label)
-    print("Loss: {:.4f}".format(loss))
-    print("Accuracy: {:.4%}".format(accuracy))
+    print("Loss: {:.4f}".format(metrics["loss"]))
+    print("Accuracy: {:.4%}".format(metrics["accuracy_score"]))
 
     print("Save")
     runner.save("../data/checkpoint/")

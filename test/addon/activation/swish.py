@@ -1,6 +1,6 @@
 import torch
 import torch.jit
-from enchanter.nn.activation import Swish
+from enchanter.addon.activation import Swish
 
 
 def main():

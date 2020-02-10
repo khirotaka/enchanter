@@ -1,12 +1,20 @@
+# *******************************************************
+#  _____            _                 _
+# | ____|_ __   ___| |__   __ _ _ __ | |_ ___ _ __
+# |  _| | '_ \ / __| '_ \ / _` | '_ \| __/ _ \ '__|
+# | |___| | | | (__| | | | (_| | | | | ||  __/ |
+# |_____|_| |_|\___|_| |_|\__,_|_| |_|\__\___|_|
+#
+# *******************************************************
+
 from typing import List
 
-import torch
 import numpy as np
 from torch.utils.data import Dataset
 from sklearn.base import BaseEstimator
 
-from .runner import BaseRunner, ClassificationRunner
-from . import modules
+from enchanter.engine.runner import BaseRunner, ClassificationRunner
+from enchanter.engine import modules
 
 if modules.is_jupyter():
     from tqdm.notebook import tqdm
@@ -21,7 +29,7 @@ class BaseEnsembleEstimator(BaseEstimator):
         self.mode: str = mode
         self.do_fit: bool = False
 
-    def fit(self, dataset: Dataset, epochs: int, batch_size: int, shuffle: bool = True, checkpoints: List[str] = None):
+    def train(self, dataset: Dataset, epochs: int, batch_size: int, shuffle: bool = True, checkpoints: List[str] = None):
         """
 
         Args:
@@ -38,14 +46,22 @@ class BaseEnsembleEstimator(BaseEstimator):
         for i, runner in enumerate(tqdm(self.runners, desc="Runner")):
             checkpoint = checkpoints[i] if checkpoints else None
 
-            runner.fit(dataset, epochs, batch_size, shuffle, checkpoint)
+            runner.train(dataset, epochs, batch_size, shuffle, checkpoint)
             self.weights.append(runner.save_checkpoint()["model_state_dict"])
 
         return self
 
+    def fit(self, x: np.ndarray, y: np.ndarray = None, **kwargs):
+        epochs: int = kwargs.get("epochs", 1)
+        batch_size: int = kwargs.get("batch_size", 1)
+        checkpoint: List[str] = kwargs.get("checkpoint", None)
+
+        train_ds = modules.get_dataset(x, y)
+        self.train(train_ds, epochs, batch_size, checkpoints=checkpoint)
+        return self
+
     def predict(self, x) -> List[np.ndarray]:
-        if isinstance(x, np.ndarray):
-            x = torch.from_numpy(x)
+        x = modules.numpy2tensor(x)
 
         predicts = []
         for i, runner in enumerate(self.runners):
