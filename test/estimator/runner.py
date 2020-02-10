@@ -7,6 +7,7 @@ from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
+from sklearn.metrics import accuracy_score
 
 import enchanter
 
@@ -71,13 +72,13 @@ def main():
                 }
             }
     )
-    loss, accuracy = runner.evaluate(test_ds, batch_size=64)
+    metrics = runner.evaluate(test_ds, batch_size=64, metrics=[accuracy_score])
 
     img, label = next(iter(DataLoader(test_ds, batch_size=32)))
     print(runner.predict(img))
     print(label)
-    print("Loss: {:.4f}".format(loss))
-    print("Accuracy: {:.4%}".format(accuracy))
+    print("Loss: {:.4f}".format(metrics["loss"]))
+    print("Accuracy: {:.4%}".format(metrics["accuracy_score"]))
 
     print("Save")
     runner.save("../data/checkpoint/")
