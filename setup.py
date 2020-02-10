@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='enchanter',
     version='0.2',
-    packages=['enchanter', 'enchanter.addon', 'enchanter.engine'],
+    packages=['enchanter', 'enchanter.addon', 'enchanter.engine', 'enchanter.ensemble'],
     url='https://github.com/khirotaka/enchanter',
     license='Apache-2.0',
     author='Hirotaka Kawashima',
