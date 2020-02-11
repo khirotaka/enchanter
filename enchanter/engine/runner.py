@@ -67,7 +67,7 @@ class BaseRunner(BaseEstimator):
         loss = self.criterion(out, target)
         return loss
 
-    def validate(self, data: torch.Tensor, target: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def validate(self, data: torch.Tensor, target: torch.Tensor) -> Dict[str, Any]:
         """
         validationを行うメソッド。
         各算出した値を格納した辞書を返します。
