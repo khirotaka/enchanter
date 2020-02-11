@@ -6,3 +6,4 @@ from .__version__ import __version__
 del Dict, Union, Any, List
 del io, os, time, deepcopy
 del np, torch, tqdm, DataLoader, Dataset, BaseEstimator
+del accuracy_score
