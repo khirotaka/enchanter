@@ -72,7 +72,7 @@ def main():
                 }
             }
     )
-    metrics = runner.evaluate(test_ds, batch_size=64, metrics=[accuracy_score])
+    metrics = runner.evaluate(test_ds, batch_size=64, metric_fn=[accuracy_score])
 
     img, label = next(iter(DataLoader(test_ds, batch_size=32)))
     print(runner.predict(img))
