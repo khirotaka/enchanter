@@ -1,4 +1,7 @@
 # Enchanter
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/84197fb283924f02a1667cea49dd031a)](https://app.codacy.com/manual/KawashimaHirotaka/enchanter?utm_source=github.com&utm_medium=referral&utm_content=khirotaka/enchanter&utm_campaign=Badge_Grade_Dashboard)
+
 Machine Learning Pipeline, Training and Logging for Me.
 
 ## System Requirements
