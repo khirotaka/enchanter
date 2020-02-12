@@ -252,7 +252,7 @@ class BaseRunner(BaseEstimator):
 
         """
         if not os.path.isdir(directory):
-            os.mkdir(directory)
+            os.makedirs(directory)
         checkpoint = self.save_checkpoint()
 
         if epoch is None:
