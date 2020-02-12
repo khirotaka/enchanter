@@ -2,7 +2,7 @@ import torch
 import torch.jit
 import torch.nn as nn
 import torch.optim as optim
-from enchanter.addon.optim_wrapper import TransformerOptimizer
+import enchanter.addon as addon
 
 
 def main():
@@ -15,7 +15,7 @@ def main():
         nn.Linear(16, 10)
     )
 
-    optimizer = TransformerOptimizer(optim.Adam(model.parameters()), 16, 10)
+    optimizer = addon.TransformerOptimizer(optim.Adam(model.parameters()), 16, 10)
     criterion = nn.CrossEntropyLoss()
 
     optimizer.zero_grad()
