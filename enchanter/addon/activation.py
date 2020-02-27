@@ -8,6 +8,7 @@
 # ***************************************************
 
 import torch
+import torch.jit
 import torch.nn as nn
 
 
@@ -22,3 +23,13 @@ class Swish(nn.Module):
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         out = inputs * torch.sigmoid(self.weight * inputs)
         return out
+
+
+@torch.jit.script
+def mish(x: torch.Tensor) -> torch.Tensor:
+    return x * torch.tanh(nn.functional.softplus(x))
+
+
+class Mish(nn.Module):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return mish(x)
