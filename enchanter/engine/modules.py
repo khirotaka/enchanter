@@ -7,14 +7,12 @@
 #
 # ***************************************************
 
-from typing import Dict
-
 import torch
 import numpy as np
 from torch.utils.data import TensorDataset, Dataset
 
 
-def is_jupyter() -> bool:
+def is_jupyter():
     if "get_ipython" not in globals():
         return False
     env = get_ipython().__class__.__name__
@@ -23,14 +21,14 @@ def is_jupyter() -> bool:
     return True
 
 
-def numpy2tensor(inputs: np.ndarray) -> torch.Tensor:
+def numpy2tensor(inputs: np.ndarray):
     if isinstance(inputs, np.ndarray):
         inputs = torch.from_numpy(inputs)
 
     return inputs
 
 
-def get_dataset(x, y=None) -> Dataset:
+def get_dataset(x, y=None):
     x = numpy2tensor(x)
 
     if y is not None:

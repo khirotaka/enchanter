@@ -26,10 +26,10 @@ class Swish(nn.Module):
 
 
 @torch.jit.script
-def mish(x: torch.Tensor) -> torch.Tensor:
+def mish(x):
     return x * torch.tanh(nn.functional.softplus(x))
 
 
 class Mish(nn.Module):
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x):
         return mish(x)
