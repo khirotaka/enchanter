@@ -30,17 +30,18 @@ else:
 
 class BaseRunner(base.BaseEstimator, ABC):
     def __init__(self):
-        self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = None
         self.optimizer = None
+        self.scheduler = None
         self.experiment = None
 
         self._epochs = 1
-
+        self.pbar = None
         self._loaders = {}
 
     @abstractmethod
-    def train_step(self, batch) -> Dict[str, torch.Tensor]:
+    def train_step(self, batch):
         """
 
         Args:
@@ -60,7 +61,7 @@ class BaseRunner(base.BaseEstimator, ABC):
 
         """
 
-    def val_step(self, batch) -> Dict[str, torch.Tensor]:
+    def val_step(self, batch):
         """
 
         Args:
@@ -80,7 +81,7 @@ class BaseRunner(base.BaseEstimator, ABC):
 
         """
 
-    def test_step(self, batch) -> Dict[str, torch.Tensor]:
+    def test_step(self, batch):
         """
 
         Args:
@@ -100,7 +101,10 @@ class BaseRunner(base.BaseEstimator, ABC):
 
         """
 
-    def train_cycle(self, epoch, loader) -> None:
+    def train_cycle(self, epoch, loader):
+        results = list()
+        loader_size = len(loader)
+
         self.model.train()
         with self.experiment.train():
             for step, batch in enumerate(loader):
@@ -110,41 +114,77 @@ class BaseRunner(base.BaseEstimator, ABC):
                 outputs["loss"].backward()
                 self.optimizer.step()
 
-                self.experiment.log_metrics(outputs, step=step, epoch=epoch)
-            self.train_end(outputs)
+                if self.scheduler:
+                    self.scheduler.step()
+                    self.experiment.log_metric("scheduler_lr", self.scheduler.get_last_lr(), step=step, epoch=epoch)
 
-    def val_cycle(self, epoch, loader) -> None:
+                per = "{:1.0%}".format(step / loader_size)
+                self.pbar.set_postfix(
+                    OrderedDict(train_batch=per), refresh=True
+                )
+
+                outputs = {
+                    key: outputs[key].detach().cpu() if isinstance(outputs[key], torch.Tensor) else outputs[key]
+                    for key in outputs.keys()
+                }
+                self.experiment.log_metrics(outputs, step=step, epoch=epoch)
+                results.append(outputs)
+            self.experiment.log_metrics(self.train_end(results), epoch=epoch)
+
+    def val_cycle(self, epoch, loader):
+        results = list()
+        loader_size = len(loader)
+
         self.model.eval()
         with self.experiment.validate():
             with torch.no_grad():
                 for step, batch in enumerate(loader):
                     batch = tuple(map(lambda x: x.to(self.device), batch))
                     outputs = self.val_step(batch)
-                    self.experiment.log_metrics(outputs, step=step, epoch=epoch)
-                self.val_end(outputs)
 
-    def test_cycle(self, loader) -> None:
+                    per = "{:1.0%}".format(step / loader_size)
+                    self.pbar.set_postfix(
+                        OrderedDict(val_batch=per), refresh=True
+                    )
+
+                    outputs = {
+                        key: outputs[key].cpu() if isinstance(outputs[key], torch.Tensor) else outputs[key]
+                        for key in outputs.keys()
+                    }
+                    self.experiment.log_metrics(outputs, step=step, epoch=epoch)
+                    results.append(outputs)
+                self.experiment.log_metrics(self.val_end(results), epoch=epoch)
+
+    def test_cycle(self, loader):
+        results = list()
+        loader_size = len(loader)
+
         self.model.eval()
         with self.experiment.test():
             with torch.no_grad():
                 for step, batch in enumerate(loader):
                     batch = tuple(map(lambda x: x.to(self.device), batch))
                     outputs = self.test_step(batch)
+
+                    per = "{:1.0%}".format(step / loader_size)
+                    self.pbar.set_postfix(
+                        OrderedDict(test_batch=per), refresh=True
+                    )
+
+                    outputs = {
+                        key: outputs[key].cpu() if isinstance(outputs[key], torch.Tensor) else outputs[key]
+                        for key in outputs.keys()
+                    }
+
                     self.experiment.log_metrics(outputs, step=step)
-                self.test_end(outputs)
+                    results.append(outputs)
+                self.experiment.log_metrics(self.test_end(results))
 
     def train_config(self, epochs, *args, **kwargs):
-        self._epochs = epochs
+        if epochs > 0:
+            self._epochs = epochs
 
-    @property
-    def device(self):
-        return self._device
-
-    @device.setter
-    def device(self, device):
-        self._device = device
-
-    def log_hyperparams(self, dic=None, prefix=None) -> None:
+    def log_hyperparams(self, dic=None, prefix=None):
         """
 
         Args:
@@ -154,16 +194,13 @@ class BaseRunner(base.BaseEstimator, ABC):
         Returns:
             None
         """
-        if hasattr(self.experiment, "set_model_graph"):
-            self.experiment.set_model_graph(self.model.__repr__())
-
         self.experiment.log_parameters(self.optimizer.__dict__["defaults"], prefix="optimizer")
         self.experiment.log_parameter("Optimizer", self.optimizer.__class__.__name__)
 
         if dic is not None:
             self.experiment.log_parameters(dic, prefix)
 
-    def standby(self) -> None:
+    def standby(self):
         if self.model is None:
             raise Exception("self.model is not defined.")
 
@@ -183,8 +220,8 @@ class BaseRunner(base.BaseEstimator, ABC):
             raise Exception("At least one DataLoader must be provided.")
 
         if "train" in self.loaders:
-            pbar = tqdm(range(self._epochs), desc="Epochs") if verbose else range(self._epochs)
-            for epoch in pbar:
+            self.pbar = tqdm(range(self._epochs), desc="Epochs") if verbose else range(self._epochs)
+            for epoch in self.pbar:
                 self.train_cycle(epoch, self.loaders["train"])
 
                 if "val" in self.loaders:
@@ -195,7 +232,7 @@ class BaseRunner(base.BaseEstimator, ABC):
 
         return self
 
-    def add_loader(self, loader: torch.utils.data.DataLoader, mode):
+    def add_loader(self, loader, mode):
         """
 
         Args:
@@ -209,7 +246,10 @@ class BaseRunner(base.BaseEstimator, ABC):
             raise Exception("argument `mode` must be one of 'train', 'val', or 'test'.")
 
         if not isinstance(loader, torch.utils.data.DataLoader):
-            raise Exception("The argument `loader` must be an instance of` torrch.utils.data.Dataloader`.")
+            raise Exception("The argument `loader` must be an instance of `torch.utils.data.DataLoader`.")
+
+        self.experiment.log_parameters(loader.__dict__, prefix=mode)
+        self.experiment.log_parameter("{}_dataset_len".format(mode), len(loader))
 
         self._loaders[mode] = loader
         return self
@@ -242,12 +282,12 @@ class BaseRunner(base.BaseEstimator, ABC):
         }
         return checkpoint
 
-    def load_checkpoint(self, checkpoint: Dict[str, OrderedDict]):
+    def load_checkpoint(self, checkpoint):
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         return self
 
-    def save(self, directory: str, epoch: int = None) -> None:
+    def save(self, directory, epoch=None) -> None:
         """
         Args:
             directory:
@@ -270,7 +310,7 @@ class BaseRunner(base.BaseEstimator, ABC):
             torch.save(checkpoint, buffer)
             self.experiment.log_asset_data(buffer.getvalue(), filename)
 
-    def load(self, filename: str, map_location: str = "cpu"):
+    def load(self, filename, map_location="cpu"):
         """
         Args:
             filename:
