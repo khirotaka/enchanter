@@ -1,45 +1,35 @@
+from comet_ml import Experiment
+
 import torch.nn as nn
 import torch.optim as optim
 from torchvision.datasets import MNIST
 from torchvision import transforms
+from torch.utils.data import DataLoader
 
-import enchanter
-import enchanter.addon as addon
-
-
-class Network(nn.Module):
-    def __init__(self):
-        super(Network, self).__init__()
-        self.conv = nn.Sequential(
-            nn.Conv2d(1, 32, 3),
-            addon.Swish(),
-            nn.MaxPool2d(2),
-            nn.Conv2d(32, 64, 3),
-            addon.Swish(),
-            nn.MaxPool2d(2)
-        )
-        self.fc = nn.Sequential(
-            nn.Linear(64*5*5, 512),
-            addon.Swish(),
-            nn.Linear(512, 10)
-        )
-
-    def forward(self, x):
-        out = self.conv(x)
-        out = out.view(-1, 64*5*5)
-        out = self.fc(out)
-        return out
+import enchanter.wrapper as wrapper
+import models
 
 
 def main():
-    train_ds = MNIST("../test/data/", train=True, transform=transforms.ToTensor())
-    test_ds = MNIST("../test/data/", train=False, transform=transforms.ToTensor())
+    experiment = Experiment()
 
-    runner = enchanter.ClassificationRunner(Network(), nn.CrossEntropyLoss(), optim.Adam, {"lr": 0.001})
-    runner.train(train_ds, epochs=1, batch_size=64, shuffle=True, verbose=False)
-    loss, accuracy = runner.evaluate(test_ds, batch_size=64)
-    print(loss)
-    print(accuracy)
+    train_ds = MNIST("../tests/data/", train=True, transform=transforms.ToTensor())
+    test_ds = MNIST("../tests/data/", train=False, transform=transforms.ToTensor())
+    train_loader = DataLoader(train_ds, batch_size=64, shuffle=True)
+    test_loader = DataLoader(test_ds, batch_size=64, shuffle=False)
+
+    model = models.MNIST()
+    optimizer = optim.Adam(model.parameters())
+    runner = wrapper.ClassificationRunner(
+        model,
+        optimizer,
+        nn.CrossEntropyLoss(),
+        experiment,
+        scheduler=optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
+    )
+    runner.add_loader(train_loader, "train").add_loader(test_loader, "test").train_config(epochs=1)
+
+    runner.run(verbose=True)
 
 
 if __name__ == '__main__':
