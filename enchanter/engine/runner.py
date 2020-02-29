@@ -35,10 +35,12 @@ class BaseRunner(base.BaseEstimator, ABC):
         self.optimizer = None
         self.scheduler = None
         self.experiment = None
+        self.early_stop = None
 
         self._epochs = 1
         self.pbar = None
         self._loaders = {}
+        self._metrics = {}
 
     @abstractmethod
     def train_step(self, batch):
@@ -110,6 +112,7 @@ class BaseRunner(base.BaseEstimator, ABC):
             for step, batch in enumerate(loader):
                 self.optimizer.zero_grad()
                 batch = tuple(map(lambda x: x.to(self.device), batch))
+                # on_step_start()
                 outputs = self.train_step(batch)
                 outputs["loss"].backward()
                 self.optimizer.step()
@@ -129,7 +132,11 @@ class BaseRunner(base.BaseEstimator, ABC):
                 }
                 self.experiment.log_metrics(outputs, step=step, epoch=epoch)
                 results.append(outputs)
-            self.experiment.log_metrics(self.train_end(results), epoch=epoch)
+                # on_step_end()
+
+            dic = self.train_end(results)
+            self._metrics.update(dic)
+            self.experiment.log_metrics(dic, epoch=epoch)
 
     def val_cycle(self, epoch, loader):
         results = list()
@@ -140,6 +147,7 @@ class BaseRunner(base.BaseEstimator, ABC):
             with torch.no_grad():
                 for step, batch in enumerate(loader):
                     batch = tuple(map(lambda x: x.to(self.device), batch))
+                    # on_step_start()
                     outputs = self.val_step(batch)
 
                     per = "{:1.0%}".format(step / loader_size)
@@ -153,7 +161,11 @@ class BaseRunner(base.BaseEstimator, ABC):
                     }
                     self.experiment.log_metrics(outputs, step=step, epoch=epoch)
                     results.append(outputs)
-                self.experiment.log_metrics(self.val_end(results), epoch=epoch)
+                    # on_step_end()
+
+                dic = self.val_end(results)
+                self._metrics.update(dic)
+                self.experiment.log_metrics(dic, epoch=epoch)
 
     def test_cycle(self, loader):
         results = list()
@@ -164,6 +176,7 @@ class BaseRunner(base.BaseEstimator, ABC):
             with torch.no_grad():
                 for step, batch in enumerate(loader):
                     batch = tuple(map(lambda x: x.to(self.device), batch))
+                    # on_step_start()
                     outputs = self.test_step(batch)
 
                     per = "{:1.0%}".format(step / loader_size)
@@ -178,7 +191,11 @@ class BaseRunner(base.BaseEstimator, ABC):
 
                     self.experiment.log_metrics(outputs, step=step)
                     results.append(outputs)
-                self.experiment.log_metrics(self.test_end(results))
+                    # on_step_end()
+
+                dic = self.test_end(results)
+                self._metrics.update(dic)
+                self.experiment.log_metrics(dic)
 
     def train_config(self, epochs, *args, **kwargs):
         if epochs > 0:
@@ -221,23 +238,45 @@ class BaseRunner(base.BaseEstimator, ABC):
 
         if "train" in self.loaders:
             self.pbar = tqdm(range(self._epochs), desc="Epochs") if verbose else range(self._epochs)
+            # .on_epoch_start()
             for epoch in self.pbar:
+                # on_train_start()
                 self.train_cycle(epoch, self.loaders["train"])
+                # on_train_end()
 
                 if "val" in self.loaders:
+                    # on_validation_start()
                     self.val_cycle(epoch, self.loaders["val"])
+                    # on_validation_end()
+
+                if self.early_stop:
+                    if self.early_stop.on_epoch_end(self._metrics, epoch):
+                        break
+                    # .on_epoch_end()
 
         if "test" in self.loaders:
+            # on_test_start()
             self.test_cycle(self.loaders["test"])
+            # on_test_end()
 
         return self
 
-    def add_loader(self, loader, mode):
+    def predict(self, x):
         """
 
         Args:
-            loader (torch.utils.data.DataLoader):
+            x (Union[torch.Tensor, np.ndarray]):
+
+        Returns:
+            predict
+        """
+
+    def add_loader(self, mode, loader):
+        """
+
+        Args:
             mode (str):
+            loader (torch.utils.data.DataLoader):
 
         Returns:
 
