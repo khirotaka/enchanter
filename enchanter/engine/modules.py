@@ -15,7 +15,7 @@ from torch.utils.data import TensorDataset
 def is_jupyter():
     if "get_ipython" not in globals():
         return False
-    env = get_ipython().__class__.__name__
+    env = get_ipython().__class__.__name__      # noqa: E731
     if env == "TerminalInteractiveShell":
         return False
     return True

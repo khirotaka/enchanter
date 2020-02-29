@@ -4,7 +4,6 @@ import glob
 from .activation import *
 from .optim_wrapper import *
 
-del nn, np
 
 __all__ = [
     os.path.split(os.path.splitext(file)[0])[1] for
