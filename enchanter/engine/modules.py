@@ -9,7 +9,7 @@
 
 import torch
 import numpy as np
-from torch.utils.data import TensorDataset, Dataset
+from torch.utils.data import TensorDataset
 
 
 def is_jupyter():
