@@ -5,13 +5,12 @@ from enchanter.metrics import accuracy as accuracy_func
 
 class ClassificationRunner(enchanter.BaseRunner):
     def __init__(self, model, optimizer, criterion, experiment, scheduler=None):
-        super(ClassificationRunner, self).__init__()
+        super().__init__()
         self.model = model
         self.optimizer = optimizer
         self.experiment = experiment
         self.criterion = criterion
-        if scheduler:
-            self.scheduler = scheduler
+        self.scheduler = scheduler
 
     def train_step(self, batch):
         x, y = batch
