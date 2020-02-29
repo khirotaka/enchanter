@@ -284,7 +284,7 @@ class BaseRunner(base.BaseEstimator, ABC):
         if mode not in ["train", "val", "test"]:
             raise Exception("argument `mode` must be one of 'train', 'val', or 'test'.")
 
-        if not isinstance(loader, torch.utils.data.DataLoader):
+        if not isinstance(loader, DataLoader):
             raise Exception("The argument `loader` must be an instance of `torch.utils.data.DataLoader`.")
 
         self.experiment.log_parameters(loader.__dict__, prefix=mode)

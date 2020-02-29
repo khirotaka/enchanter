@@ -27,7 +27,7 @@ class BaseEnsembleEstimator(BaseEstimator):
         x = modules.numpy2tensor(x).to(self.device)
 
         predicts = []
-        for i, runner in enumerate(self.runners):
+        for runner in self.runners:
             predicts.append(runner.predict(x))
 
         return predicts
