@@ -6,7 +6,7 @@ from torchvision.datasets import MNIST
 from torchvision import transforms
 from torch.utils.data import DataLoader
 
-import enchanter.wrapper as wrapper
+import enchanter.wrappers as wrappers
 import models
 
 
@@ -20,7 +20,7 @@ def main():
 
     model = models.MNIST()
     optimizer = optim.Adam(model.parameters())
-    runner = wrapper.ClassificationRunner(
+    runner = wrappers.ClassificationRunner(
         model,
         optimizer,
         nn.CrossEntropyLoss(),

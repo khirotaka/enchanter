@@ -1,5 +1,5 @@
 import torch.nn as nn
-import enchanter.addon as addon
+import enchanter.addons as addons
 
 
 class MNIST(nn.Module):
@@ -10,15 +10,15 @@ class MNIST(nn.Module):
         super(MNIST, self).__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(1, 32, 3),
-            addon.Swish(),
+            addons.Swish(),
             nn.MaxPool2d(2),
             nn.Conv2d(32, 64, 3),
-            addon.Swish(),
+            addons.Swish(),
             nn.MaxPool2d(2)
         )
         self.fc = nn.Sequential(
             nn.Linear(64*5*5, 512),
-            addon.Swish(),
+            addons.Swish(),
             nn.Linear(512, 10)
         )
 
