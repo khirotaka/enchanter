@@ -22,8 +22,8 @@ setup(
     version='0.3',
     packages=[
         'enchanter', 'enchanter.addons',
-        'enchanter.engine', 'enchanter.ensemble',
-        'enchanter.metrics', 'enchanter.wrappers'
+        'enchanter.engine', 'enchanter.metrics',
+        'enchanter.wrappers'
     ],
     url='https://github.com/khirotaka/enchanter',
     license='Apache-2.0',
