@@ -7,8 +7,8 @@ def accuracy(inputs, targets):
     分類度を Python float で返します。
 
     Args:
-        inputs (torch.Tensor):
-        targets (torch.Tensor):
+        inputs (torch.Tensor): shape == [N, n_class]
+        targets (torch.Tensor): shape == [N]
 
     Returns:
         分類制度 (torch.Tensor)
