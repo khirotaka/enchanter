@@ -21,7 +21,7 @@ def is_jupyter():
     return True
 
 
-def numpy2tensor(inputs: np.ndarray):
+def numpy2tensor(inputs):
     if isinstance(inputs, np.ndarray):
         inputs = torch.from_numpy(inputs)
 
