@@ -7,14 +7,15 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 
 import enchanter.wrappers as wrappers
+from enchanter.callbacks import EarlyStopping
 import models
 
 
 def main():
     experiment = Experiment()
 
-    train_ds = MNIST("../tests/data/", train=True, transform=transforms.ToTensor())
-    test_ds = MNIST("../tests/data/", train=False, transform=transforms.ToTensor())
+    train_ds = MNIST("../tests/data/", download=True, train=True, transform=transforms.ToTensor())
+    test_ds = MNIST("../tests/data/", download=True, train=False, transform=transforms.ToTensor())
     train_loader = DataLoader(train_ds, batch_size=64, shuffle=True)
     test_loader = DataLoader(test_ds, batch_size=64, shuffle=False)
 
@@ -25,9 +26,10 @@ def main():
         optimizer,
         nn.CrossEntropyLoss(),
         experiment,
-        scheduler=optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
+        scheduler=optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5),
+        early_stop=EarlyStopping("train_avg_loss", min_delta=0.1, patience=1)
     )
-    runner.add_loader(train_loader, "train").add_loader(test_loader, "test").train_config(epochs=1)
+    runner.add_loader("train", train_loader).add_loader("test", test_loader).train_config(epochs=5)
 
     runner.run(verbose=True)
 
