@@ -1,57 +1,80 @@
 # Enchanter
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/84197fb283924f02a1667cea49dd031a)](https://app.codacy.com/manual/KawashimaHirotaka/enchanter?utm_source=github.com&utm_medium=referral&utm_content=khirotaka/enchanter&utm_campaign=Badge_Grade_Dashboard)
+![CI testing](https://github.com/khirotaka/enchanter/workflows/CI/badge.svg)
 
 Machine Learning Pipeline, Training and Logging for Me.
 
-## System Requirements
-* Python 3.7 or later
-* PyTorch v1.4 or later
+## Installation
 
+```shell script
+pip install git+https://github.com/khirotaka/enchanter.git
+```
 
 ## Example
 
 ### Runner
-Enchanter Runners has `train()` method and sklearn style `fit()` method.
 
-#### train()
+#### run()
 ```python
+from comet_ml import Experiment
 import torch.nn as nn
 import torch.optim as optim
+from torchvision import transforms
 from torchvision.datasets import MNIST
+from torch.utils.data import DataLoader
 
-import enchanter
-import enchanter.addon as addon
+import enchanter.addons as addons
+import enchanter.wrappers as wrappers
 
 
-model = nn.Sequential(
-    nn.Linear(4, 32),
-    addon.Swish(),
-    nn.Linear(32, 10)
+class MNIST(nn.Module):
+    """
+    MNIST 用のCNN
+    """
+    def __init__(self):
+        super(MNIST, self).__init__()
+        self.conv = nn.Sequential(
+            nn.Conv2d(1, 32, 3),
+            addons.Swish(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(32, 64, 3),
+            addons.Swish(),
+            nn.MaxPool2d(2)
+        )
+        self.fc = nn.Sequential(
+            nn.Linear(64*5*5, 512),
+            addons.Swish(),
+            nn.Linear(512, 10)
+        )
+
+    def forward(self, x):
+        out = self.conv(x)
+        out = out.view(-1, 64*5*5)
+        out = self.fc(out)
+        return out
+
+
+
+experiment = Experiment()
+
+train_ds = MNIST("./data", train=True, transform=transforms.ToTensor())
+test_ds = MNIST("./data", train=False, transform=transforms.ToTensor())
+train_loader = DataLoader(train_ds, batch_size=64, shuffle=True)
+test_loader = DataLoader(test_ds, batch_size=64, shuffle=False)
+
+model = MNIST()
+optimizer = optim.Adam(model.parameters())
+runner = wrappers.ClassificationRunner(
+    model,
+    optimizer,
+    nn.CrossEntropyLoss(),
+    experiment,
+    scheduler=optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
 )
+runner.add_loader(train_loader, "train").add_loader(test_loader, "test")
 
-ds = MNIST("./data", train=True)
-runner = enchanter.ClassificationRunner(model, nn.CrossEntropyLoss(), optim.Adam, {"lr": 0.001})
-runner.train(ds, epochs=10, batch_size=64)
-```
+runner.train_config(epochs=1)
+runner.run(verbose=True)
 
-#### fit()
-```python
-import torch.nn as nn
-import torch.optim as optim
-from sklearn.datasets import load_iris
-
-import enchanter
-import enchanter.addon as addon
-
-
-model = nn.Sequential(
-    nn.Linear(4, 32),
-    addon.Swish(),
-    nn.Linear(32, 10)
-)
-
-x, y = load_iris(return_X_y=True)
-runner = enchanter.ClassificationRunner(model, nn.CrossEntropyLoss(), optim.Adam, {"lr": 0.001})
-runner.fit(x, y)
 ```
