@@ -134,7 +134,7 @@ class BaseRunner(base.BaseEstimator, ABC):
                 results.append(outputs)
                 # on_step_end()
 
-            dic = self.train_end(results)
+            dic = self.train_end(results)        # pylint: disable=E1111
             self._metrics.update(dic)
             self.experiment.log_metrics(dic, epoch=epoch)
 
@@ -148,7 +148,7 @@ class BaseRunner(base.BaseEstimator, ABC):
                 for step, batch in enumerate(loader):
                     batch = tuple(map(lambda x: x.to(self.device), batch))
                     # on_step_start()
-                    outputs = self.val_step(batch)
+                    outputs = self.val_step(batch)        # pylint: disable=E1111
 
                     per = "{:1.0%}".format(step / loader_size)
                     self.pbar.set_postfix(
@@ -163,7 +163,7 @@ class BaseRunner(base.BaseEstimator, ABC):
                     results.append(outputs)
                     # on_step_end()
 
-                dic = self.val_end(results)
+                dic = self.val_end(results)        # pylint: disable=E1111
                 self._metrics.update(dic)
                 self.experiment.log_metrics(dic, epoch=epoch)
 
@@ -177,7 +177,7 @@ class BaseRunner(base.BaseEstimator, ABC):
                 for step, batch in enumerate(loader):
                     batch = tuple(map(lambda x: x.to(self.device), batch))
                     # on_step_start()
-                    outputs = self.test_step(batch)
+                    outputs = self.test_step(batch)        # pylint: disable=E1111
 
                     per = "{:1.0%}".format(step / loader_size)
                     self.pbar.set_postfix(
@@ -193,7 +193,7 @@ class BaseRunner(base.BaseEstimator, ABC):
                     results.append(outputs)
                     # on_step_end()
 
-                dic = self.test_end(results)
+                dic = self.test_end(results)        # pylint: disable=E1111
                 self._metrics.update(dic)
                 self.experiment.log_metrics(dic)
 
