@@ -11,12 +11,14 @@ import io
 import os
 import time
 from copy import deepcopy
-from typing import Dict, List, Union, Any
+from abc import ABC, abstractmethod
+from collections import OrderedDict
+from typing import Dict
 
 import torch
-import numpy as np
-from sklearn import base, metrics
-from torch.utils.data import DataLoader, Dataset
+import torch.nn as nn
+from sklearn import base
+from torch.utils.data import DataLoader
 
 from enchanter.engine import modules
 
@@ -26,243 +28,310 @@ else:
     from tqdm import tqdm
 
 
-class BaseRunner(base.BaseEstimator):
-    """"
-    BaseRunner
-    """
-    def __init__(self, model, criterion, optimizer, optim_config, device=None, experiment=None, scheduler=None):
+class BaseRunner(base.BaseEstimator, ABC):
+    def __init__(self):
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model = None
+        self.optimizer = None
+        self.scheduler = None
+        self.experiment = None
+        self.early_stop = None
+
+        self._epochs = 1
+        self.pbar = None
+        self._loaders = {}
+        self._metrics = {}
+
+    @abstractmethod
+    def train_step(self, batch):
         """
 
         Args:
-            model (nn.Module):
-            criterion:
-            optimizer:
-            optim_config (dict):
-            device: torch.device
-            experiment:
-            scheduler (Dict[str, Union]):
-        """
-        self.device = torch.device(device) if device else torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-        self.model: torch.nn.Module = model.to(self.device)
-        self.criterion = criterion
-        self.optimizer = optimizer(self.model.parameters(), **optim_config)
-        self.logger = modules.CometLogger(experiment) if experiment else None
-        self.scheduler = scheduler["algorithm"](self.optimizer, **scheduler["config"]) if scheduler else None
-
-    def forward(self, data: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        """
-        順伝搬・損失値の計算を行うメソッド。
-        算出した loss を返します。
-
-        Args:
-            data: Training Data.
-            target: Training Label for supervised learning.
-
-        Returns:
-            loss: loss value which calculated by self.criterion.
-        """
-        data = data.to(self.device)
-        target = target.to(self.device)
-
-        out = self.model(data)
-        loss = self.criterion(out, target)
-        return loss
-
-    def validate(self, data: torch.Tensor, target: torch.Tensor) -> Dict[str, Any]:
-        """
-        validationを行うメソッド。
-        各算出した値を格納した辞書を返します。
-
-        Args:
-            data: Validating Data.
-            target: Validating Label for supervised learning.
-
-        Returns:
-            results: dictionary which contained some results.
-        """
-        results = {}
-
-        loss = self.forward(data, target)
-        results["loss"] = loss.cpu()
-
-        return results
-
-    def train(self, dataset, epochs, batch_size, verbose=True, shuffle=False, checkpoint=False, validation=None, **loader_config):
-        """
-
-        Args:
-            dataset (Dataset):
-            epochs (int):
-            batch_size (int):
-            verbose (bool):
-            shuffle (bool):
-            checkpoint (str):
-            validation (Dict[str, Union[Dataset, Dict]]):
-
-        Examples:
-            >>> ds: Dataset = MNIST( ... )
-            >>> model: torch.nn.Module = torch.nn.Sequential(
-            >>>     ...
-            >>> )
-            >>> runner = ClassificationRunner(model, torch.nn.NLLLoss(), torch.optim.SGD, {"lr": 0.001})
-            >>> runner.train(ds, epochs=10, batch_size=32, shuffle=True)
+            batch:
 
         Returns:
 
         """
 
-        train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, **loader_config)
+    def train_end(self, outputs):
+        """
 
-        val_loader = DataLoader(
-            validation["dataset"], batch_size=batch_size, shuffle=shuffle, **validation["config"]
-        ) if validation else None
+        Args:
+            outputs:
 
-        epoch_bar = tqdm(range(epochs), desc="Epochs", leave=True) if verbose else range(epochs)
-        for epoch in epoch_bar:
-            self.model.train()
-            step_bar = tqdm(train_loader, desc="Training", leave=False) if verbose else train_loader
-            for i, (x_train, y_train) in enumerate(step_bar):
+        Returns:
 
+        """
+
+    def val_step(self, batch):
+        """
+
+        Args:
+            batch:
+
+        Returns:
+
+        """
+
+    def val_end(self, outputs):
+        """
+
+        Args:
+            outputs:
+
+        Returns:
+
+        """
+
+    def test_step(self, batch):
+        """
+
+        Args:
+            batch:
+
+        Returns:
+
+        """
+
+    def test_end(self, outputs):
+        """
+
+        Args:
+            outputs:
+
+        Returns:
+
+        """
+
+    def train_cycle(self, epoch, loader):
+        results = list()
+        loader_size = len(loader)
+
+        self.model.train()
+        with self.experiment.train():
+            for step, batch in enumerate(loader):
                 self.optimizer.zero_grad()
-                loss = self.forward(x_train, y_train)
-
-                loss.backward()
+                batch = tuple(map(lambda x: x.to(self.device), batch))
+                # on_step_start()
+                outputs = self.train_step(batch)
+                outputs["loss"].backward()
                 self.optimizer.step()
 
                 if self.scheduler:
                     self.scheduler.step()
+                    self.experiment.log_metric("scheduler_lr", self.scheduler.get_last_lr(), step=step, epoch=epoch)
 
-                if self.logger:
-                    self.logger.log_train(epoch, i, {"loss": loss.detach().cpu()})
+                per = "{:1.0%}".format(step / loader_size)
+                self.pbar.set_postfix(
+                    OrderedDict(train_batch=per), refresh=True
+                )
 
-                    if self.scheduler:
-                        self.logger.log_train(epoch, i, {"lr": self.scheduler.get_last_lr()})
+                outputs = {
+                    key: outputs[key].detach().cpu() if isinstance(outputs[key], torch.Tensor) else outputs[key]
+                    for key in outputs.keys()
+                }
+                self.experiment.log_metrics(outputs, step=step, epoch=epoch)
+                results.append(outputs)
+                # on_step_end()
 
-            if val_loader:
-                self.model.eval()
-                with torch.no_grad():
-                    val_bar = tqdm(val_loader, desc="Validation", leave=False) if verbose else val_loader
-                    for j, (x_val, y_val) in enumerate(val_bar):
-                        val_results = self.validate(x_val, y_val)
+            dic = self.train_end(results)        # pylint: disable=E1111
+            self._metrics.update(dic)
+            self.experiment.log_metrics(dic, epoch=epoch)
 
-                        if self.logger:
-                            self.logger.log_val(epoch, j, val_results)
+    def val_cycle(self, epoch, loader):
+        results = list()
+        loader_size = len(loader)
 
-            if checkpoint:
-                self.save(checkpoint, epoch=epoch+1)
+        self.model.eval()
+        with self.experiment.validate():
+            with torch.no_grad():
+                for step, batch in enumerate(loader):
+                    batch = tuple(map(lambda x: x.to(self.device), batch))
+                    # on_step_start()
+                    outputs = self.val_step(batch)        # pylint: disable=E1111
 
-        return self
+                    per = "{:1.0%}".format(step / loader_size)
+                    self.pbar.set_postfix(
+                        OrderedDict(val_batch=per), refresh=True
+                    )
 
-    def fit(self, x: np.ndarray, y: np.ndarray = None, **kwargs):
+                    outputs = {
+                        key: outputs[key].cpu() if isinstance(outputs[key], torch.Tensor) else outputs[key]
+                        for key in outputs.keys()
+                    }
+                    self.experiment.log_metrics(outputs, step=step, epoch=epoch)
+                    results.append(outputs)
+                    # on_step_end()
+
+                dic = self.val_end(results)        # pylint: disable=E1111
+                self._metrics.update(dic)
+                self.experiment.log_metrics(dic, epoch=epoch)
+
+    def test_cycle(self, loader):
+        results = list()
+        loader_size = len(loader)
+
+        self.model.eval()
+        with self.experiment.test():
+            with torch.no_grad():
+                for step, batch in enumerate(loader):
+                    batch = tuple(map(lambda x: x.to(self.device), batch))
+                    # on_step_start()
+                    outputs = self.test_step(batch)        # pylint: disable=E1111
+
+                    per = "{:1.0%}".format(step / loader_size)
+                    self.pbar.set_postfix(
+                        OrderedDict(test_batch=per), refresh=True
+                    )
+
+                    outputs = {
+                        key: outputs[key].cpu() if isinstance(outputs[key], torch.Tensor) else outputs[key]
+                        for key in outputs.keys()
+                    }
+
+                    self.experiment.log_metrics(outputs, step=step)
+                    results.append(outputs)
+                    # on_step_end()
+
+                dic = self.test_end(results)        # pylint: disable=E1111
+                self._metrics.update(dic)
+                self.experiment.log_metrics(dic)
+
+    def train_config(self, epochs, *args, **kwargs):
+        if epochs > 0:
+            self._epochs = epochs
+
+    def log_hyperparams(self, dic=None, prefix=None):
         """
-        sklearn API
-
 
         Args:
-            x:
-            y:
-            **kwargs:
+            dic (Dict):
+            prefix (str):
 
         Returns:
-
+            None
         """
-        epochs: int = kwargs.get("epochs", 1)
-        batch_size: int = kwargs.get("batch_size", 1)
-        checkpoint: str = kwargs.get("checkpoint", None)
-        pin_memory: bool = kwargs.get("pin_memory", False)
-        train_rate: float = kwargs.get("train_rate", 0.8)
-        val_ds = kwargs.get("val_ds", None)
-        verbose: bool = kwargs.get("verbose", True)
-        loader_config: Dict = kwargs.get("loader_config", dict())
+        self.experiment.log_parameters(self.optimizer.__dict__["defaults"], prefix="optimizer")
+        self.experiment.log_parameter("Optimizer", self.optimizer.__class__.__name__)
 
-        train_ds = modules.get_dataset(x, y)
+        if dic is not None:
+            self.experiment.log_parameters(dic, prefix)
 
-        if not val_ds:
-            n_samples = len(train_ds)
-            train_size = int(n_samples * train_rate)
-            val_size = n_samples - train_size
-            train_ds, val_ds = torch.utils.data.random_split(train_ds, [train_size, val_size])
+    def standby(self):
+        if self.model is None:
+            raise Exception("self.model is not defined.")
 
-        self.train(
-            dataset=train_ds,
-            epochs=epochs,
-            batch_size=batch_size,
-            verbose=verbose,
-            checkpoint=checkpoint,
-            pin_memory=pin_memory,
-            validation={
-                "dataset": val_ds,
-                "config": {
-                    "pin_memory": pin_memory
-                }
-            },
-            **loader_config
-        )
+        if self.optimizer is None:
+            raise Exception("self.optimizer is not defined.")
+
+        if self.experiment is None:
+            raise Exception("self.experiment is not defined.")
+
+        self.model = self.model.to(self.device)
+
+    def run(self, verbose=True):
+        self.log_hyperparams()
+        self.standby()
+
+        if not self.loaders:
+            raise Exception("At least one DataLoader must be provided.")
+
+        if "train" in self.loaders:
+            self.pbar = tqdm(range(self._epochs), desc="Epochs") if verbose else range(self._epochs)
+            # .on_epoch_start()
+            for epoch in self.pbar:
+                # on_train_start()
+                self.train_cycle(epoch, self.loaders["train"])
+                # on_train_end()
+
+                if "val" in self.loaders:
+                    # on_validation_start()
+                    self.val_cycle(epoch, self.loaders["val"])
+                    # on_validation_end()
+
+                if self.early_stop:
+                    if self.early_stop.on_epoch_end(self._metrics, epoch):
+                        break
+                    # .on_epoch_end()
+
+        if "test" in self.loaders:
+            # on_test_start()
+            self.test_cycle(self.loaders["test"])
+            # on_test_end()
+
         return self
 
-    def predict(self, x: Union[torch.Tensor, np.ndarray]) -> np.ndarray:
+    def predict(self, x):
         """
 
         Args:
             x (Union[torch.Tensor, np.ndarray]):
 
-        Examples:
-            >>> x = mnist_img    # [1, 1, 28, 28]
-            >>> prediction = runner.predict(x)
-
         Returns:
-            prediction (np.ndarray)
+            predict
         """
-        x = modules.numpy2tensor(x)
-        self.model.eval()
-        with torch.no_grad():
-            x = x.to(self.device)
-            out = self.model(x).cpu().numpy()
-        return out
 
-    def evaluate(self, *args, **kwargs) -> Any:
+    def add_loader(self, mode, loader):
         """
-        テストデータセットを用いてモデルの評価を行うメソッド。
-        このクラスを継承して新しいRunnerを作る場合必ず定義する必要がある。
 
         Args:
-            *args:
-            **kwargs:
+            mode (str):
+            loader (torch.utils.data.DataLoader):
 
         Returns:
 
         """
-        raise NotImplementedError
+        if mode not in ["train", "val", "test"]:
+            raise Exception("argument `mode` must be one of 'train', 'val', or 'test'.")
 
-    def save_checkpoint(self) -> dict:
+        if not isinstance(loader, DataLoader):
+            raise Exception("The argument `loader` must be an instance of `torch.utils.data.DataLoader`.")
+
+        self.experiment.log_parameters(loader.__dict__, prefix=mode)
+        self.experiment.log_parameter("{}_dataset_len".format(mode), len(loader))
+
+        self._loaders[mode] = loader
+        return self
+
+    @property
+    def loaders(self):
+        return self._loaders
+
+    def freeze(self):
+        for param in self.model.parameters():
+            param.requires_grad = False
+
+        self.model.eval()
+
+    def unfreeze(self):
+        for param in self.model.parameters():
+            param.requires_grad = True
+
+        self.model.train()
+
+    def save_checkpoint(self) -> Dict[str, OrderedDict]:
+        if isinstance(self.model, nn.DataParallel):
+            model = self.model.module.state_dict()
+        else:
+            model = self.model.state_dict()
+
         checkpoint = {
-            "model_state_dict": deepcopy(self.model.state_dict()),
+            "model_state_dict": deepcopy(model),
             "optimizer_state_dict": deepcopy(self.optimizer.state_dict())
         }
         return checkpoint
 
-    def load_checkpoint(self, checkpoint: dict):
-        """
-
-        Args:
-            checkpoint:
-
-        Returns:
-
-        """
+    def load_checkpoint(self, checkpoint):
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        return self
 
-    def save(self, directory: str, epoch: int = None) -> None:
+    def save(self, directory, epoch=None) -> None:
         """
-
         Args:
             directory:
             epoch:
-
         Returns:
-
         """
         if not os.path.isdir(directory):
             os.makedirs(directory)
@@ -275,98 +344,19 @@ class BaseRunner(base.BaseEstimator):
         path = directory + filename
         torch.save(checkpoint, path)
 
-        if self.logger:
+        if hasattr(self.experiment, "log_asset_data"):
             buffer = io.BytesIO()
             torch.save(checkpoint, buffer)
-            self.logger.experiment.log_asset_data(buffer.getvalue(), filename)
+            self.experiment.log_asset_data(buffer.getvalue(), filename)
 
-    def load(self, filename: str, map_location: str = "cpu") -> None:
+    def load(self, filename, map_location="cpu"):
         """
-
         Args:
             filename:
             map_location:
-
         Returns:
-
         """
         checkpoint = torch.load(filename, map_location=map_location)
         self.load_checkpoint(checkpoint)
 
-
-class ClassificationRunner(BaseRunner):
-    """
-    Runner for Classification task.
-    """
-    def predict(self, x: Union[torch.Tensor, np.ndarray]) -> np.ndarray:
-        """
-
-        Args:
-            x:
-
-        Returns:
-
-        """
-        out = super().predict(x)
-        predict = np.argmax(out, axis=-1)
-        return predict
-
-    def evaluate(self, x, y=None, batch_size: int = 1, verbose: bool = True, metric_fn: List[callable] = None) -> Dict:
-        """
-
-        Args:
-            x (Union[Union[np.ndarray, torch.Tensor], Dataset]):
-            y (Union[Union[np.ndarray, torch.Tensor], None]):
-            batch_size (int):
-            verbose (bool):
-            metric_fn (List[callable]): sklearn.metrics のような、 func(y_true, y_pred) の形で提供される評価関数を格納した配列
-
-        Returns:
-            losses (float):
-            accuracy (float):
-        """
-        if metric_fn is None:
-            metric_fn = [metrics.accuracy_score]
-        else:
-            metric_fn.append(metrics.accuracy_score)
-
-        total = 0.0
-        losses = 0.0
-
-        metric_values = dict()
-
-        predicts = []
-        labels = []
-
-        if x is not Dataset and y is not None:
-            x = modules.get_dataset(x, y)
-
-        loader = tqdm(DataLoader(x, batch_size=batch_size, shuffle=False), desc="Evaluating")\
-            if verbose else DataLoader(x, batch_size=batch_size, shuffle=False)
-
-        with torch.no_grad():
-            for data, target in loader:
-                total += target.shape[0]
-
-                data = data.to(self.device)
-                target = target.to(self.device)
-
-                loss = self.criterion(self.model(data), target).cpu().item()
-                predict = self.predict(data)
-                losses += loss
-
-                labels.append(target.cpu().numpy())
-                predicts.append(predict)
-
-        labels = np.hstack(labels)
-        predicts = np.hstack(predicts)
-
-        for func in metric_fn:
-            metric_values[func.__name__] = func(labels, predicts)
-
-        metric_values["loss"] = losses / total
-
-        if self.logger:
-            self.logger.log_test(metric_values)
-
-        return metric_values
+        return self

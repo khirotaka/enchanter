@@ -9,64 +9,25 @@
 
 from typing import List
 
+import torch
 import numpy as np
-from torch.utils.data import Dataset
 from sklearn.base import BaseEstimator
 
-from enchanter.engine.runner import BaseRunner, ClassificationRunner
+from enchanter.engine.runner import BaseRunner
 from enchanter.engine import modules
-
-if modules.is_jupyter():
-    from tqdm.notebook import tqdm
-else:
-    from tqdm import tqdm
 
 
 class BaseEnsembleEstimator(BaseEstimator):
     def __init__(self, runners: List[BaseRunner], mode: str = None):
         self.runners: List[BaseRunner] = runners
-        self.weights: List = []
         self.mode: str = mode
-        self.do_fit: bool = False
-
-    def train(self, dataset: Dataset, epochs: int, batch_size: int, shuffle: bool = True, checkpoints: List[str] = None):
-        """
-
-        Args:
-            dataset:
-            epochs:
-            batch_size:
-            shuffle:
-            checkpoints:
-
-        Returns:
-
-        """
-        self.do_fit = True
-        for i, runner in enumerate(tqdm(self.runners, desc="Runner")):
-            checkpoint = checkpoints[i] if checkpoints else None
-
-            runner.train(dataset, epochs, batch_size, shuffle, checkpoint)
-            self.weights.append(runner.save_checkpoint()["model_state_dict"])
-
-        return self
-
-    def fit(self, x: np.ndarray, y: np.ndarray = None, **kwargs):
-        epochs: int = kwargs.get("epochs", 1)
-        batch_size: int = kwargs.get("batch_size", 1)
-        checkpoint: List[str] = kwargs.get("checkpoint", None)
-
-        train_ds = modules.get_dataset(x, y)
-        self.train(train_ds, epochs, batch_size, checkpoints=checkpoint)
-        return self
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def predict(self, x) -> List[np.ndarray]:
-        x = modules.numpy2tensor(x)
+        x = modules.numpy2tensor(x).to(self.device)
 
         predicts = []
-        for i, runner in enumerate(self.runners):
-            if self.do_fit:
-                runner.model.load_state_dict(self.weights[i])
+        for runner in self.runners:
             predicts.append(runner.predict(x))
 
         return predicts
@@ -101,7 +62,7 @@ class HardEnsemble(BaseEnsembleEstimator):
     """
     多数決をとるアンサンブル
     """
-    def __init__(self, runners: List[ClassificationRunner]):
+    def __init__(self, runners: List):
         super().__init__(runners, mode="classification")
 
     def predict(self, x) -> np.ndarray:
