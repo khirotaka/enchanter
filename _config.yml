@@ -1,1 +1,3 @@
-remote_theme: jekyll/minima
+title: Enchanter
+theme: jekyll-theme-minimal
+destination: Machine Learning Pipeline, Training and Logging for Me.
