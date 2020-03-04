@@ -18,8 +18,8 @@ class ClassificationRunner(enchanter.BaseRunner):
             optimizer: Optimizer,
             criterion: _Loss,
             experiment: Any,
-            scheduler: Any,
-            early_stop: Union[EarlyStopping, None]
+            scheduler: Any = None,
+            early_stop: Union[EarlyStopping, None] = None
     ) -> None:
         super().__init__()
         ...
