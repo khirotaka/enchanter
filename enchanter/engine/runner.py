@@ -200,6 +200,8 @@ class BaseRunner(base.BaseEstimator, ABC):
     def train_config(self, epochs, *args, **kwargs):
         if epochs > 0:
             self._epochs = epochs
+        else:
+            self._epochs = 1
 
     def log_hyperparams(self, dic=None, prefix=None):
         """
