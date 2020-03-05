@@ -6,7 +6,7 @@ from enchanter.metrics import accuracy as accuracy_func
 
 class ClassificationRunner(enchanter.BaseRunner):
     def __init__(self, model, optimizer, criterion, experiment, scheduler=None, early_stop=None):
-        super().__init__()
+        enchanter.BaseRunner.__init__(self)
         self.model = model
         self.optimizer = optimizer
         self.experiment = experiment

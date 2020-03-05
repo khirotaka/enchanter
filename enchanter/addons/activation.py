@@ -13,14 +13,14 @@ import torch.nn as nn
 
 
 class Swish(nn.Module):
-    def __init__(self, beta: bool = False):
-        super().__init__()
+    def __init__(self, beta=False):
+        nn.Module.__init__(self)
         if beta:
             self.weight = nn.Parameter(torch.tensor([1.]), requires_grad=True)
         else:
             self.weight = 1.0
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+    def forward(self, inputs):
         out = inputs * torch.sigmoid(self.weight * inputs)
         return out
 
@@ -32,9 +32,9 @@ def mish(x):
 
 class Mish(nn.Module):
     def __init__(self):
-        super().__init__()
+        nn.Module.__init__(self)
         self.tanh = nn.Tanh()
         self.softplus = nn.Softplus()
 
-    def forward(self, x):
-        return x * self.tanh(self.softplus(x))
+    def forward(self, inputs):
+        return inputs * self.tanh(self.softplus(inputs))
