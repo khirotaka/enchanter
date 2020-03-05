@@ -1,3 +1,4 @@
+import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 from sklearn.datasets import load_iris
@@ -9,7 +10,7 @@ import enchanter.engine as engine
 from enchanter.callbacks import TensorBoardLogger
 
 x, y = load_iris(return_X_y=True)
-ds = engine.get_dataset(x, y)
+ds = engine.get_dataset(x.astype(np.float32), y.astype(np.int64))
 loader = DataLoader(ds, batch_size=32, shuffle=True)
 
 model = nn.Sequential(
@@ -31,12 +32,12 @@ def test_classification_1():
     runner.train_config(epochs=1)
 
     try:
-        runner.run(verbose=False)
+        runner.run(verbose=True)
         is_pass = True
-    except Exception:
+    except Exception as e:
         is_pass = False
 
-    assert is_pass
+    assert is_pass is True
 
 
 def test_classification_2():
