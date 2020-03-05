@@ -7,4 +7,4 @@ def test_accuracy():
     y = torch.tensor([0, 1, 1, 2]).long()
 
     score = accuracy(x, y)
-    assert score == 1.0
+    assert score == 0.75
