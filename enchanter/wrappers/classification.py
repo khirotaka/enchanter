@@ -41,7 +41,7 @@ class ClassificationRunner(enchanter.BaseRunner):
     def predict(self, x):
         self.model.eval()
         with torch.no_grad():
-            x = modules.numpy2tensor(x).float().to(self.device)
+            x = modules.numpy2tensor(x).to(self.device)
             out = self.model(x)
             _, predicted = torch.max(out, 1)
 
