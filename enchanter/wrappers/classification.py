@@ -4,7 +4,7 @@ import enchanter.engine.modules as modules
 from enchanter.metrics import accuracy as accuracy_func
 
 
-class ClassificationRunner(enchanter.BaseRunner):
+class ClassificationRunner(enchanter.engine.BaseRunner):
     def __init__(self, model, optimizer, criterion, experiment, scheduler=None, early_stop=None):
         enchanter.BaseRunner.__init__(self)
         self.model = model

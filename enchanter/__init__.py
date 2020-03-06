@@ -1,7 +1,6 @@
 import enchanter.addons
 import enchanter.callbacks
 import enchanter.engine
-import enchanter.engine.modules
 import enchanter.wrappers
 import enchanter.metrics
 
