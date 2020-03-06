@@ -1,9 +1,7 @@
 from contextlib import contextmanager
 import torch
 import numpy as np
-from torch.utils.data import Dataset
 from torch.utils.tensorboard import SummaryWriter
-from torch.utils.data.sampler import RandomSampler
 
 
 class BaseLogger:
