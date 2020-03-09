@@ -14,9 +14,9 @@ x, y = load_iris(return_X_y=True)
 x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=0)
 x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, random_state=0)
 
-train_ds = engine.get_dataset(x_train.astype(np.float32), y_train.astype(np.int64))
-val_ds = engine.get_dataset(x_val.astype(np.float32), y_val.astype(np.int64))
-test_ds = engine.get_dataset(x_test.astype(np.float32), y_test.astype(np.int64))
+train_ds = engine.modules.get_dataset(x_train.astype(np.float32), y_train.astype(np.int64))
+val_ds = engine.modules.get_dataset(x_val.astype(np.float32), y_val.astype(np.int64))
+test_ds = engine.modules.get_dataset(x_test.astype(np.float32), y_test.astype(np.int64))
 
 train_loader = DataLoader(train_ds, batch_size=32, shuffle=True)
 val_loader = DataLoader(val_ds, batch_size=32, shuffle=True)
