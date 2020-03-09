@@ -1,0 +1,19 @@
+import torch
+import torch.nn as nn
+from typing import List, Callable, Union
+
+class MLP(nn.Module):
+    layers: Union[List, nn.ModuleList] = ...
+    activation: Callable = ...
+    def __init__(self, shapes: List[int], activation: Callable = ...) -> None:
+        super().__init__()
+        ...
+    def forward(self, x: torch.Tensor) -> torch.Tensor: ...
+
+
+class PositionWiseFeedForward(nn.Module):
+    conv: nn.Module
+    def __init__(self, hidden_size: int) -> None:
+        super().__init__()
+        ...
+    def forward(self, x: torch.Tensor) -> torch.Tensor: ...

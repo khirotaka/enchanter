@@ -5,7 +5,7 @@ from .base import Callback
 
 class EarlyStopping(Callback):
     def __init__(self, monitor: str = "validate_avg_loss", min_delta=0.0, patience: int = 0, mode: str = "auto"):
-        super(EarlyStopping, self).__init__()
+        Callback.__init__(self)
         self.monitor = monitor
         self.patience = patience
         self.min_delta = min_delta

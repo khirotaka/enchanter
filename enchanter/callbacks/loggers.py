@@ -1,4 +1,6 @@
 from contextlib import contextmanager
+import torch
+import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -59,11 +61,15 @@ class TensorBoardLogger(BaseLogger):
 
     def log_metrics(self, dic, prefix=None, step=None, epoch=None):
         for k, v in dic.items():
-            self.log_metric(k, v, step, epoch)
+            self.writer.add_scalar(k, v)
 
     def log_parameter(self, name, value, step=None):
-        self.writer.add_scalar("{}/{}/{}".format(self.context, "params", name), value, step)
+        if isinstance(value, torch.Tensor) or\
+                isinstance(value, np.ndarray) or\
+                isinstance(value, float) or\
+                isinstance(value, int):
+            self.writer.add_scalar("{}/{}/{}".format(self.context, "params", name), value, step)
 
     def log_parameters(self, dic: dict, prefix=None, step=None):
         for k, v in dic.items():
-            self.log_parameter(k, v)
+            self.log_parameter(k, v, step)
