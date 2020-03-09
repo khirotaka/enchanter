@@ -19,14 +19,14 @@ def test_mlp_2():
 
 
 def test_ff_1():
-    x = torch.randn(1, 64, 128)     # [N, features, seq_len]
+    x = torch.randn(1, 128, 64)     # [N, seq_len, features]
     model = addons.layers.PositionWiseFeedForward(64)
     out = model(x)
     assert isinstance(out, torch.Tensor)
 
 
 def test_ff_2():
-    x = torch.randn(1, 64, 128)
+    x = torch.randn(1, 128, 64)
     model = addons.layers.PositionWiseFeedForward(64)
     jit = torch.jit.trace(model, (x, ))
     out = jit(x)

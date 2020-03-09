@@ -48,7 +48,7 @@ class PositionWiseFeedForward(nn.Module):
     Examples:
         >>> import torch
         >>> import enchanter.addons as addons
-        >>> x = torch.randn(1, 128, 512)    # [N, features, seq_len]
+        >>> x = torch.randn(1, 128, 512)    # [N, seq_len, features]
         >>> ff = addons.layers.PositionWiseFeedForward(128)
         >>> out = ff(x)
     """
