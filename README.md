@@ -2,6 +2,8 @@
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/84197fb283924f02a1667cea49dd031a)](https://app.codacy.com/manual/KawashimaHirotaka/enchanter?utm_source=github.com&utm_medium=referral&utm_content=khirotaka/enchanter&utm_campaign=Badge_Grade_Dashboard)
 ![CI testing](https://github.com/khirotaka/enchanter/workflows/CI/badge.svg)
+![license](https://img.shields.io/github/license/khirotaka/enchanter?color=light)
+![code size](https://img.shields.io/github/languages/code-size/khirotaka/enchanter?color=light)
 
 Machine Learning Pipeline, Training and Logging for Me.
 
@@ -10,6 +12,14 @@ Machine Learning Pipeline, Training and Logging for Me.
 ```shell script
 pip install git+https://github.com/khirotaka/enchanter.git
 ```
+
+## Documentation
+*   [Main Page](https://khirotaka.github.io/enchanter/)
+      *   [addons](https://khirotaka.github.io/enchanter/docs/api/addons)
+      *   [callbacks](https://khirotaka.github.io/enchanter/docs/api/callbacks)
+      *   [engine](https://khirotaka.github.io/enchanter/docs/api/engine)
+      *   [metrics](https://khirotaka.github.io/enchanter/docs/api/metrics)
+      *   [wrappers](https://khirotaka.github.io/enchanter/docs/api/wrappers)
 
 ## Example
 
