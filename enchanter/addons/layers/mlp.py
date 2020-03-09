@@ -49,7 +49,7 @@ class PositionWiseFeedForward(nn.Module):
         >>> import torch
         >>> import enchanter.addons as addons
         >>> x = torch.randn(1, 128, 512)    # [N, seq_len, features]
-        >>> ff = addons.layers.PositionWiseFeedForward(128)
+        >>> ff = addons.layers.PositionWiseFeedForward(512)
         >>> out = ff(x)
     """
     def __init__(self, hidden_size):
