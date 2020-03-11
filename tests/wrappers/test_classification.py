@@ -62,3 +62,20 @@ def test_classification_2():
         is_pass = False
 
     assert is_pass is False
+
+
+def test_classification_3():
+    runner = wrappers.ClassificationRunner(
+        model,
+        optimizer,
+        nn.CrossEntropyLoss(),
+        TensorBoardLogger("./logs")
+    )
+    try:
+        runner.fit(x, y)
+        is_pass = True
+
+    except Exception:
+        is_pass = False
+
+    assert is_pass is True
