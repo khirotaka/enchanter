@@ -72,7 +72,7 @@ def test_classification_3():
         TensorBoardLogger("./logs")
     )
     try:
-        runner.fit(x, y)
+        runner.fit(x.astype(np.float32), y.astype(np.int64))
         is_pass = True
 
     except Exception:
