@@ -19,7 +19,7 @@ def load_requirements(path_dir=PATH_ROOT, comment_char='#'):
 
 setup(
     name='enchanter',
-    version='0.3.1',
+    version='0.3.2',
     packages=[
         'enchanter', 'enchanter.addons', 'enchanter.addons.layers', 'enchanter.callbacks',
         'enchanter.engine', 'enchanter.metrics', 'enchanter.wrappers'
