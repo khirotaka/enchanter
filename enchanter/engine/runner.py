@@ -15,10 +15,12 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from typing import Dict
 
+import numpy as np
 import torch
 import torch.nn as nn
 from sklearn import base
 from torch.utils.data import DataLoader
+from torch.utils.data import SubsetRandomSampler
 
 from enchanter.engine import modules
 
@@ -219,7 +221,7 @@ class BaseRunner(base.BaseEstimator, ABC):
         if dic is not None:
             self.experiment.log_parameters(dic, prefix)
 
-    def standby(self):
+    def initialize(self):
         if self.model is None:
             raise Exception("self.model is not defined.")
 
@@ -232,8 +234,8 @@ class BaseRunner(base.BaseEstimator, ABC):
         self.model = self.model.to(self.device)
 
     def run(self, verbose=True):
+        self.initialize()
         self.log_hyperparams()
-        self.standby()
 
         if not self.loaders:
             raise Exception("At least one DataLoader must be provided.")
@@ -298,6 +300,40 @@ class BaseRunner(base.BaseEstimator, ABC):
     @property
     def loaders(self):
         return self._loaders
+
+    def fit(self, x, y, **kwargs):
+        val_size: float = kwargs.get("val_size", 0.1)
+        num_workers = kwargs.get("num_workers", 0)
+        batch_size = kwargs.get("batch_size", 1)
+        pin_memory = kwargs.get("pin_memory", False)
+        verbose = kwargs.get("verbose", True)
+        epochs = kwargs.get("epochs", 1)
+
+        train_ds = modules.get_dataset(x, y)
+        val_ds = modules.get_dataset(x, y)
+        n_train = len(train_ds)
+        indices = list(range(n_train))
+        split = int(np.floor(val_size * n_train))
+
+        train_idx, val_idx = indices[split:], indices[:split]
+        train_sampler = SubsetRandomSampler(train_idx)
+        val_sampler = SubsetRandomSampler(val_idx)
+
+        train_loader = DataLoader(
+            train_ds, batch_size=batch_size,
+            sampler=train_sampler, num_workers=num_workers,
+            pin_memory=pin_memory
+        )
+        val_loader = DataLoader(
+            val_ds, batch_size=batch_size,
+            sampler=val_sampler, num_workers=num_workers, pin_memory=pin_memory
+        )
+
+        self.add_loader("train", train_loader)
+        self.add_loader("val", val_loader)
+        self.train_config(epochs)
+        self.run(verbose)
+        return self
 
     def freeze(self):
         for param in self.model.parameters():
