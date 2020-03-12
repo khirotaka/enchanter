@@ -66,3 +66,13 @@ def test_adjust_sequences_4():
     new = adjust_sequences(x, dtype=np.int64)
     assert new.dtype == np.int64
 
+
+def test_adjust_sequences_5():
+    x = [
+        np.random.randn(128, 5),
+        np.random.randn(50, 5),
+        np.random.randn(100, 5),
+    ]
+
+    new = adjust_sequences(x, dtype=np.float64)
+    assert new.dtype == np.float64
