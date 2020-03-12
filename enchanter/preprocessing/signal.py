@@ -165,14 +165,15 @@ def adjust_sequences(sequences, max_len=None, dtype=np.float32):
         new_seq[:, :] = np.nan
         new_seq = pd.DataFrame(new_seq)
 
+        if seq.dtype != dtype:
+            seq = seq.astype(dtype)
+
         if max_len > seq.shape[0]:
             new_seq[:seq.shape[0]] = seq
-            new_seq = new_seq.ffill().values
-
+            new_seq = new_seq.ffill()
         else:
             new_seq[:max_len] = seq[:max_len]
-            new_seq = new_seq.values
 
-        new_seqs.append(new_seq)
+        new_seqs.append(new_seq.values)
 
     return np.dstack(new_seqs).transpose((2, 0, 1))
