@@ -111,6 +111,7 @@ def adjust_sequences(sequences, max_len=None, dtype=np.float32):
                    各要素は2次元配列、第0次元目は系列の長さ、第1次元目は時系列の特徴の数で、全てのサンプルにおいて同じ特徴数である必要があります。
         max_len: 入力された全ての要素を指定した長さに加工します。
                    もし、指定されなかった場合は、与えられたサンプルの中で最も大きい系列長がmax_lenになります。
+                   また、np.max や np.min, np.mean と言った関数が与えられた場合、それを用いて新しい長さの系列を生成できます。
         dtype:  NumPy のデータ型を指定してください。この値を元に出力系列のデータ型が決定されます。
 
     Examples:
@@ -129,20 +130,37 @@ def adjust_sequences(sequences, max_len=None, dtype=np.float32):
         >>> #        [3.],
         >>> #        [3.],
         >>> #        [3.]])
+        >>> out = adjust_sequences(x, np.min)
+        >>> out
+        >>> # array([[[1],
+        >>> #         [2],
+        >>> #         [3]],
+        >>> #
+        >>> #        [[1],
+        >>> #         [2],
+        >>> #         [3]],
+        >>> #
+        >>> #        [[1],
+        >>> #         [2],
+        >>> #         [3]]])
+
     Returns:
         長さを調整した系列を np.dstack し、[Samples, Seq_len, Features] の3次元配列にし返します。
     """
     features = sequences[0].shape[1]
 
+    lengths = []
+    for item in sequences:
+        if isinstance(item, np.ndarray):
+            lengths.append(item.shape[0])
+
     if max_len is None:
-        lengths = []
-        for item in sequences:
-            if isinstance(item, np.ndarray):
-                lengths.append(item.shape[0])
         max_len = np.max(lengths)
+    elif hasattr(max_len, "__call__"):
+        max_len = int(max_len(lengths))
 
     new_seqs = []
-    for seq in sequences:       # [100, 128, 90]    max_len=100
+    for seq in sequences:
         new_seq = np.zeros((max_len, features), dtype=dtype)
         new_seq[:, :] = np.nan
         new_seq = pd.DataFrame(new_seq)
