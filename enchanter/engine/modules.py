@@ -7,6 +7,7 @@
 #
 # ***************************************************
 
+import random
 import torch
 import numpy as np
 from torch.utils.data import TensorDataset
@@ -38,3 +39,17 @@ def get_dataset(x, y=None):
         ds = TensorDataset(x)
 
     return ds
+
+
+def fix_seed(seed):
+    """
+    PyTorch, NumPy, Pure Python Random のSEED値を一括固定します。
+    Args:
+        seed (int): SEED値
+
+    Returns:
+
+    """
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
