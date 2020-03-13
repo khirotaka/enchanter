@@ -1,5 +1,6 @@
 import numpy as np
 from typing import Union, Tuple, List, Type, Optional, Callable
+Numerical = Union[int, float]
 
 class FixedSlidingWindow:
     window_size: int = ...
@@ -13,5 +14,6 @@ class FixedSlidingWindow:
 def adjust_sequences(
         sequences: List[np.ndarray],
         max_len: Optional[Union[int, Callable[[List[int]], int]]] = None,
+        fill: Union[str, Numerical] = "ffill",
         dtype: Type = np.float32
 ) -> np.ndarray: ...

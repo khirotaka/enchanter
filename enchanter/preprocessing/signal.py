@@ -100,7 +100,7 @@ class FixedSlidingWindow:
         return data, label
 
 
-def adjust_sequences(sequences, max_len=None, dtype=np.float32):
+def adjust_sequences(sequences, max_len=None, fill="ffill", dtype=np.float32):
     """
     長さが一定でない系列データを一定の長さに整える関数。
     各サンプルに対して、 `max_len` よりもサンプルの系列が長い場合は、`max_len` まででそれ以降は無視され、
@@ -112,6 +112,9 @@ def adjust_sequences(sequences, max_len=None, dtype=np.float32):
         max_len: 入力された全ての要素を指定した長さに加工します。
                    もし、指定されなかった場合は、与えられたサンプルの中で最も大きい系列長がmax_lenになります。
                    また、np.max や np.min, np.mean と言った関数が与えられた場合、それを用いて新しい長さの系列を生成できます。
+        fill: `max_len` より短い場合は、足りない部分を埋める方法を指定します。 fill='ffill' とされた場合、最後の値を用いて埋められます。
+               数値(Python int or Python float) が与えられた場合は、その値を用いて値を埋めます。
+               fill=["ffill" or int or float]
         dtype:  NumPy のデータ型を指定してください。この値を元に出力系列のデータ型が決定されます。
 
     Examples:
@@ -170,7 +173,12 @@ def adjust_sequences(sequences, max_len=None, dtype=np.float32):
 
         if max_len > seq.shape[0]:
             new_seq[:seq.shape[0]] = seq
-            new_seq = new_seq.ffill()
+            if fill == "ffill":
+                new_seq = new_seq.ffill()
+            elif isinstance(fill, int) or isinstance(fill, float):
+                new_seq = new_seq.fillna(fill)
+            else:
+                raise TypeError
         else:
             new_seq[:max_len] = seq[:max_len]
 

@@ -76,3 +76,48 @@ def test_adjust_sequences_5():
 
     new = adjust_sequences(x, dtype=np.float64)
     assert new.dtype == np.float64
+
+
+def test_adjust_sequences_6():
+    x = [
+        np.random.randn(128, 5),
+        np.random.randn(50, 5),
+        np.random.randn(100, 5),
+    ]
+    try:
+        new = adjust_sequences(x, fill=0)
+        passed = True
+    except Exception:
+        passed = False
+
+    assert passed
+
+
+def test_adjust_sequences_7():
+    x = [
+        np.random.randn(128, 5),
+        np.random.randn(50, 5),
+        np.random.randn(100, 5),
+    ]
+    try:
+        new = adjust_sequences(x, fill=0.0)
+        passed = True
+    except Exception:
+        passed = False
+
+    assert passed
+
+
+def test_adjust_sequences_8():
+    x = [
+        np.random.randn(128, 5),
+        np.random.randn(50, 5),
+        np.random.randn(100, 5),
+    ]
+    passed = False
+    try:
+        new = adjust_sequences(x, fill="Something")
+    except TypeError:
+        passed = True
+
+    assert passed
