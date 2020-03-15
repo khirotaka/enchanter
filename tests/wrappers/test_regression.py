@@ -37,7 +37,7 @@ def test_regression_1():
         TensorBoardLogger("./logs"),
     )
     runner.add_loader("train", train_loader).add_loader("val", val_loader).add_loader("test", test_loader)
-    runner.train_config(epochs=100)
+    runner.train_config(epochs=1)
 
     try:
         runner.run(verbose=True)
@@ -76,7 +76,7 @@ def test_regression_3():
         TensorBoardLogger("./logs")
     )
     try:
-        runner.fit(x.astype(np.float32), y.astype(np.int64))
+        runner.fit(x.astype(np.float32), y.astype(np.float32), batch_size=32, epochs=1)
         is_pass = True
 
     except Exception:
