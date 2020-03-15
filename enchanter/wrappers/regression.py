@@ -1,0 +1,52 @@
+import torch
+import enchanter
+from sklearn.metrics import r2_score
+import enchanter.engine.modules as modules
+
+
+__all__ = [
+    "RegressionRunner"
+]
+
+
+class RegressionRunner(enchanter.engine.BaseRunner):
+    def __init__(self, model, optimizer, criterion, experiment, scheduler=None, early_stop=None):
+        enchanter.engine.BaseRunner.__init__(self)
+        self.model = model
+        self.optimizer = optimizer
+        self.criterion = criterion
+        self.experiment = experiment
+        self.scheduler = scheduler
+        self.early_stop = early_stop
+
+    def train_step(self, batch):
+        x, y = batch
+        out = self.model(x)
+        loss = self.criterion(out, y)
+        r2 = r2_score(y.cpu().numpy(), out.cpu().detach().numpy())
+        return {"loss": loss, "r2": r2}
+
+    def train_end(self, outputs):
+        avg_loss = torch.stack([x["loss"] for x in outputs]).mean()
+        avg_r2 = torch.stack([torch.tensor(x["r2"]) for x in outputs]).mean()
+        return {"avg_loss": avg_loss, "avg_r2": avg_r2}
+
+    def val_step(self, batch):
+        return self.train_step(batch)
+
+    def val_end(self, outputs):
+        return self.train_end(outputs)
+
+    def test_step(self, batch):
+        return self.train_step(batch)
+
+    def test_end(self, outputs):
+        return self.train_end(outputs)
+
+    def predict(self, x):
+        self.model.eval()
+        with torch.no_grad():
+            x = modules.numpy2tensor(x).to(self.device)
+            out = self.model(x)
+
+        return out.cpu().numpy()
