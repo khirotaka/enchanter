@@ -17,6 +17,11 @@ from enchanter.engine.runner import BaseRunner
 from enchanter.engine import modules
 
 
+__all__ = [
+    "BaseEnsembleEstimator", "SoftEnsemble", "HardEnsemble"
+]
+
+
 class BaseEnsembleEstimator(BaseEstimator):
     def __init__(self, runners: List[BaseRunner], mode: str = None):
         self.runners: List[BaseRunner] = runners

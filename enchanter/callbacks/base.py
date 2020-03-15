@@ -1,6 +1,11 @@
 import abc
 
 
+__all__ = [
+    "Callback"
+]
+
+
 class Callback(abc.ABC):
     def on_epoch_start(self, *args, **kwargs):
         """Called when the epoch begins."""

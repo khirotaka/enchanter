@@ -10,6 +10,11 @@ else:
     from tqdm import tqdm
 
 
+__all__ = [
+    "FixedSlidingWindow", "adjust_sequences"
+]
+
+
 class FixedSlidingWindow:
     """Fixed sliding window.
     Examples::

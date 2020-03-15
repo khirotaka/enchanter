@@ -3,6 +3,11 @@ import numpy as np
 from .base import Callback
 
 
+__all__ = [
+    "EarlyStopping"
+]
+
+
 class EarlyStopping(Callback):
     def __init__(self, monitor: str = "validate_avg_loss", min_delta=0.0, patience: int = 0, mode: str = "auto"):
         Callback.__init__(self)

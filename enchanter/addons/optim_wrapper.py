@@ -10,6 +10,11 @@
 import numpy as np
 
 
+__all__ = [
+    "TransformerOptimizer"
+]
+
+
 class TransformerOptimizer:
     """
     Reference: `jadore801120/attention-is-all-you-need-pytorch \

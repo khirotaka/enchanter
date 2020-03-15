@@ -3,6 +3,11 @@ import torch
 import torch.nn as nn
 
 
+__all__ = [
+    "PositionalEncoding"
+]
+
+
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, dropout=0.1, max_len=5000):
         nn.Module.__init__(self)
