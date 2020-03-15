@@ -30,6 +30,11 @@ else:
     from tqdm import tqdm
 
 
+__all__ = [
+    "BaseRunner"
+]
+
+
 class BaseRunner(base.BaseEstimator, ABC):
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -47,16 +52,29 @@ class BaseRunner(base.BaseEstimator, ABC):
     @abstractmethod
     def train_step(self, batch):
         """
+        ニューラルネットの訓練時、
+            >>> for x, y in train_loader:
+            >>>     out = model(x)
+            >>>     loss = criteion(out, y)
+        にあたる箇所を担当するメソッドです。
 
         Args:
-            batch:
+            batch: PyTorch DataLoader から得られる訓練用のデータトラベルを含むタプル
 
         Returns:
+            キーに 'loss' を含む辞書を返す必要があります。
 
+        Examples:
+            >>> def train_step(self, batch):
+            >>>     x, y = batch
+            >>>     out = self.model(x)
+            >>>     loss = nn.functional.cross_entropy(out, y)
+            >>>     return {"loss": loss}
         """
 
     def train_end(self, outputs):
         """
+        ニューラルネットの訓練時、1step 終了ごとに実行されるメソッドです。
 
         Args:
             outputs:
@@ -222,6 +240,14 @@ class BaseRunner(base.BaseEstimator, ABC):
             self.experiment.log_parameters(dic, prefix)
 
     def initialize(self):
+        """
+        Runner の準備を行うメソッドです。
+        self.model, self.optimizer, self.experiment といった実行に必要な最低限の変数が未定義な場合はエラーメッセージを出し終了します。
+        問題がなければ CPU or GPU にモデルを渡します。
+
+        Returns:
+            None
+        """
         if self.model is None:
             raise Exception("self.model is not defined.")
 
@@ -234,6 +260,16 @@ class BaseRunner(base.BaseEstimator, ABC):
         self.model = self.model.to(self.device)
 
     def run(self, verbose=True):
+        """
+        Runnerを実行します。
+        実行には、事前に self.add_loader("train", train_loader) で訓練用のデータローダを登録するしておく必要があります。
+
+        Args:
+            verbose: True の場合、学習の進行を表示します。
+
+        Returns:
+            None
+        """
         self.initialize()
         self.log_hyperparams()
 
