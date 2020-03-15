@@ -10,6 +10,18 @@ __all__ = [
 
 
 class RegressionRunner(enchanter.engine.BaseRunner):
+    """
+    回帰問題を対象にしたRunner。
+
+    Examples:
+        >>> runner = RegressionRunner(...)
+        >>> runner.add_loader("train", ...)
+        >>> runner.train_config(epochs=1)
+        >>> runner.run()
+        >>> # OR
+        >>> runner = RegressionRunner(...)
+        >>> runner.fit(x, y, epochs=1, batch_size=32)
+    """
     def __init__(self, model, optimizer, criterion, experiment, scheduler=None, early_stop=None):
         enchanter.engine.BaseRunner.__init__(self)
         self.model = model
