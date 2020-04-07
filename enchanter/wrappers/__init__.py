@@ -6,11 +6,3 @@ __all__ = [
     "ClassificationRunner", "RegressionRunner",
     "HardEnsemble", "SoftEnsemble"
 ]
-
-
-try:
-    from enchanter.wrappers.comet import ConfigGenerator
-except ImportError:
-    pass
-else:
-    __all__.append("ConfigGenerator")
