@@ -1,28 +1,24 @@
 from comet_ml import Optimizer
-import torch
+import torch                            # pylint: disable=W0611
 import torch.nn as nn
 import torch.optim as optim
 from sklearn.datasets import load_iris
 import enchanter.wrappers as wrappers
-import enchanter.addons as addons
+import enchanter.addons as addons       # pylint: disable=W0611
 import enchanter.addons.layers as layers
+from enchanter.utils import comet
 
+config = comet.TunerConfigGenerator(
+    algorithm="bayes",
+    metric="train_avg_loss",
+    objective="minimize",
+    seed=0,
+    trials=5
+)
 
-config = {
-    "algorithm": "bayes",
+config.suggest_categorical("activation", ["addons.mish", "torch.relu", "torch.sigmoid"])
 
-    "parameters": {
-        "activation": {"type": "categorical", "values": ["addons.mish", "torch.relu", "torch.sigmoid"]},
-    },
-
-    "spec": {
-    "metric": "train_avg_loss",
-        "objective": "minimize",
-    },
-    "trials": 5,
-}
-
-opt = Optimizer(config)
+opt = Optimizer(config.generate())
 
 for experiment in opt.get_experiments():
     model = layers.MLP([4, 512, 128, 3], eval(experiment.get_parameter("activation")))
@@ -34,4 +30,4 @@ for experiment in opt.get_experiments():
     x = x.astype("float32")
     y = y.astype("int64")
 
-    runner.fit(x, y, epochs=10)
+    runner.fit(x, y, epochs=1)
