@@ -9,23 +9,29 @@
 
 
 import json
+from pprint import pformat
 
 try:
-    import comet_ml
+    import comet_ml as _         # pylint: disable=W0611
 except ImportError:
     raise ImportError("You have to install `comet_ml` if you want to use `enchanter.utils.comet` module.")
 
 
+__all__ = [
+    "TunerConfigGenerator"
+]
+
+
 class TunerConfigGenerator:
     def __init__(
-            self, algorithm="bayes", metrics="validate_avg_loss", objective="minimize", seed=None, max_combo=0,
+            self, algorithm="bayes", metric="validate_avg_loss", objective="minimize", seed=None, max_combo=0,
             grid_size=10, min_sample_size=100, retry_limit=20,  retry_assign_limit=0, name=None, trials=1
     ):
         """
 
         Args:
             algorithm: パラメータチューニングに用いるアルゴリズムを指定します。対応しているアルゴリズムは ['grid', 'random', 'bayes'] です。
-            metrics: 最小化/最大化する値を指定します。デフォルトでは、'validate_avg_loss' が指定されています。
+            metric: 最小化/最大化する値を指定します。デフォルトでは、'validate_avg_loss' が指定されています。
             objective: metrics を最大化/最小化するかを指定します。['minimize', 'maximize'] で指定してください。
             seed: シード値を設定します。デフォルトでは指定されていません。
             max_combo:
@@ -41,7 +47,7 @@ class TunerConfigGenerator:
         self.spec = {
             "maxCombo": max_combo,
             "objective": objective,
-            "metrics": metrics,
+            "metric": metric,
             "seed": seed,
             "gridSize": grid_size,
             "minSampleSize": min_sample_size,
@@ -61,6 +67,8 @@ class TunerConfigGenerator:
             values: 探索する変数をしていします。comet.mlの仕様上、文字列のリストを与える必要があります。
 
         Examples:
+            >>> import comet_ml
+            >>> from enchanter.utils.comet import TunerConfigGenerator
             >>> config = TunerConfigGenerator()
             >>> config.suggest_categorical("activation", ["torch.relu", "torch.sigmoid", "torch.softmax"])
             >>> opt = comet_ml.Optimizer(config.generate())
@@ -241,7 +249,7 @@ class TunerConfigGenerator:
             "trials": self.trials,
             "name": self.name
         }
-        return json.dumps(config)
+        return config
 
     def to_json(self, filename):
         """
@@ -250,3 +258,6 @@ class TunerConfigGenerator:
         """
         with open(filename, "w") as f:
             json.dump(self.generate(), f, indent=2, ensure_ascii=False)
+
+    def __repr__(self):
+        return pformat(self.generate())
