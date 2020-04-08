@@ -1,0 +1,7 @@
+torch>=1.4.0
+numpy>=1.17.4
+scikit-learn>=0.22.1
+tqdm>=4.41.1
+tensorboard>=2.1.0
+pandas>=1.0.1
+comet_ml>=3.1.3
