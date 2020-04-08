@@ -43,6 +43,9 @@ class TunerConfigGenerator:
             trials: 試行回数を指定します。
         """
 
+        if algorithm not in ["grid", "bayes", "random"]:
+            raise ValueError("The algorithms you can select are `random`, `bayes` and `grid`.")
+
         self.algorithm = algorithm
         self.spec = {
             "maxCombo": max_combo,
