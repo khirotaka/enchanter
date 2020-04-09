@@ -1,3 +1,4 @@
+from comet_ml import OfflineExperiment
 import numpy as np
 import torch.nn as nn
 import torch.optim as optim
@@ -70,6 +71,61 @@ def test_classification_3():
         optimizer,
         nn.CrossEntropyLoss(),
         TensorBoardLogger("./logs")
+    )
+    try:
+        runner.fit(x.astype(np.float32), y.astype(np.int64))
+        is_pass = True
+
+    except Exception:
+        is_pass = False
+
+    assert is_pass is True
+
+
+def test_classification_4():
+    runner = wrappers.ClassificationRunner(
+        model,
+        optimizer,
+        nn.CrossEntropyLoss(),
+        OfflineExperiment()
+    )
+    runner.add_loader("train", train_loader).add_loader("val", val_loader).add_loader("test", test_loader)
+    runner.train_config(epochs=1)
+
+    try:
+        runner.run(verbose=True)
+        is_pass = True
+    except Exception:
+        is_pass = False
+
+    assert is_pass is True
+
+
+def test_classification_5():
+    runner = wrappers.ClassificationRunner(
+        model,
+        optimizer,
+        nn.CrossEntropyLoss(),
+        OfflineExperiment()
+    )
+    runner.train_config(epochs=1)
+
+    try:
+        runner.run(verbose=False)
+        is_pass = True
+
+    except Exception:
+        is_pass = False
+
+    assert is_pass is False
+
+
+def test_classification_6():
+    runner = wrappers.ClassificationRunner(
+        model,
+        optimizer,
+        nn.CrossEntropyLoss(),
+        OfflineExperiment()
     )
     try:
         runner.fit(x.astype(np.float32), y.astype(np.int64))
