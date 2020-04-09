@@ -17,10 +17,15 @@ from enchanter.engine.runner import BaseRunner
 from enchanter.engine import modules
 
 
+__all__ = [
+    "BaseEnsembleEstimator", "SoftEnsemble", "HardEnsemble"
+]
+
+
 class BaseEnsembleEstimator(BaseEstimator):
     def __init__(self, runners: List[BaseRunner], mode: str = None):
-        self.runners: List[BaseRunner] = runners
-        self.mode: str = mode
+        self.runners = runners
+        self.mode = mode
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def predict(self, x) -> List[np.ndarray]:

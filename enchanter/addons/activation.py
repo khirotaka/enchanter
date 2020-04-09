@@ -12,6 +12,11 @@ import torch.jit
 import torch.nn as nn
 
 
+__all__ = [
+    "Swish", "mish", "Mish"
+]
+
+
 class Swish(nn.Module):
     def __init__(self, beta=False):
         nn.Module.__init__(self)

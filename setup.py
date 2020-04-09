@@ -19,10 +19,11 @@ def load_requirements(path_dir=PATH_ROOT, comment_char='#'):
 
 setup(
     name='enchanter',
-    version='0.3.2',
+    version='0.4.0',
     packages=[
-        'enchanter', 'enchanter.addons', 'enchanter.addons.layers', 'enchanter.callbacks',
-        'enchanter.engine', 'enchanter.metrics', 'enchanter.preprocessing', 'enchanter.wrappers'
+        'enchanter', 'enchanter.addons', 'enchanter.addons.layers',
+        'enchanter.callbacks', 'enchanter.engine', 'enchanter.metrics',
+        'enchanter.preprocessing', 'enchanter.wrappers', 'enchanter.utils'
     ],
     url='https://github.com/khirotaka/enchanter',
     license='Apache-2.0',

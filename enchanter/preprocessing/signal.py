@@ -1,3 +1,12 @@
+# ***************************************************
+#  _____            _                 _
+# | ____|_ __   ___| |__   __ _ _ __ | |_ ___ _ __
+# |  _| | '_ \ / __| '_ \ / _` | '_ \| __/ _ \ '__|
+# | |___| | | | (__| | | | (_| | | | | ||  __/ |
+# |_____|_| |_|\___|_| |_|\__,_|_| |_|\__\___|_|
+#
+# ***************************************************
+
 from collections import Counter
 
 import numpy as np
@@ -8,6 +17,11 @@ if is_jupyter():
     from tqdm.notebook import tqdm
 else:
     from tqdm import tqdm
+
+
+__all__ = [
+    "FixedSlidingWindow", "adjust_sequences"
+]
 
 
 class FixedSlidingWindow:
