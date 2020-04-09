@@ -8,12 +8,11 @@
 # ***************************************************
 
 
-import json
 from pprint import pformat
+import pkg_resources
 
-try:
-    import comet_ml as _         # pylint: disable=W0611
-except ImportError:
+
+if "comet-ml" not in [d.project_name for d in pkg_resources.working_set]:
     raise ImportError("You have to install `comet_ml` if you want to use `enchanter.utils.comet` module.")
 
 
