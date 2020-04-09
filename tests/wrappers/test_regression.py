@@ -1,4 +1,3 @@
-from comet_ml import OfflineExperiment
 import numpy as np
 import torch.nn as nn
 import torch.optim as optim
@@ -75,61 +74,6 @@ def test_regression_3():
         optimizer,
         nn.MSELoss(),
         TensorBoardLogger("./logs")
-    )
-    try:
-        runner.fit(x.astype(np.float32), y.astype(np.float32), batch_size=32, epochs=1)
-        is_pass = True
-
-    except Exception:
-        is_pass = False
-
-    assert is_pass is True
-
-def test_regression_4():
-    runner = wrappers.RegressionRunner(
-        model,
-        optimizer,
-        nn.MSELoss(),
-        OfflineExperiment(offline_directory="/tmp")
-    )
-    runner.add_loader("train", train_loader).add_loader("val", val_loader).add_loader("test", test_loader)
-    runner.train_config(epochs=1)
-
-    try:
-        runner.run(verbose=True)
-        is_pass = True
-    except Exception as e:
-        print(e)
-        is_pass = False
-
-    assert is_pass is True
-
-
-def test_regression_5():
-    runner = wrappers.RegressionRunner(
-        model,
-        optimizer,
-        nn.MSELoss(),
-        OfflineExperiment(offline_directory="/tmp")
-    )
-    runner.train_config(epochs=1)
-
-    try:
-        runner.run(verbose=False)
-        is_pass = True
-
-    except Exception:
-        is_pass = False
-
-    assert is_pass is False
-
-
-def test_regression_6():
-    runner = wrappers.RegressionRunner(
-        model,
-        optimizer,
-        nn.MSELoss(),
-        OfflineExperiment(offline_directory="/tmp")
     )
     try:
         runner.fit(x.astype(np.float32), y.astype(np.float32), batch_size=32, epochs=1)
