@@ -38,10 +38,10 @@ __all__ = [
 class BaseRunner(base.BaseEstimator, ABC):
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = None
-        self.optimizer = None
+        self.model = NotImplemented
+        self.optimizer = NotImplemented
         self.scheduler = None
-        self.experiment = None
+        self.experiment = NotImplemented
         self.early_stop = None
 
         self._epochs = 1
@@ -136,10 +136,6 @@ class BaseRunner(base.BaseEstimator, ABC):
                 outputs = self.train_step(batch)
                 outputs["loss"].backward()
                 self.optimizer.step()
-
-                if self.scheduler:
-                    self.scheduler.step()
-                    self.experiment.log_metric("scheduler_lr", self.scheduler.get_last_lr(), step=step, epoch=epoch)
 
                 per = "{:1.0%}".format(step / loader_size)
                 self.pbar.set_postfix(
@@ -288,6 +284,10 @@ class BaseRunner(base.BaseEstimator, ABC):
                     # on_validation_start()
                     self.val_cycle(epoch, self.loaders["val"])
                     # on_validation_end()
+
+                if self.scheduler:
+                    self.scheduler.step()
+                    self.experiment.log_metric("scheduler_lr", self.scheduler.get_last_lr(), epoch=epoch)
 
                 if self.early_stop:
                     if self.early_stop.on_epoch_end(self._metrics, epoch):
