@@ -30,7 +30,9 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       env:
-         COMET_API_KEY: ${{ secrets.COMET_API_KEY }}
+         COMET_API_KEY: key
       run: |
         pip install pytest
         pytest
+        pytest tests/wrappers/classification_with_comet.py
+        pytest tests/wrappers/regression_with_comet.py
