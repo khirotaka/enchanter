@@ -27,18 +27,19 @@ class TunerConfigGenerator:
             grid_size=10, min_sample_size=100, retry_limit=20,  retry_assign_limit=0, name=None, trials=1
     ):
         """
-
+        各引数のより詳しい説明は https://www.comet.ml/docs/python-sdk/introduction-optimizer/ を参照してください。
+        
         Args:
             algorithm: パラメータチューニングに用いるアルゴリズムを指定します。対応しているアルゴリズムは ['grid', 'random', 'bayes'] です。
             metric: 最小化/最大化する値を指定します。デフォルトでは、'validate_avg_loss' が指定されています。
             objective: metrics を最大化/最小化するかを指定します。['minimize', 'maximize'] で指定してください。
             seed: シード値を設定します。デフォルトでは指定されていません。
-            max_combo:
-            grid_size:
-            min_sample_size:
-            retry_limit:
+            max_combo: 整数、試行するパラメーターの組み合わせの制限（デフォルトは0、制限なしを意味します）
+            grid_size: 整数、グリッドを作成するときのパラメーターあたりのビンの数（デフォルトは10）
+            min_sample_size: 整数、適切なグリッド範囲を見つけるのに役立つサンプル数（デフォルトは100）
+            retry_limit: 整数、中断する前に一意のパラメータセットを作成しようとする制限（デフォルトは20）
             retry_assign_limit:
-            name:
+            name: 文字列、この検索インスタンスに関連付けるパーソナライズ可能な名前（オプション）
             trials: 試行回数を指定します。
         """
 
