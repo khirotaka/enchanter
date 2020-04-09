@@ -87,7 +87,7 @@ def test_classification_4():
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        OfflineExperiment()
+        OfflineExperiment(offline_directory="/tmp")
     )
     runner.add_loader("train", train_loader).add_loader("val", val_loader).add_loader("test", test_loader)
     runner.train_config(epochs=1)
@@ -106,7 +106,7 @@ def test_classification_5():
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        OfflineExperiment()
+        OfflineExperiment(offline_directory="/tmp")
     )
     runner.train_config(epochs=1)
 
@@ -125,7 +125,7 @@ def test_classification_6():
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        OfflineExperiment()
+        OfflineExperiment(offline_directory="/tmp")
     )
     try:
         runner.fit(x.astype(np.float32), y.astype(np.int64))

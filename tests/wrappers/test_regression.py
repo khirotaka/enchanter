@@ -90,7 +90,7 @@ def test_regression_4():
         model,
         optimizer,
         nn.MSELoss(),
-        OfflineExperiment()
+        OfflineExperiment(offline_directory="/tmp")
     )
     runner.add_loader("train", train_loader).add_loader("val", val_loader).add_loader("test", test_loader)
     runner.train_config(epochs=1)
@@ -110,7 +110,7 @@ def test_regression_5():
         model,
         optimizer,
         nn.MSELoss(),
-        OfflineExperiment()
+        OfflineExperiment(offline_directory="/tmp")
     )
     runner.train_config(epochs=1)
 
@@ -129,7 +129,7 @@ def test_regression_6():
         model,
         optimizer,
         nn.MSELoss(),
-        OfflineExperiment()
+        OfflineExperiment(offline_directory="/tmp")
     )
     try:
         runner.fit(x.astype(np.float32), y.astype(np.float32), batch_size=32, epochs=1)
