@@ -29,7 +29,7 @@ def test_config_gen_2():
 
     is_pass = False
     try:
-        opt = Optimizer("test.config")
+        opt = Optimizer("test.config", experiment_class="OfflineExperiment")
 
     except exceptions.OptimizerException as e:
         print(e)
