@@ -254,13 +254,13 @@ class TunerConfigGenerator:
         }
         return config
 
-    def to_json(self, filename):
+    def export(self, filename):
         """
-        作成したConfigをjson形式で保存する為のメソッドです。
+        作成したConfigをファイルにして保存する為のメソッドです。
 
         """
         with open(filename, "w") as f:
-            json.dump(self.generate(), f, indent=2, ensure_ascii=False)
+            f.write(self.__repr__())
 
     def __repr__(self):
-        return pformat(self.generate())
+        return pformat(self.generate(), indent=1)
