@@ -30,4 +30,4 @@ for experiment in opt.get_experiments():
     x = x.astype("float32")
     y = y.astype("int64")
 
-    runner.fit(x, y, epochs=1)
+    runner.fit(x, y, epochs=1, batch_size=32)
