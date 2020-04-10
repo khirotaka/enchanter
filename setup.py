@@ -17,6 +17,11 @@ def load_requirements(path_dir=PATH_ROOT, comment_char='#'):
     return reqs
 
 
+this_directory = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
+
+
 setup(
     name='enchanter',
     version='0.4.0',
@@ -30,5 +35,7 @@ setup(
     author='Hirotaka Kawashima',
     author_email='',
     description='Machine Learning Pipeline, Training and Logging for Me.',
-    install_requires=load_requirements()
+    install_requires=load_requirements(),
+    long_description=long_description,
+    long_description_content_type='text/markdown'
 )

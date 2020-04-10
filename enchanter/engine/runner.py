@@ -152,7 +152,7 @@ class BaseRunner(base.BaseEstimator, ABC):
 
             dic = self.train_end(results)        # pylint: disable=E1111
             self._metrics.update(dic)
-            self.experiment.log_metrics(dic, epoch=epoch)
+            self.experiment.log_metrics(dic, step=epoch)
 
     def val_cycle(self, epoch, loader):
         results = list()
@@ -181,7 +181,7 @@ class BaseRunner(base.BaseEstimator, ABC):
 
                 dic = self.val_end(results)        # pylint: disable=E1111
                 self._metrics.update(dic)
-                self.experiment.log_metrics(dic, epoch=epoch)
+                self.experiment.log_metrics(dic, step=epoch)
 
     def test_cycle(self, loader):
         results = list()
