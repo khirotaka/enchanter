@@ -56,6 +56,7 @@ class BaseRunner(base.BaseEstimator, ABC):
             >>> for x, y in train_loader:
             >>>     out = model(x)
             >>>     loss = criteion(out, y)
+
         にあたる箇所を担当するメソッドです。
 
         Args:
@@ -70,6 +71,7 @@ class BaseRunner(base.BaseEstimator, ABC):
             >>>     out = self.model(x)
             >>>     loss = nn.functional.cross_entropy(out, y)
             >>>     return {"loss": loss}
+
         """
 
     def train_end(self, outputs):
