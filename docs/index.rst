@@ -7,9 +7,10 @@ Welcome to Enchanter's documentation!
 =====================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    :caption: Contents:
 
+   source/modules
 
 
 Indices and tables

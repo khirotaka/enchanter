@@ -1,7 +1,7 @@
 :orphan:
 
-enchanter
-=========
+API
+==================
 
 .. toctree::
    :maxdepth: 4
