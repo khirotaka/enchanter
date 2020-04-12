@@ -20,88 +20,49 @@ pip install git+https://github.com/khirotaka/enchanter.git
 ```
 
 ## Documentation
-*   [Main Page](https://enchanter.readthedocs.io/ja/latest/)
+*   [API Reference](https://enchanter.readthedocs.io/ja/latest/)
+*   [Tutorial](https://enchanter.readthedocs.io/ja/latest/tutorial/modules.html)
 
-## Example
+## Getting Started
+Try your first Enchanter Program
 
-### Runner
+### Training Neural Network
 
-#### run()
 ```python
 from comet_ml import Experiment
-import torch.nn as nn
-import torch.optim as optim
-from torchvision import transforms
-from torchvision.datasets import MNIST
-from torch.utils.data import DataLoader
+import torch
+import enchanter
 
-import enchanter.addons as addons
-import enchanter.wrappers as wrappers
+model = torch.nn.Linear(6, 10)
+optimizer = torch.optim.Adam(model.parameters())
 
-
-class MNIST(nn.Module):
-    """
-    MNIST 用のCNN
-    """
-    def __init__(self):
-        super(MNIST, self).__init__()
-        self.conv = nn.Sequential(
-            nn.Conv2d(1, 32, 3),
-            addons.Swish(),
-            nn.MaxPool2d(2),
-            nn.Conv2d(32, 64, 3),
-            addons.Swish(),
-            nn.MaxPool2d(2)
-        )
-        self.fc = nn.Sequential(
-            nn.Linear(64*5*5, 512),
-            addons.Swish(),
-            nn.Linear(512, 10)
-        )
-
-    def forward(self, x):
-        out = self.conv(x)
-        out = out.view(-1, 64*5*5)
-        out = self.fc(out)
-        return out
-
-
-
-experiment = Experiment()
-
-train_ds = MNIST("./data", train=True, transform=transforms.ToTensor())
-test_ds = MNIST("./data", train=False, transform=transforms.ToTensor())
-train_loader = DataLoader(train_ds, batch_size=64, shuffle=True)
-test_loader = DataLoader(test_ds, batch_size=64, shuffle=False)
-
-model = MNIST()
-optimizer = optim.Adam(model.parameters())
-runner = wrappers.ClassificationRunner(
-    model,
+runner = enchanter.wrappers.ClassificationRunner(
+    model, 
     optimizer,
-    nn.CrossEntropyLoss(),
-    experiment,
-    scheduler=optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
+    criterion=torch.nn.CrossEntropyLoss(),
+    experiment=Experiment()
 )
-runner.add_loader(train_loader, "train").add_loader(test_loader, "test")
 
-runner.train_config(epochs=1)
-runner.run(verbose=True)
-
+runner.add_loader("train", train_loader)
+runner.train_config(epochs=10)
+runner.run()
 ```
 
-### Comet.ml hyper parameter turning
+### Hyper parameter searching using Comet.ml
 
 ```python
 from comet_ml import Optimizer
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from sklearn.datasets import load_iris
+
 import enchanter.wrappers as wrappers
 import enchanter.addons as addons
 import enchanter.addons.layers as layers
 from enchanter.utils import comet
+
 
 config = comet.TunerConfigGenerator(
     algorithm="bayes",
@@ -112,8 +73,12 @@ config = comet.TunerConfigGenerator(
 )
 
 config.suggest_categorical("activation", ["addons.mish", "torch.relu", "torch.sigmoid"])
-
 opt = Optimizer(config.generate())
+
+x, y = load_iris(return_X_y=True)
+x = x.astype("float32")
+y = y.astype("int64")
+
 
 for experiment in opt.get_experiments():
     model = layers.MLP([4, 512, 128, 3], eval(experiment.get_parameter("activation")))
@@ -121,9 +86,9 @@ for experiment in opt.get_experiments():
     runner = wrappers.ClassificationRunner(
         model, optimizer=optimizer, criterion=nn.CrossEntropyLoss(), experiment=experiment
     )
-    x, y = load_iris(return_X_y=True)
-    x = x.astype("float32")
-    y = y.astype("int64")
 
-    runner.fit(x, y, epochs=1)
+    runner.fit(x, y, epochs=1, batch_size=32)
 ```
+
+## License
+[Apache License 2.0](LICENSE)
