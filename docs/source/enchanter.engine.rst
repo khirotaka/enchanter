@@ -12,14 +12,6 @@ enchanter.engine.modules module
    :undoc-members:
    :show-inheritance:
 
-enchanter.engine.runner module
-------------------------------
-
-.. automodule:: enchanter.engine.runner
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 
 Module contents
 ---------------
