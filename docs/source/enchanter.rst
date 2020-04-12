@@ -4,6 +4,7 @@ enchanter
 .. toctree::
 
     enchanter.addons
+    enchanter.addons.layers
     enchanter.callbacks
     enchanter.engine
     enchanter.metrics

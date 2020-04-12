@@ -1,7 +1,7 @@
 Define Custom Runner
 =============================
 
-Enchanterでは、 ``enchanter.BaseRunner`` を継承することでカスタムRunnerを定義する事が出来ます。
+Enchanterでは、 ``enchanter.engine.BaseRunner`` を継承することでカスタムRunnerを定義する事が出来ます。
 このチュートリアルでは、分類タスク用のRunnerを定義します。
 
 ::
@@ -37,7 +37,7 @@ Enchanterでは、 ``enchanter.BaseRunner`` を継承することでカスタム
 
 ::
 
-    class CustomRunner(enchanter.BaseRunner):
+    class CustomRunner(enchanter.engine.BaseRunner):
         def __init__(self):
             # REQUIRED
             super().__init__()

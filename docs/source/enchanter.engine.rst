@@ -1,10 +1,7 @@
-enchanter.engine package
+enchanter.engine
 ========================
 
-Submodules
-----------
-
-enchanter.engine.modules module
+enchanter.engine.modules
 -------------------------------
 
 .. automodule:: enchanter.engine.modules
@@ -13,8 +10,8 @@ enchanter.engine.modules module
    :show-inheritance:
 
 
-Module contents
----------------
+enchanter.engine.BaseRunner
+----------------------------
 
 .. automodule:: enchanter.engine
    :members:

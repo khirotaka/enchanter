@@ -1,9 +1,6 @@
-enchanter.preprocessing package
+enchanter.preprocessing
 ===============================
 
-
-Module contents
----------------
 
 .. automodule:: enchanter.preprocessing
    :members:

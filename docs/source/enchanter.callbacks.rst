@@ -1,11 +1,6 @@
-enchanter.callbacks package
+enchanter.callbacks
 ===========================
 
-Submodules
-----------
-
-Module contents
----------------
 
 .. automodule:: enchanter.callbacks
    :members:

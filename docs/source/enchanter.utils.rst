@@ -1,22 +1,11 @@
-enchanter.utils package
+enchanter.utils
 =======================
 
-Submodules
-----------
 
-enchanter.utils.comet module
+enchanter.utils.comet
 ----------------------------
 
 .. automodule:: enchanter.utils.comet
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: enchanter.utils
    :members:
    :undoc-members:
    :show-inheritance:

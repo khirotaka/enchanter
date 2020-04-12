@@ -1,9 +1,6 @@
-enchanter.wrappers package
+enchanter.wrappers
 ==========================
 
-
-Module contents
----------------
 
 .. automodule:: enchanter.wrappers
    :members:
