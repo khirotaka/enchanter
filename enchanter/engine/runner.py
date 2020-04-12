@@ -36,6 +36,29 @@ __all__ = [
 
 
 class BaseRunner(base.BaseEstimator, ABC):
+    """
+    PyTorchモデルの訓練に用いる Runner を作成する為のクラスです。
+
+    Alias: `enchanter.BaseRunner`, `enchanter.engine.BaseRunner`
+
+    Examples:
+
+        >>> class Runner(BaseRunner):
+        >>>     def __init__(self):
+        >>>         super(Runner, self).__init__()
+        >>>         self.model = nn.Linear(10, 10)
+        >>>         self.optimizer = torch.optim.Adam(self.model.parameters())
+        >>>         self.experiment = Experiment()
+        >>>         self.criterion = nn.CrossEntropyLoss()
+        >>>
+        >>>     def train_step(self, batch):
+        >>>         x, y = batch
+        >>>         out = self.model(x)
+        >>>         loss = self.criterion(out, y)
+        >>>
+        >>>         return {"loss": loss}
+
+    """
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = NotImplemented
@@ -88,16 +111,19 @@ class BaseRunner(base.BaseEstimator, ABC):
 
     def val_step(self, batch):
         """
+        ニューラルネットの検証時、1step ごとに実行されるメソッドです。
 
         Args:
-            batch:
+            batch: PyTorch DataLoader から得られる訓練用のデータトラベルを含むタプル
 
         Returns:
+            辞書を返す必要があります。
 
         """
 
     def val_end(self, outputs):
         """
+        ニューラルネットの検証時、1step 終了ごとに実行されるメソッドです。
 
         Args:
             outputs:
@@ -109,16 +135,19 @@ class BaseRunner(base.BaseEstimator, ABC):
 
     def test_step(self, batch):
         """
+        ニューラルネットの評価時、1step ごとに実行されるメソッドです。
 
         Args:
-            batch:
+            batch: PyTorch DataLoader から得られる訓練用のデータトラベルを含むタプル
 
         Returns:
+            辞書を返す必要があります。
 
         """
 
     def test_end(self, outputs):
         """
+        ニューラルネットの評価時、1step 終了ごとに実行されるメソッドです。
 
         Args:
             outputs:
@@ -129,6 +158,14 @@ class BaseRunner(base.BaseEstimator, ABC):
         return {}
 
     def train_cycle(self, epoch, loader):
+        """
+        ニューラルネットの訓練ループです。
+
+        Args:
+            epoch (int):
+            loader (torch.utils.data.DataLoader):
+
+        """
         results = list()
         loader_size = len(loader)
 
@@ -162,6 +199,16 @@ class BaseRunner(base.BaseEstimator, ABC):
                 self.experiment.log_metrics(dic, step=epoch)
 
     def val_cycle(self, epoch, loader):
+        """
+        ニューラルネットの評価用ループです。
+
+        Args:
+            epoch:
+            loader:
+
+        Returns:
+
+        """
         results = list()
         loader_size = len(loader)
 
@@ -193,6 +240,15 @@ class BaseRunner(base.BaseEstimator, ABC):
                     self.experiment.log_metrics(dic, step=epoch)
 
     def test_cycle(self, loader):
+        """
+        ニューラルネットの検証用ループです。
+
+        Args:
+            loader:
+
+        Returns:
+
+        """
         results = list()
         loader_size = len(loader)
 
@@ -225,6 +281,17 @@ class BaseRunner(base.BaseEstimator, ABC):
                     self.experiment.log_metrics(dic)
 
     def train_config(self, epochs, *args, **kwargs):
+        """
+        .run() メソッドを用いて訓練を行う際に、 epochs などを指定する為のメソッドです。
+
+        Args:
+            epochs (int):
+            *args:
+            **kwargs:
+
+        Returns:
+
+        """
         if epochs > 0:
             self._epochs = epochs
         else:
@@ -314,6 +381,7 @@ class BaseRunner(base.BaseEstimator, ABC):
 
     def predict(self, x):
         """
+        与えられた入力をもとに予測を行うメソッドです。
 
         Args:
             x (Union[torch.Tensor, np.ndarray]):
@@ -321,15 +389,15 @@ class BaseRunner(base.BaseEstimator, ABC):
         Returns:
             predict
         """
+        raise NotImplementedError
 
     def add_loader(self, mode, loader):
         """
+        訓練等に用いるデータローダをRunnerに登録する為のメソッドです。
 
         Args:
-            mode (str):
+            mode (str): ['train', 'val', 'test'] のいずれをか指定します。
             loader (torch.utils.data.DataLoader):
-
-        Returns:
 
         """
         if mode not in ["train", "val", "test"]:
@@ -349,6 +417,15 @@ class BaseRunner(base.BaseEstimator, ABC):
         return self._loaders
 
     def fit(self, x, y, **kwargs):
+        """
+        Scikit-Learn スタイルの訓練メソッドです。
+
+        Args:
+            x: 訓練用データ
+            y: 教師ラベル
+            **kwargs:
+
+        """
         val_size: float = kwargs.get("val_size", 0.1)
         num_workers = kwargs.get("num_workers", 0)
         batch_size = kwargs.get("batch_size", 1)
@@ -380,21 +457,39 @@ class BaseRunner(base.BaseEstimator, ABC):
         self.add_loader("val", val_loader)
         self.train_config(epochs)
         self.run(verbose)
+
         return self
 
     def freeze(self):
+        """
+        モデルのパラメータが勾配を計算しないように固定する為のメソッドです。
+
+        """
         for param in self.model.parameters():
             param.requires_grad = False
 
         self.model.eval()
 
     def unfreeze(self):
+        """
+        .freeze() で固定されたパラメータを再度学習できるようにする為のメソッドです。
+
+        """
         for param in self.model.parameters():
             param.requires_grad = True
 
         self.model.train()
 
-    def save_checkpoint(self) -> Dict[str, OrderedDict]:
+    def save_checkpoint(self):
+        """
+        ニューラルネットの重みと、 Optimizerの状態を辞書として出力するメソッドです。
+
+        Returns:
+            以下のキーと値を持つ辞書を返します。
+                - "model_state_dict": ニューラルネットの重み
+                - "optimizer_state_dict": Optimizer の状態
+
+        """
         if isinstance(self.model, nn.DataParallel):
             model = self.model.module.state_dict()
         else:
@@ -407,16 +502,27 @@ class BaseRunner(base.BaseEstimator, ABC):
         return checkpoint
 
     def load_checkpoint(self, checkpoint):
+        """
+        'model_state_dict', 'optimizer_state_dict' を持つ辞書を受け取り、それらを元に モデル と Optimizer の状態を復元します。
+
+        Args:
+            checkpoint:
+                以下のキーと値を持つ辞書。
+                    - "model_state_dict": ニューラルネットの重み
+                    - "optimizer_state_dict": Optimizer の状態
+        """
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         return self
 
     def save(self, directory, epoch=None) -> None:
         """
+        指定したディレクトリにモデルとOptimizerの状態を記録したファイルを保存します。
+
         Args:
-            directory:
-            epoch:
-        Returns:
+            directory (str):
+            epoch (Optional[int]):
+
         """
         if not os.path.isdir(directory):
             os.makedirs(directory)
@@ -436,10 +542,12 @@ class BaseRunner(base.BaseEstimator, ABC):
 
     def load(self, filename, map_location="cpu"):
         """
+        指定したファイルを元にモデルとOptimizerの状態を復元します。
+
         Args:
-            filename:
-            map_location:
-        Returns:
+            filename (str):
+            map_location (str):
+
         """
         checkpoint = torch.load(filename, map_location=map_location)
         self.load_checkpoint(checkpoint)
