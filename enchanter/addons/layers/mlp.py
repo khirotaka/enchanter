@@ -76,6 +76,15 @@ class PositionWiseFeedForward(nn.Module):
         )
 
     def forward(self, x):
+        """
+        入力に対して PositionWiseFeedForward を適用します。
+
+        Args:
+            x (torch.Tensor):
+
+        Returns:
+
+        """
         x = x.transpose(1, 2)
         x = self.conv(x)
         x = x.transpose(1, 2)

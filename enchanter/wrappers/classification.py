@@ -20,6 +20,27 @@ __all__ = [
 
 
 class ClassificationRunner(enchanter.engine.BaseRunner):
+    """
+    分類タスク向けの Runner です。
+
+    Examples:
+        >>> from comet_ml import Experiment
+        >>> model = torch.nn.Sequential(...)
+        >>> optimizer = torch.optim.Adam(model.parameters())
+        >>> criterion = torch.nn.CrossEntropyLoss()
+        >>> runner = ClassificationRunner(
+        >>>     model,
+        >>>     optimizer,
+        >>>     criterion,
+        >>>     Experiment()
+        >>> )
+        >>> runner.fit(...)
+        >>> # or
+        >>> runner.add_loader(...)
+        >>> runner.train_config(epochs=10)
+        >>> runner.run()
+
+    """
     def __init__(self, model, optimizer, criterion, experiment, scheduler=None, early_stop=None):
         enchanter.engine.BaseRunner.__init__(self)
         self.model = model
