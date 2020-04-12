@@ -134,3 +134,4 @@ dmypy.json
 tests/data/
 
 .DS_Store
+/.update.txt
