@@ -39,7 +39,6 @@ class BaseRunner(base.BaseEstimator, ABC):
     """
     PyTorchモデルの訓練に用いる Runner を作成する為のクラスです。
 
-    Alias: `enchanter.BaseRunner`, `enchanter.engine.BaseRunner`
 
     Examples:
 
