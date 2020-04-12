@@ -41,13 +41,13 @@ class Swish(nn.Module):
             inputs (torch.Tensor):
 
         Returns:
+            Swishを適用した結果
 
         """
         out = inputs * torch.sigmoid(self.weight * inputs)
         return out
 
 
-@torch.jit.script
 def mish(x):
     """
     mish活性化関数を適用します。
@@ -60,6 +60,7 @@ def mish(x):
         x (torch.Tensor):
 
     Returns:
+        mishを適用した結果 (torch.Tensor)
 
     """
     return x * torch.tanh(nn.functional.softplus(x))
@@ -88,6 +89,7 @@ class Mish(nn.Module):
             inputs(torch.Tensor):
 
         Returns:
+            mishを適用した結果 (torch.Tensor)
 
         """
         return inputs * self.tanh(self.softplus(inputs))
