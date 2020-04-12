@@ -55,15 +55,8 @@ Enchanterでは、 ``enchanter.BaseRunner`` を継承することでカスタム
 
             return {"loss": loss}           # `loss` というキーを持つ辞書を戻り値にする必要があります。
 
-        def train_end(self, outputs):
-            # REQUIRED
-            avg_loss = torch.stack([x["loss"] for x in outputs]).mean()
-            avg_acc = torch.stack([torch.tensor(x["accuracy"]) for x in outputs]).mean()
 
-            return {"avg_loss": avg_loss, "avg_acc": avg_acc}
-
-
-カスタムRunnerを定義する際、``__init__()``, ``train_step()``,``train_end()``を必ず定義する必要があります。
+カスタムRunnerを定義する際、``__init__()``, ``train_step()`` を必ず定義する必要があります。
 なお、``__init__()`` の中で、``self.model``, ``self.optimizer``, ``self.experiment`` を定義する必要があります。
 
 これで、カスタムRunnerの定義か完了しました。あとは、データセットを用意して実行するだけです。

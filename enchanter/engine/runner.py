@@ -84,6 +84,7 @@ class BaseRunner(base.BaseEstimator, ABC):
         Returns:
 
         """
+        return {}
 
     def val_step(self, batch):
         """
@@ -104,6 +105,7 @@ class BaseRunner(base.BaseEstimator, ABC):
         Returns:
 
         """
+        return {}
 
     def test_step(self, batch):
         """
@@ -124,6 +126,7 @@ class BaseRunner(base.BaseEstimator, ABC):
         Returns:
 
         """
+        return {}
 
     def train_cycle(self, epoch, loader):
         results = list()
@@ -153,8 +156,10 @@ class BaseRunner(base.BaseEstimator, ABC):
                 # on_step_end()
 
             dic = self.train_end(results)        # pylint: disable=E1111
-            self._metrics.update(dic)
-            self.experiment.log_metrics(dic, step=epoch)
+
+            if len(dic) != 0:
+                self._metrics.update(dic)
+                self.experiment.log_metrics(dic, step=epoch)
 
     def val_cycle(self, epoch, loader):
         results = list()
@@ -182,8 +187,10 @@ class BaseRunner(base.BaseEstimator, ABC):
                     # on_step_end()
 
                 dic = self.val_end(results)        # pylint: disable=E1111
-                self._metrics.update(dic)
-                self.experiment.log_metrics(dic, step=epoch)
+
+                if len(dic) != 0:
+                    self._metrics.update(dic)
+                    self.experiment.log_metrics(dic, step=epoch)
 
     def test_cycle(self, loader):
         results = list()
@@ -212,8 +219,10 @@ class BaseRunner(base.BaseEstimator, ABC):
                     # on_step_end()
 
                 dic = self.test_end(results)        # pylint: disable=E1111
-                self._metrics.update(dic)
-                self.experiment.log_metrics(dic)
+
+                if len(dic) != 0:
+                    self._metrics.update(dic)
+                    self.experiment.log_metrics(dic)
 
     def train_config(self, epochs, *args, **kwargs):
         if epochs > 0:
