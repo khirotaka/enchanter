@@ -37,8 +37,13 @@ def is_jupyter():
 def numpy2tensor(inputs):
     """
     入力された `np.ndarray` を `torch.Tensor` に変換します。単に `torch.Tensor` が入力された場合は、そのまま値を返します。
+
+    Examples:
+        >>> x = np.random.randn(512, 6)     # np.ndarray (dtype=np.float64)
+        >>> x = numpy2tensor(x)             # torch.Tensor (dtype=torch.DoubleTensor)
+
     Args:
-        inputs (np.ndarray):
+        inputs (Union[np.ndarray, torch.Tensor]):
 
     Returns:
         `torch.Tensor`
@@ -79,11 +84,17 @@ def get_dataset(x, y=None):
 def fix_seed(seed):
     """
     PyTorch, NumPy, Pure Python Random のSEED値を一括固定します。
+
+    Examples:
+        >>> fix_seed(0)
+        >>> x = torch.randn(...)
+        >>> y = np.random.randn(...)
+
     Args:
         seed (int): SEED値
 
     Returns:
-
+        None
     """
     random.seed(seed)
     np.random.seed(seed)
