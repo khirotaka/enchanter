@@ -1,5 +1,4 @@
 from comet_ml import OfflineExperiment
-import pytest
 
 import numpy as np
 import torch.nn as nn

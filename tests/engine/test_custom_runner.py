@@ -10,7 +10,8 @@ X = torch.randn(512, 10).numpy()
 Y = torch.randint(0, 9, (512,)).numpy()
 
 
-class Runner1(enchanter.BaseRunner):
+
+class Runner1(enchanter.engine.BaseRunner):
     def __init__(self):
         super(Runner1, self).__init__()
         self.model = nn.Linear(10, 10)
@@ -26,7 +27,7 @@ class Runner1(enchanter.BaseRunner):
         return {"loss": loss}
 
 
-class Runner2(enchanter.BaseRunner):
+class Runner2(enchanter.engine.BaseRunner):
     def __init__(self):
         super(Runner2, self).__init__()
         self.model = nn.Linear(10, 10)

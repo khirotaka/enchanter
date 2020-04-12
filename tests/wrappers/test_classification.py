@@ -1,9 +1,9 @@
 import numpy as np
 import torch.nn as nn
 import torch.optim as optim
+from torch.utils.data import DataLoader
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
-from torch.utils.data import DataLoader
 
 import enchanter.wrappers as wrappers
 import enchanter.addons as addons
