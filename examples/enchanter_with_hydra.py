@@ -30,8 +30,9 @@ def main(cfg):
         criterion=nn.CrossEntropyLoss(),
         experiment=experiment
     )
+    runner.train_config(epochs=10, checkpoint_path="./checkpoints")
     runner.fit(x, y)
-    runner.save("./checkpoints/")
+    runner.save()
 
 
 if __name__ == '__main__':
