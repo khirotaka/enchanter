@@ -8,8 +8,8 @@
 # ***************************************************
 
 import io
-import os
 import time
+from pathlib import Path
 from copy import deepcopy
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -69,6 +69,7 @@ class BaseRunner(base.BaseEstimator, ABC):
         self.pbar = None
         self._loaders = {}
         self._metrics = {}
+        self._checkpoint_path = None
 
     @abstractmethod
     def train_step(self, batch):
@@ -290,6 +291,8 @@ class BaseRunner(base.BaseEstimator, ABC):
         Returns:
 
         """
+        self._checkpoint_path = kwargs.get("checkpoint_path", None)
+
         if epochs > 0:
             self._epochs = epochs
         else:
@@ -370,6 +373,9 @@ class BaseRunner(base.BaseEstimator, ABC):
                         break
                     # .on_epoch_end()
 
+                if self._checkpoint_path:
+                    self.save(self._checkpoint_path, epoch=epoch)
+
         if "test" in self.loaders:
             # on_test_start()
             self.test_cycle(self.loaders["test"])
@@ -429,7 +435,11 @@ class BaseRunner(base.BaseEstimator, ABC):
         batch_size = kwargs.get("batch_size", 1)
         pin_memory = kwargs.get("pin_memory", False)
         verbose = kwargs.get("verbose", True)
-        epochs = kwargs.get("epochs", 1)
+
+        if self._epochs == 0:
+            epochs = kwargs.get("epochs", 1)
+        else:
+            epochs = self._epochs
 
         train_ds = modules.get_dataset(x, y)
         val_ds = modules.get_dataset(x, y)
@@ -453,7 +463,7 @@ class BaseRunner(base.BaseEstimator, ABC):
 
         self.add_loader("train", train_loader)
         self.add_loader("val", val_loader)
-        self.train_config(epochs)
+        self.train_config(epochs, checkpoint_path=self._checkpoint_path)
         self.run(verbose)
 
         return self
@@ -513,24 +523,28 @@ class BaseRunner(base.BaseEstimator, ABC):
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         return self
 
-    def save(self, directory, epoch=None) -> None:
+    def save(self, directory=None, epoch=None) -> None:
         """
         指定したディレクトリにモデルとOptimizerの状態を記録したファイルを保存します。
 
         Args:
-            directory (str):
+            directory (Optional[str]):
             epoch (Optional[int]):
 
         """
-        if not os.path.isdir(directory):
-            os.makedirs(directory)
+        if directory is None:
+            directory = self._checkpoint_path
+
+        directory = Path(directory)
+        if not directory.exists():
+            directory.mkdir(parents=True)
         checkpoint = self.save_checkpoint()
 
         if epoch is None:
             epoch = time.ctime().replace(" ", "_")
 
         filename = "checkpoint_epoch_{}.pth".format(epoch)
-        path = directory + filename
+        path = directory / filename
         torch.save(checkpoint, path)
 
         if hasattr(self.experiment, "log_asset_data"):
