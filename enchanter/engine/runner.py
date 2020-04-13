@@ -13,7 +13,6 @@ import time
 from copy import deepcopy
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-from typing import Dict
 
 import numpy as np
 import torch
