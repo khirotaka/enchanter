@@ -2,7 +2,7 @@
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/84197fb283924f02a1667cea49dd031a)](https://app.codacy.com/manual/KawashimaHirotaka/enchanter?utm_source=github.com&utm_medium=referral&utm_content=khirotaka/enchanter&utm_campaign=Badge_Grade_Dashboard)
 ![CI testing](https://github.com/khirotaka/enchanter/workflows/CI/badge.svg)
-![Build & Publish](https://github.com/khirotaka/enchanter/workflows/Build%20&%20Publish/badge.svg?branch=v0.5.0)
+![Build & Publish](https://github.com/khirotaka/enchanter/workflows/Build%20&%20Publish/badge.svg)
 [![Documentation Status](https://readthedocs.org/projects/enchanter/badge/?version=latest)](https://enchanter.readthedocs.io/ja/latest/?badge=latest)
 ![PyPI](https://img.shields.io/pypi/v/enchanter?color=brightgreen)
 ![license](https://img.shields.io/github/license/khirotaka/enchanter?color=light)
