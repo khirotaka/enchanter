@@ -27,6 +27,7 @@ __all__ = [
 class FixedSlidingWindow:
     """Fixed sliding window.
     Examples::
+
         >>> import numpy as np
         >>> from enchanter.preprocessing import FixedSlidingWindow
         >>> x = np.random.randn(1024, 23)
@@ -35,6 +36,7 @@ class FixedSlidingWindow:
         >>> x, y = sw(x, y)
         >>> x.shape     # [6, 256, 23]
         >>> y.shape     # [6, ]
+
     Args:
         window_size: int
         overlap_rate: float

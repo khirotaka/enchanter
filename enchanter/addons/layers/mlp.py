@@ -34,9 +34,11 @@ class MLP(nn.Module):
         """
 
         Args:
-            shapes: MLPの各層におけるニューロン数。int型の要素で構成される配列を想定。
+            shapes (List[int]): MLPの各層におけるニューロン数。int型の要素で構成される配列を想定。
                     与えられる配列の第0番目の要素の値はモデルへの入力次元の数として扱われます。
-            activation: 活性化関数。 torch.relu や enchanter.addons.Mish() 等の微分可能な Callableなオブジェクト
+
+            activation (Union[Callable[[torch.Tensor], torch.Tensor], nn.Module]): 活性化関数。
+                        torch.relu や enchanter.addons.Mish() 等の微分可能な Callableなオブジェクト
         """
         super().__init__()
         self.layers = []
@@ -76,6 +78,15 @@ class PositionWiseFeedForward(nn.Module):
         )
 
     def forward(self, x):
+        """
+        入力に対して PositionWiseFeedForward を適用します。
+
+        Args:
+            x (torch.Tensor):
+
+        Returns:
+
+        """
         x = x.transpose(1, 2)
         x = self.conv(x)
         x = x.transpose(1, 2)

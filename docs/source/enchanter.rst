@@ -1,0 +1,14 @@
+enchanter
+=================
+
+.. toctree::
+
+    enchanter.addons
+    enchanter.addons.layers
+    enchanter.callbacks
+    enchanter.engine
+    enchanter.metrics
+    enchanter.preprocessing
+    enchanter.utils
+    enchanter.wrappers
+

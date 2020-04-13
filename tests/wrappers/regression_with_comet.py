@@ -1,12 +1,13 @@
-from comet_ml import OfflineExperiment
 import warnings
+
+from comet_ml import OfflineExperiment
+
 import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 from sklearn.datasets import load_boston
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
-import pytest
 
 import enchanter.wrappers as wrappers
 import enchanter.addons.layers as layers
@@ -77,7 +78,7 @@ def test_regression_3():
         model,
         optimizer,
         nn.MSELoss(),
-        OfflineExperiment(offline_directory="/tmp")
+        OfflineExperiment(offline_directory="../tmp")
     )
     try:
         runner.fit(x.astype(np.float32), y.astype(np.float32), batch_size=32, epochs=1)

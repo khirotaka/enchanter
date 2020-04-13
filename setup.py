@@ -24,7 +24,7 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='enchanter',
-    version='0.4.1.1',
+    version='0.5.0',
     packages=[
         'enchanter', 'enchanter.addons', 'enchanter.addons.layers',
         'enchanter.callbacks', 'enchanter.engine', 'enchanter.metrics',
@@ -34,7 +34,7 @@ setup(
     license='Apache-2.0',
     author='Hirotaka Kawashima',
     author_email='',
-    description='Machine Learning Pipeline, Training and Logging for Me.',
+    description='Enchanter is a library for machine learning tasks for comet.ml users.',
     install_requires=load_requirements(),
     long_description=long_description,
     long_description_content_type='text/markdown'

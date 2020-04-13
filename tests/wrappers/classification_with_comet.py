@@ -1,5 +1,4 @@
 from comet_ml import OfflineExperiment
-import pytest
 
 import numpy as np
 import torch.nn as nn
@@ -34,7 +33,7 @@ def test_classification_1():
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        OfflineExperiment(offline_directory="/tmp")
+        OfflineExperiment(offline_directory="../tmp")
     )
     runner.add_loader("train", train_loader).add_loader("val", val_loader).add_loader("test", test_loader)
     runner.train_config(epochs=1)

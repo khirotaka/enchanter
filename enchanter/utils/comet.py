@@ -133,7 +133,7 @@ class TunerConfigGenerator:
             name: 変数の名前
             min_value: 最小値
             max_value: 最大値
-            dtype: データ型。指定されない場合、'min_value' と 'max_value' の値から自動的に推定されます。
+            dtype: データ型。指定されない場合、`min_value` と `max_value` の値から自動的に推定されます。
 
         Examples:
             >>> config = TunerConfigGenerator()
@@ -156,7 +156,7 @@ class TunerConfigGenerator:
             max_value: 最大値
             mu: 正規分布のμ
             sigma: 正規分布のσ
-            dtype: データ型。指定されない場合、'min_value' と 'max_value' の値から自動的に推定されます。
+            dtype: データ型。指定されない場合、`min_value` と `max_value` の値から自動的に推定されます。
 
         Examples:
             >>> config = TunerConfigGenerator()
@@ -179,7 +179,7 @@ class TunerConfigGenerator:
             max_value: 最大値
             mu: 正規分布のμ
             sigma: 正規分布のσ
-            dtype: データ型。指定されない場合、'min_value' と 'max_value' の値から自動的に推定されます。
+            dtype: データ型。指定されない場合、`min_value` と `max_value` の値から自動的に推定されます。
 
         Examples:
             >>> config = TunerConfigGenerator()
@@ -200,7 +200,7 @@ class TunerConfigGenerator:
             name: 変数の名前
             min_value: 最小値
             max_value: 最大値
-            dtype: データ型。指定されない場合、'min_value' と 'max_value' の値から自動的に推定されます。
+            dtype: データ型。指定されない場合、`min_value` と `max_value` の値から自動的に推定されます。
 
         Examples:
             >>> config = TunerConfigGenerator()
@@ -237,7 +237,7 @@ class TunerConfigGenerator:
 
     def generate(self):
         """
-        'comet_ml.Optimizer' 用のConfigを生成する為のメソッドです。
+        `comet_ml.Optimizer` 用のConfigを生成する為のメソッドです。
 
         Examples:
             >>> config = TunerConfigGenerator()

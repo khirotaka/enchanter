@@ -19,6 +19,13 @@ __all__ = [
 
 
 def is_jupyter():
+    """
+    実行中の環境が Jupyter Notebookかどうかを判定します。
+
+    Returns (bool) :
+        True if run on jupyrer notebook else False
+
+    """
     if "get_ipython" not in globals():
         return False
     env = get_ipython().__class__.__name__      # NOQA
@@ -28,6 +35,19 @@ def is_jupyter():
 
 
 def numpy2tensor(inputs):
+    """
+    入力された `np.ndarray` を `torch.Tensor` に変換します。単に `torch.Tensor` が入力された場合は、そのまま値を返します。
+
+    Examples:
+        >>> x = np.random.randn(512, 6)     # np.ndarray (dtype=np.float64)
+        >>> x = numpy2tensor(x)             # torch.Tensor (dtype=torch.DoubleTensor)
+
+    Args:
+        inputs (Union[np.ndarray, torch.Tensor]):
+
+    Returns:
+        `torch.Tensor`
+    """
     if isinstance(inputs, np.ndarray):
         inputs = torch.from_numpy(inputs)
 
@@ -35,6 +55,21 @@ def numpy2tensor(inputs):
 
 
 def get_dataset(x, y=None):
+    """
+    入力された値をもとに `torch.utils.data.TensorDataset` を生成します。
+
+    Examples:
+        >>> x = torch.randn(512, 6)
+        >>> y = torch.randint(0, 9, size=[512])
+        >>> ds = get_dataset(x, y)
+
+    Args:
+        x (Union[np.ndarray, torch.Tensor]):
+        y (Optional[Union[np.ndarray, torch.Tensor]]):
+
+    Returns:
+        `torch.utils.data.TensorDataset`
+    """
     x = numpy2tensor(x)
 
     if y is not None:
@@ -49,11 +84,17 @@ def get_dataset(x, y=None):
 def fix_seed(seed):
     """
     PyTorch, NumPy, Pure Python Random のSEED値を一括固定します。
+
+    Examples:
+        >>> fix_seed(0)
+        >>> x = torch.randn(...)
+        >>> y = np.random.randn(...)
+
     Args:
         seed (int): SEED値
 
     Returns:
-
+        None
     """
     random.seed(seed)
     np.random.seed(seed)
