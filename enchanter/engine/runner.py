@@ -532,8 +532,10 @@ class BaseRunner(base.BaseEstimator, ABC):
             epoch (Optional[int]):
 
         """
-        if directory is None:
+        if directory is None and self._checkpoint_path is not None:
             directory = self._checkpoint_path
+        else:
+            raise ValueError("The argument `directory` must be specified.")
 
         directory = Path(directory)
         if not directory.exists():
