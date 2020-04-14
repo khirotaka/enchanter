@@ -290,10 +290,13 @@ class BaseRunner(base.BaseEstimator, ABC):
         Returns:
 
         """
+        
         if epochs > 0:
             self._epochs = epochs
         else:
             self._epochs = 1
+
+        return self
 
     def log_hyperparams(self, dic=None, prefix=None):
         """
@@ -362,7 +365,7 @@ class BaseRunner(base.BaseEstimator, ABC):
                     # on_validation_end()
 
                 if self.scheduler:
-                    self.scheduler.step()
+                    self.scheduler.step(epoch=None)
                     self.experiment.log_metric("scheduler_lr", self.scheduler.get_last_lr(), epoch=epoch)
 
                 if self.early_stop:
@@ -513,7 +516,7 @@ class BaseRunner(base.BaseEstimator, ABC):
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         return self
 
-    def save(self, directory, epoch=None) -> None:
+    def save(self, directory=None, epoch=None):
         """
         指定したディレクトリにモデルとOptimizerの状態を記録したファイルを保存します。
 
