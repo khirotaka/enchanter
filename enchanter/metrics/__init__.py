@@ -1,6 +1,7 @@
 from .classification import *
+from .authentication import *
 
 
 __all__ = [
-    "accuracy"
+    "accuracy", "calculate_eer"
 ]
