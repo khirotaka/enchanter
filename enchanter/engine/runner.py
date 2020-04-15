@@ -538,7 +538,8 @@ class BaseRunner(base.BaseEstimator, ABC):
         """
         if directory is None and self._checkpoint_path is not None:
             directory = self._checkpoint_path
-        else:
+
+        elif directory is None and self._checkpoint_path is None:
             raise ValueError("The argument `directory` must be specified.")
 
         directory = Path(directory)
