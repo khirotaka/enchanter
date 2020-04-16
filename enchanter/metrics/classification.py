@@ -11,11 +11,11 @@ import torch
 
 
 __all__ = [
-    "accuracy"
+    "calculate_accuracy"
 ]
 
 
-def accuracy(inputs, targets):
+def calculate_accuracy(inputs, targets):
     """
     バッチ処理向けの精度計算関数。
     分類度を Python float で返します。

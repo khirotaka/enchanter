@@ -32,7 +32,7 @@ class RegressionRunner(enchanter.engine.BaseRunner):
         >>> runner.fit(x, y, epochs=1, batch_size=32)
     """
     def __init__(self, model, optimizer, criterion, experiment, scheduler=None, early_stop=None):
-        enchanter.engine.BaseRunner.__init__(self)
+        super().__init__()
         self.model = model
         self.optimizer = optimizer
         self.criterion = criterion
