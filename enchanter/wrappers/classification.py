@@ -11,7 +11,7 @@
 import torch
 import enchanter
 import enchanter.engine.modules as modules
-from enchanter.metrics import accuracy as accuracy_func
+from enchanter.metrics import calculate_accuracy as calculate_accuracy
 
 
 __all__ = [
@@ -42,7 +42,7 @@ class ClassificationRunner(enchanter.engine.BaseRunner):
 
     """
     def __init__(self, model, optimizer, criterion, experiment, scheduler=None, early_stop=None):
-        enchanter.engine.BaseRunner.__init__(self)
+        super().__init__()
         self.model = model
         self.optimizer = optimizer
         self.experiment = experiment
@@ -54,7 +54,7 @@ class ClassificationRunner(enchanter.engine.BaseRunner):
         x, y = batch
         out = self.model(x)
         loss = self.criterion(out, y)
-        accuracy = accuracy_func(out, y)
+        accuracy = calculate_accuracy(out, y)
         return {"loss": loss, "accuracy": accuracy}
 
     def train_end(self, outputs):
