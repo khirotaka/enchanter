@@ -15,14 +15,15 @@ Enchanter with Hydra
 
 .. code-block:: sh
 
-    config/
-      ├── config.yaml
-      ├── model
-      │    ├── mlp1.yaml
-      │    └── mlp2.yaml
-      ├── optimizer
-      │    └── adam.yaml
-      └── with_hydra.py
+    examples/
+        ├── config/
+        │     ├── config.yaml
+        │     ├── model/
+        │     │     ├── mlp1.yaml
+        │     │     └── mlp2.yaml
+        │     └── optimizer/
+        │           └── adam.yaml
+        └── with_hydra.py
 
 それぞれのファイルの中身は以下のようにして下さい。
 
