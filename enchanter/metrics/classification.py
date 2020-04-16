@@ -25,7 +25,7 @@ def calculate_accuracy(inputs, targets):
         targets (torch.Tensor): shape == [N]
 
     Returns:
-        分類精度 (torch.Tensor)
+        分類精度 (float)
     """
     with torch.no_grad():
         total = targets.shape[0]
