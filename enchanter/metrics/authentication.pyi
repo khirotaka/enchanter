@@ -1,0 +1,3 @@
+import numpy as np
+
+def calculate_eer(y_true: np.ndarray, y_score: np.ndarray) -> float: ...

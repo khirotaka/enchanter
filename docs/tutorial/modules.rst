@@ -28,6 +28,7 @@ Advanced Usage
    :maxdepth: 1
 
    custom_runner
+   with_hydra
 
 
 Model Optimization
