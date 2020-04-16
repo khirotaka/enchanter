@@ -3,5 +3,5 @@ from .authentication import *
 
 
 __all__ = [
-    "accuracy", "calculate_eer"
+    "calculate_accuracy", "calculate_eer"
 ]
