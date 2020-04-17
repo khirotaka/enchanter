@@ -81,4 +81,8 @@ html_theme_options = {
     'color_accent': 'cyan',
     'repo_url': 'https://github.com/khirotaka/enchanter',
     'repo_name': 'Enchanter',
+    'heroes': {
+        "index": "Enchanter is a library for machine learning tasks for comet.ml users."
+    },
+    "theme_color": "#2196f3"
 }
