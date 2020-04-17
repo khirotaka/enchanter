@@ -12,7 +12,8 @@
 #
 import os
 import sys
-import sphinx_materialdesign_theme
+# import sphinx_materialdesign_theme
+import sphinx_material
 sys.path.insert(0, os.path.abspath('../'))
 
 
@@ -36,6 +37,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "sphinx_material"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -59,8 +61,10 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_materialdesign_theme'
-html_theme_path = [sphinx_materialdesign_theme.get_path()]
+# html_theme = 'sphinx_materialdesign_theme'
+html_theme = "sphinx_material"
+html_theme_path = sphinx_material.html_theme_path()
+html_context = sphinx_material.get_html_context()
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -72,12 +76,9 @@ master_doc = 'index'
 highlight_language = "python"
 
 html_theme_options = {
-    'header_links': [
-        ("Home", "index", False, "home"),
-        ("GitHub", "https://github.com/khirotaka/enchanter", True, "link")
-    ],
-    'fixed_drawer': True,
-    'fixed_header': True,
-    'header_waterfall': True,
-    'header_scroll': False,
+    'nav_title': 'Enchanter documentation',
+    'color_primary': 'blue',
+    'color_accent': 'light-blue',
+    'repo_url': 'https://github.com/khirotaka/enchanter',
+    'repo_name': 'Enchanter',
 }
