@@ -1,0 +1,1 @@
+jupyter-sphinx-theme==0.0.6

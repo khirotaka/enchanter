@@ -1,19 +1,19 @@
 enchanter.engine
 ========================
 
-enchanter.engine.modules
--------------------------------
+enchanter.engine.BaseRunner
+----------------------------
 
-.. automodule:: enchanter.engine.modules
+.. automodule:: enchanter.engine
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-enchanter.engine.BaseRunner
-----------------------------
+enchanter.engine.modules
+-------------------------------
 
-.. automodule:: enchanter.engine
+.. automodule:: enchanter.engine.modules
    :members:
    :undoc-members:
    :show-inheritance:
