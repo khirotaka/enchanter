@@ -1,1 +1,1 @@
-jupyter-sphinx-theme==0.0.6
+sphinx_materialdesign_theme=0.1.11

@@ -12,7 +12,7 @@
 #
 import os
 import sys
-from jupyter_sphinx_theme import *
+import sphinx_materialdesign_theme
 sys.path.insert(0, os.path.abspath('../'))
 
 
@@ -59,8 +59,8 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-# html_theme = 'sphinx_rtd_theme'
-pygments_style = 'sphinx'
+html_theme = 'sphinx_materialdesign_theme'
+html_theme_path = [sphinx_materialdesign_theme.get_path()]
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -71,4 +71,13 @@ master_doc = 'index'
 
 highlight_language = "python"
 
-init_theme()
+html_theme_options = {
+    'header_links': [
+        ("Home", "index", False, "home"),
+        ("GitHub", "https://github.com/khirotaka/enchanter", True, "link")
+    ],
+    'fixed_drawer': True,
+    'fixed_header': True,
+    'header_waterfall': True,
+    'header_scroll': False,
+}
