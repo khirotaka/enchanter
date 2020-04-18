@@ -5,6 +5,14 @@
 
 Enchanter documentation
 =======================
+
+.. image:: _static/images/Enchanter-Logo-black.png
+   :height: 250px
+   :width: 250px
+   :scale: 80%
+   :align: center
+   :target: .
+
 Enchanter is a library for machine learning tasks for comet.ml users.
 
 .. image:: https://api.codacy.com/project/badge/Grade/84197fb283924f02a1667cea49dd031a
