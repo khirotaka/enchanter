@@ -31,6 +31,7 @@ author = 'Hirotaka Kawashima'
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    'sphinx.ext.autosectionlabel',
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
@@ -71,6 +72,7 @@ html_context = sphinx_material.get_html_context()
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+autoclass_content = 'both'
 master_doc = 'index'
 
 highlight_language = "python"
@@ -84,5 +86,10 @@ html_theme_options = {
     'heroes': {
         "index": "Enchanter is a library for machine learning tasks for comet.ml users."
     },
-    "theme_color": "#2196f3"
+    "theme_color": "#2196f3",
+
+}
+
+html_sidebars = {
+    "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
 }

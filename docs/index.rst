@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Enchanter documentation
-------------------------
+=======================
 Enchanter is a library for machine learning tasks for comet.ml users.
 
 .. image:: https://api.codacy.com/project/badge/Grade/84197fb283924f02a1667cea49dd031a
@@ -28,7 +28,7 @@ Enchanter is a library for machine learning tasks for comet.ml users.
 
 
 Installation
-============
+=============
 
 Install the latest version of Enchanter with ``pip``.
 
@@ -38,19 +38,18 @@ Install the latest version of Enchanter with ``pip``.
 
 
 Documentation
-==============
+===============
 
 .. toctree::
    :maxdepth: 3
-   :caption: Contents:
 
    source/modules
    tutorial/modules
 
 
-Indices and tables
-==================
+Index
+=======================
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
+
