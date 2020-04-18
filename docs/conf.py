@@ -12,6 +12,7 @@
 #
 import os
 import sys
+import sphinx_material
 sys.path.insert(0, os.path.abspath('../'))
 
 
@@ -30,10 +31,13 @@ author = 'Hirotaka Kawashima'
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    'sphinx.ext.autosectionlabel',
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.viewcode",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "sphinx_material"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -57,13 +61,35 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+
+html_title = "Enchanter documentation"
+html_theme = "sphinx_material"
+html_theme_path = sphinx_material.html_theme_path()
+html_context = sphinx_material.get_html_context()
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+autoclass_content = 'both'
 master_doc = 'index'
 
 highlight_language = "python"
+
+html_theme_options = {
+    'nav_title': 'Enchanter',
+    'color_primary': 'blue',
+    'color_accent': 'cyan',
+    'repo_url': 'https://github.com/khirotaka/enchanter',
+    'repo_name': 'Enchanter',
+    'heroes': {
+        "index": "Enchanter is a library for machine learning tasks for comet.ml users."
+    },
+    "theme_color": "#2196f3",
+
+}
+
+html_sidebars = {
+    "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
+}
