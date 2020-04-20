@@ -2,6 +2,7 @@ enchanter
 =================
 
 .. toctree::
+    :maxdepth: 2
 
     enchanter.addons
     enchanter.addons.layers

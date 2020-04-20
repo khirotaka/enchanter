@@ -14,6 +14,28 @@ enchanter.engine.modules
 -------------------------------
 
 .. automodule:: enchanter.engine.modules
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. currentmodule:: enchanter.engine.modules
+
+
+`is_jupyter`
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: is_jupyter
+
+
+`numpy2tensor`
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: numpy2tensor
+
+
+`get_dataset`
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: get_dataset
+
+`fix_seed`
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: fix_seed
+
