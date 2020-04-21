@@ -6,7 +6,7 @@
 Enchanter documentation
 =======================
 
-.. image:: _static/images/Enchanter-Logo-black.png
+.. image:: _static/images/Enchanter-Logo-black-small.png
    :height: 250px
    :width: 250px
    :scale: 80%
