@@ -1,1 +1,1 @@
-sphinx-material==0.0.25
+sphinx-material==0.0.26
