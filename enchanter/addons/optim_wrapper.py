@@ -17,8 +17,10 @@ __all__ = [
 
 class TransformerOptimizer:
     """
-    Reference: `jadore801120/attention-is-all-you-need-pytorch \
-    <https://github.com/jadore801120/attention-is-all-you-need-pytorch/blob/master/transformer/Optim.py>`_
+    Reference:
+        `jadore801120/attention-is-all-you-need-pytorch \
+        <https://github.com/jadore801120/attention-is-all-you-need-pytorch/blob/master/transformer/Optim.py>`_
+
     """
     def __init__(self, optimizer, d_model, warm_up):
         self._optimizer = optimizer
