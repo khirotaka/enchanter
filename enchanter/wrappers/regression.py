@@ -8,8 +8,10 @@
 # ***************************************************
 
 import torch
-import enchanter
 from sklearn.metrics import r2_score
+from sklearn.base import RegressorMixin
+
+import enchanter
 import enchanter.engine.modules as modules
 
 
@@ -18,7 +20,7 @@ __all__ = [
 ]
 
 
-class RegressionRunner(enchanter.engine.BaseRunner):
+class RegressionRunner(enchanter.engine.BaseRunner, RegressorMixin):
     """
     回帰問題を対象にしたRunner。
 

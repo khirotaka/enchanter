@@ -9,6 +9,8 @@
 
 
 import torch
+from sklearn.base import ClassifierMixin
+
 import enchanter
 import enchanter.engine.modules as modules
 from enchanter.metrics import calculate_accuracy as calculate_accuracy
@@ -19,7 +21,7 @@ __all__ = [
 ]
 
 
-class ClassificationRunner(enchanter.engine.BaseRunner):
+class ClassificationRunner(enchanter.engine.BaseRunner, ClassifierMixin):
     """
     分類タスク向けの Runner です。
 
