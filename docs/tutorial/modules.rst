@@ -4,7 +4,6 @@ Tutorials
 ==================
 
 Welcome to Enchanter tutorials
--------------------------------
 
 Enchanterの使い方を学ぶ為に、以下のチュートリアルに挑戦しましょう。
 

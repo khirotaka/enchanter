@@ -1,0 +1,8 @@
+<div id="toc" class="sidebarRow">
+
+{%- if sphinx_version[:3] >= '1.2' %}
+{{ toctree (maxdepth=2, collapse=False, includehidden=True) }}
+{% else %}
+{{ toctree(maxdepth=2, collapse=False) }}
+{% endif %}
+</div>
