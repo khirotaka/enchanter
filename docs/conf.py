@@ -30,8 +30,6 @@ author = 'Hirotaka Kawashima'
 # ones.
 extensions = [
     "autoapi.extension",
-    "sphinx.ext.autosummary",
-    'sphinx.ext.autosectionlabel',
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
