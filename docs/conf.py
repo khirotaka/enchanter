@@ -29,16 +29,18 @@ author = 'Hirotaka Kawashima'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinx.ext.autodoc",
+    "autoapi.extension",
     "sphinx.ext.autosummary",
     'sphinx.ext.autosectionlabel',
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.viewcode",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinx_material"
 ]
+
+autoapi_dirs = ['../enchanter']
+autoapi_generate_api_docs = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

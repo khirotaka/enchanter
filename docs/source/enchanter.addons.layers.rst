@@ -1,3 +1,5 @@
+:tocdepth: 2
+
 enchanter.addons.layers
 ===============================
 
@@ -27,6 +29,7 @@ enchanter.addons.layers
     :members:
     :undoc-members:
     :show-inheritance:
+
 
 `SELayer1d`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
