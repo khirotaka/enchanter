@@ -7,7 +7,8 @@ formats:
   - pdf
 
 python:
-   setup_py_install: true
    version: 3.7
    install:
      - requirements: docs/requirements.txt
+     - method: setuptools
+     path: .
