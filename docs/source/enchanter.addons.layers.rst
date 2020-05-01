@@ -53,3 +53,11 @@ enchanter.addons.layers
     :members:
     :undoc-members:
     :show-inheritance:
+
+
+`CausalConv1d`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. autoclass:: CausalConv1d
+    :members:
+    :undoc-members:
+    :show-inheritance:
