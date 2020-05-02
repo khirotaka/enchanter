@@ -10,10 +10,10 @@ If you are interested in contributing to Enchanter, your contributions will fall
 Post about your intended feature, and we shall discuss the design and implementation. 
 Once we agree that the plan looks good, go ahead and implement it.
 
-1.  You want to implement a feature or bug-fix for an outstanding issue.
-    * Search for your issue here: https://github.com/khirotaka/enchanter/issues
-    * Pick an issue and comment on the task that you want to work on this feature.
-    * If you need more context on a particular issue, please ask and we shall provide.
+2.  You want to implement a feature or bug-fix for an outstanding issue.
+    *   Search for your issue here: https://github.com/khirotaka/enchanter/issues
+    *   Pick an issue and comment on the task that you want to work on this feature.
+    *   If you need more context on a particular issue, please ask and we shall provide.
 
 ## Developing Enchanter
 To develop Enchanter on your machine
@@ -47,12 +47,12 @@ Enchanter uses Google style for formatting docstrings.
 To build the documentation
 
 1.  Build and install Enchanter
-1.  Install the requirements
+2.  Install the requirements
 ```shell script
 cd docs/
 pip install -r requirements.txt
 ```
-1.  Generate the documentation HTML files.
+3.  Generate the documentation HTML files.
 
 ```shell script
 make html
