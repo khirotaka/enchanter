@@ -4,6 +4,14 @@ API
 ==================
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 1
 
-   enchanter
+    enchanter.addons
+    enchanter.addons.layers
+    enchanter.callbacks
+    enchanter.engine
+    enchanter.metrics
+    enchanter.preprocessing
+    enchanter.utils
+    enchanter.wrappers
+

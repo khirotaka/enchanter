@@ -1,3 +1,5 @@
+:tocdepth: 2
+
 enchanter.addons.layers
 ===============================
 
@@ -28,6 +30,7 @@ enchanter.addons.layers
     :undoc-members:
     :show-inheritance:
 
+
 `SELayer1d`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autoclass:: SELayer1d
@@ -47,6 +50,14 @@ enchanter.addons.layers
 `DenseInterpolation`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autoclass:: DenseInterpolation
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+`CausalConv1d`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. autoclass:: CausalConv1d
     :members:
     :undoc-members:
     :show-inheritance:

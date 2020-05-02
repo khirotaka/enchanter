@@ -1,3 +1,5 @@
+:tocdepth: 3
+
 enchanter.wrappers
 ==========================
 
@@ -6,8 +8,8 @@ enchanter.wrappers
 .. currentmodule:: enchanter.wrappers
 
 
-Classification
----------------
+Classification Task
+--------------------
 
 `ClassificationRunner`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -18,7 +20,7 @@ Classification
     :show-inheritance:
 
 
-Regression
+Regression Task
 ---------------
 
 `RegressionnRunner`

@@ -10,7 +10,6 @@ X = torch.randn(512, 10).numpy()
 Y = torch.randint(0, 9, (512,)).numpy()
 
 
-
 class Runner1(enchanter.engine.BaseRunner):
     def __init__(self):
         super(Runner1, self).__init__()
