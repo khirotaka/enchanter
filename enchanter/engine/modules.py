@@ -22,7 +22,7 @@ def is_jupyter():
     """
     実行中の環境が Jupyter Notebookかどうかを判定します。
 
-    Returns (bool) :
+    Returns:
         True if run on jupyrer notebook else False
 
     """

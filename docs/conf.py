@@ -15,6 +15,7 @@ import sys
 import sphinx_material
 sys.path.insert(0, os.path.abspath('../'))
 
+import enchanter
 
 # -- Project information -----------------------------------------------------
 
@@ -29,16 +30,16 @@ author = 'Hirotaka Kawashima'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.autosummary",
-    'sphinx.ext.autosectionlabel',
+    "autoapi.extension",
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.viewcode",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinx_material"
 ]
+
+autoapi_dirs = ['../enchanter']
+autoapi_generate_api_docs = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -66,6 +67,7 @@ html_title = "Enchanter documentation"
 html_theme = "sphinx_material"
 html_theme_path = sphinx_material.html_theme_path()
 html_context = sphinx_material.get_html_context()
+html_logo = "_static/images/Enchanter-Logo.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -91,5 +93,5 @@ html_theme_options = {
 }
 
 html_sidebars = {
-    "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
+    "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html", "globaltoc.html"]
 }

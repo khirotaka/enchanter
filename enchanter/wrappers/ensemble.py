@@ -13,7 +13,6 @@ import torch
 import numpy as np
 from sklearn.base import BaseEstimator
 
-from enchanter.engine.runner import BaseRunner
 from enchanter.engine import modules
 
 
@@ -23,12 +22,12 @@ __all__ = [
 
 
 class BaseEnsembleEstimator(BaseEstimator):
-    def __init__(self, runners: List[BaseRunner], mode: str = None):
+    def __init__(self, runners, mode=None):
         self.runners = runners
         self.mode = mode
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    def predict(self, x) -> List[np.ndarray]:
+    def predict(self, x):
         x = modules.numpy2tensor(x).to(self.device)
 
         predicts = []
@@ -43,7 +42,7 @@ class SoftEnsemble(BaseEnsembleEstimator):
     確率の平均をとるアンサンブル
     """
 
-    def predict(self, x) -> np.ndarray:
+    def predict(self, x):
         """
 
         Args:
@@ -70,7 +69,7 @@ class HardEnsemble(BaseEnsembleEstimator):
     def __init__(self, runners: List):
         super().__init__(runners, mode="classification")
 
-    def predict(self, x) -> np.ndarray:
+    def predict(self, x):
         """
 
         Args:
