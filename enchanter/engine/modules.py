@@ -81,6 +81,22 @@ def get_dataset(x, y=None):
     return ds
 
 
+def send(batch, device):
+    """
+    Send `variable` to `device`
+
+    Args:
+        batch: Tuple which contain variable
+        device: torch.device
+
+    Returns:
+        new tuple
+
+    """
+
+    return tuple(map(lambda x: x.to(device) if isinstance(x, torch.Tensor) else x, batch))
+
+
 def fix_seed(seed):
     """
     PyTorch, NumPy, Pure Python Random のSEED値を一括固定します。

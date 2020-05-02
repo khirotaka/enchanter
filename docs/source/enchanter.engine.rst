@@ -41,3 +41,7 @@ enchanter.engine.modules
 
 .. autofunction:: fix_seed
 
+`send`
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: send
