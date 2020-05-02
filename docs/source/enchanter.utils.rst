@@ -13,10 +13,10 @@ enchanter.utils.comet
    :show-inheritance:
 
 
-enchanter.utils.functions
+enchanter.utils.backend
 ----------------------------
 
-.. automodule:: enchanter.utils.functions
+.. automodule:: enchanter.utils.backend
    :members:
    :undoc-members:
    :show-inheritance:

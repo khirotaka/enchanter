@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from enchanter.utils import functions as ef
+from enchanter.utils import backend as bf
 
 
 __all__ = [
@@ -58,6 +58,6 @@ class CausalConv1d(nn.Module):
             out = self.activation(out)
 
         if self.kernel_size > 0:
-            out = ef.slice_axis(out, axis=2, begin=0, end=-self.padding)
+            out = bf.slice_axis(out, axis=2, begin=0, end=-self.padding)
 
         return out
