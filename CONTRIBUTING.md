@@ -11,7 +11,7 @@ Post about your intended feature, and we shall discuss the design and implementa
 Once we agree that the plan looks good, go ahead and implement it.
 
 2.  You want to implement a feature or bug-fix for an outstanding issue.
-    *   Search for your issue here: https://github.com/khirotaka/enchanter/issues
+    *   Search for your issue here: [https://github.com/khirotaka/enchanter/issues](https://github.com/khirotaka/enchanter/issues)
     *   Pick an issue and comment on the task that you want to work on this feature.
     *   If you need more context on a particular issue, please ask and we shall provide.
 
