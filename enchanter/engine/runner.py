@@ -172,7 +172,7 @@ class BaseRunner(base.BaseEstimator, ABC):
         with self.experiment.train():
             for step, batch in enumerate(loader):
                 self.optimizer.zero_grad()
-                batch = tuple(map(lambda x: x.to(self.device), batch))
+                batch = modules.send(batch, self.device)
                 # on_step_start()
                 outputs = self.train_step(batch)
                 outputs["loss"].backward()
@@ -215,7 +215,7 @@ class BaseRunner(base.BaseEstimator, ABC):
         with self.experiment.validate():
             with torch.no_grad():
                 for step, batch in enumerate(loader):
-                    batch = tuple(map(lambda x: x.to(self.device), batch))
+                    batch = modules.send(batch, self.device)
                     # on_step_start()
                     outputs = self.val_step(batch)        # pylint: disable=E1111
 
@@ -255,7 +255,7 @@ class BaseRunner(base.BaseEstimator, ABC):
         with self.experiment.test():
             with torch.no_grad():
                 for step, batch in enumerate(loader):
-                    batch = tuple(map(lambda x: x.to(self.device), batch))
+                    batch = modules.send(batch, self.device)
                     # on_step_start()
                     outputs = self.test_step(batch)        # pylint: disable=E1111
 
