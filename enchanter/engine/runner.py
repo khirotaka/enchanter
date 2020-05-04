@@ -279,13 +279,12 @@ class BaseRunner(base.BaseEstimator, ABC):
                     self._metrics.update(dic)
                     self.experiment.log_metrics(dic)
 
-    def train_config(self, epochs, *args, **kwargs):
+    def train_config(self, epochs, **kwargs):
         """
         .run() メソッドを用いて訓練を行う際に、 epochs などを指定する為のメソッドです。
 
         Args:
             epochs (int):
-            *args:
             **kwargs:
 
         Returns:
