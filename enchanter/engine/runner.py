@@ -178,10 +178,11 @@ class BaseRunner(base.BaseEstimator, ABC):
                 outputs["loss"].backward()
                 self.optimizer.step()
 
-                per = "{:1.0%}".format(step / loader_size)
-                self.pbar.set_postfix(
-                    OrderedDict(train_batch=per), refresh=True
-                )
+                if hasattr(self.pbar, "set_postfix"):
+                    per = "{:1.0%}".format(step / loader_size)
+                    self.pbar.set_postfix(
+                        OrderedDict(train_batch=per), refresh=True
+                    )
 
                 outputs = {
                     key: outputs[key].detach().cpu() if isinstance(outputs[key], torch.Tensor) else outputs[key]
@@ -219,10 +220,11 @@ class BaseRunner(base.BaseEstimator, ABC):
                     # on_step_start()
                     outputs = self.val_step(batch)        # pylint: disable=E1111
 
-                    per = "{:1.0%}".format(step / loader_size)
-                    self.pbar.set_postfix(
-                        OrderedDict(val_batch=per), refresh=True
-                    )
+                    if hasattr(self.pbar, "set_postfix"):
+                        per = "{:1.0%}".format(step / loader_size)
+                        self.pbar.set_postfix(
+                            OrderedDict(val_batch=per), refresh=True
+                        )
 
                     outputs = {
                         key: outputs[key].cpu() if isinstance(outputs[key], torch.Tensor) else outputs[key]
@@ -260,9 +262,11 @@ class BaseRunner(base.BaseEstimator, ABC):
                     outputs = self.test_step(batch)        # pylint: disable=E1111
 
                     per = "{:1.0%}".format(step / loader_size)
-                    self.pbar.set_postfix(
-                        OrderedDict(test_batch=per), refresh=True
-                    )
+                    if hasattr(self.pbar, "set_postfix"):
+                        self.pbar.set_postfix(
+                            OrderedDict(test_batch=per), refresh=True
+                        )
+                        self.pbar.update(1)
 
                     outputs = {
                         key: outputs[key].cpu() if isinstance(outputs[key], torch.Tensor) else outputs[key]
@@ -368,7 +372,7 @@ class BaseRunner(base.BaseEstimator, ABC):
 
                 if self.scheduler:
                     self.scheduler.step(epoch=None)
-                    self.experiment.log_metric("scheduler_lr", self.scheduler.get_last_lr(), epoch=epoch)
+                    self.experiment.log_metric("scheduler_lr", self.scheduler.get_lr(), epoch=epoch)
 
                 if self.early_stop:
                     if self.early_stop.on_epoch_end(self._metrics, epoch):
@@ -380,6 +384,7 @@ class BaseRunner(base.BaseEstimator, ABC):
 
         if "test" in self.loaders:
             # on_test_start()
+            self.pbar = tqdm(total=len(self.loaders["test"]), desc="Evaluating") if verbose else None
             self.test_cycle(self.loaders["test"])
             # on_test_end()
 
