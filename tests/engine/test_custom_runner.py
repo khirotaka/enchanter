@@ -75,6 +75,23 @@ def test_custom_runner_1():
 
 def test_custom_runner_2():
     runner = Runner2()
+    ds = enchanter.engine.modules.get_dataset(X, Y)
+    loader = DataLoader(ds, batch_size=32)
+
+    try:
+        runner.add_loader("test", loader)
+        runner.run()
+        is_pass = True
+
+    except Exception as e:
+        print(e)
+        is_pass = False
+
+    assert is_pass
+
+
+def test_custom_runner_3():
+    runner = Runner2()
 
     ds = enchanter.engine.modules.get_dataset(X, Y)
     loader = DataLoader(ds, batch_size=32)

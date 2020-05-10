@@ -24,7 +24,7 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='enchanter',
-    version='0.5.1-rc1',
+    version='0.5.1-rc2',
     packages=[
         'enchanter', 'enchanter.addons', 'enchanter.addons.layers',
         'enchanter.callbacks', 'enchanter.engine', 'enchanter.metrics',
