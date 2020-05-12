@@ -1,16 +1,43 @@
 :tocdepth: 3
 
 enchanter.preprocessing
-==========================
+==============================
 
-.. automodule:: enchanter.preprocessing
-.. currentmodule:: enchanter.preprocessing
+Signal
+-------------------------------
 
-Time Series
-------------
+Transforms
+~~~~~~~~~~
+
+.. automodule:: enchanter.preprocessing.signal.transforms
+.. currentmodule:: enchanter.preprocessing.signal.transforms
+
+`Compose`
+^^^^^^^^^^^^^^^^
+
+.. autoclass:: Compose
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+`FixedWindow`
+^^^^^^^^^^^^^^^^
+
+.. autoclass:: FixedWindow
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Functions
+~~~~~~~~~~
+
+.. automodule:: enchanter.preprocessing.signal
+.. currentmodule:: enchanter.preprocessing.signal
 
 `FixedSlidingWindow`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: FixedSlidingWindow
     :members:
@@ -19,6 +46,6 @@ Time Series
 
 
 `adjust_sequences`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: adjust_sequences

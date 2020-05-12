@@ -1,6 +1,6 @@
-from .signal import *
+from . import signal
 
 
 __all__ = [
-    "FixedSlidingWindow", "adjust_sequences"
+    "signal"
 ]
