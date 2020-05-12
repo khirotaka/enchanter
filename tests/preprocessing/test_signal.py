@@ -1,5 +1,5 @@
 import numpy as np
-from enchanter.preprocessing import FixedSlidingWindow, adjust_sequences
+from enchanter.preprocessing import signal
 
 
 def test_fsw_1():
@@ -7,7 +7,7 @@ def test_fsw_1():
     y = np.random.randint(0, 9, 200)
     try:
         error_occur = False
-        sw = FixedSlidingWindow(256, overlap_rate=0.5)
+        sw = signal.FixedSlidingWindow(256, overlap_rate=0.5)
         x, y = sw(x, y)
     except Exception:
         error_occur = True
@@ -18,7 +18,7 @@ def test_fsw_1():
 def test_fsw_2():
     x = np.random.randn(1024, 23)
     y = np.random.randint(0, 9, 1024)
-    sw = FixedSlidingWindow(256, overlap_rate=0.5)
+    sw = signal.FixedSlidingWindow(256, overlap_rate=0.5)
     x, y = sw(x, y)
     assert isinstance(x, np.ndarray) and isinstance(y, np.ndarray)
 
@@ -30,7 +30,7 @@ def test_adjust_sequences_1():
         np.random.randn(100, 5),
     ]
     max_len = max([i.shape[0] for i in x])
-    new = adjust_sequences(x)
+    new = signal.adjust_sequences(x)
     assert max_len == new.shape[1]
 
 
@@ -41,7 +41,7 @@ def test_adjust_sequences_2():
         np.random.randn(100, 5),
     ]
     min_len = min([i.shape[0] for i in x])
-    new = adjust_sequences(x, np.min)
+    new = signal.adjust_sequences(x, np.min)
     assert min_len == new.shape[1]
 
 
@@ -52,7 +52,7 @@ def test_adjust_sequences_3():
         np.random.randn(100, 5),
     ]
 
-    new = adjust_sequences(x, 64)
+    new = signal.adjust_sequences(x, 64)
     assert new.shape[1] == 64
 
 
@@ -63,7 +63,7 @@ def test_adjust_sequences_4():
         np.random.randn(100, 5),
     ]
 
-    new = adjust_sequences(x, dtype=np.int64)
+    new = signal.adjust_sequences(x, dtype=np.int64)
     assert new.dtype == np.int64
 
 
@@ -74,7 +74,7 @@ def test_adjust_sequences_5():
         np.random.randn(100, 5),
     ]
 
-    new = adjust_sequences(x, dtype=np.float64)
+    new = signal.adjust_sequences(x, dtype=np.float64)
     assert new.dtype == np.float64
 
 
@@ -85,7 +85,7 @@ def test_adjust_sequences_6():
         np.random.randn(100, 5),
     ]
     try:
-        new = adjust_sequences(x, fill=0)
+        new = signal.adjust_sequences(x, fill=0)
         passed = True
     except Exception:
         passed = False
@@ -100,7 +100,7 @@ def test_adjust_sequences_7():
         np.random.randn(100, 5),
     ]
     try:
-        new = adjust_sequences(x, fill=0.0)
+        new = signal.adjust_sequences(x, fill=0.0)
         passed = True
     except Exception:
         passed = False
@@ -116,7 +116,7 @@ def test_adjust_sequences_8():
     ]
     passed = False
     try:
-        new = adjust_sequences(x, fill="Something")
+        new = signal.adjust_sequences(x, fill="Something")
     except TypeError:
         passed = True
 
