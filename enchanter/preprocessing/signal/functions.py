@@ -26,6 +26,7 @@ __all__ = [
 
 class FixedSlidingWindow:
     """Fixed sliding window.
+
     Examples::
 
         >>> import numpy as np
@@ -41,6 +42,7 @@ class FixedSlidingWindow:
         window_size: int
         overlap_rate: float
         step_size: int (default, None)
+
     Raises:
         AssertionError: an error occur when
             argument overlap_rate under 0.0 or over 1.0.n error occurred.
@@ -48,10 +50,12 @@ class FixedSlidingWindow:
     def __init__(self, window_size, overlap_rate, step_size=None):
         """
         Initializer of FixedSlidingWindow.
+
         Args:
             window_size: int
             overlap_rate: float
             step_size: int (default, None)
+
         """
         self.window_size = window_size
 
@@ -66,9 +70,11 @@ class FixedSlidingWindow:
 
     def transform(self, inputs, verbose=False):
         """
+
         Args:
             inputs: 2 or 3 dim of np.ndarray
             verbose: if True, show progress bar
+
         Returns:
             np.ndarray
         """
