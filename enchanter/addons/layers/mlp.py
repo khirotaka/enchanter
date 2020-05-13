@@ -20,6 +20,13 @@ class MLP(nn.Module):
     """
     MLPを作成するクラス
 
+    Args:
+        shapes (List[int]): MLPの各層におけるニューロン数。int型の要素で構成される配列を想定。
+                与えられる配列の第0番目の要素の値はモデルへの入力次元の数として扱われます。
+
+        activation (Union[Callable[[torch.Tensor], torch.Tensor], nn.Module]): 活性化関数。
+                    torch.relu や enchanter.addons.Mish() 等の微分可能な Callableなオブジェクト
+
     Examples:
         >>> import enchanter.addons as addons
         >>> model = addons.layers.MLP([10, 512, 128, 5], addons.Mish())
@@ -31,15 +38,6 @@ class MLP(nn.Module):
         >>> #)
     """
     def __init__(self, shapes, activation=torch.relu):
-        """
-
-        Args:
-            shapes (List[int]): MLPの各層におけるニューロン数。int型の要素で構成される配列を想定。
-                    与えられる配列の第0番目の要素の値はモデルへの入力次元の数として扱われます。
-
-            activation (Union[Callable[[torch.Tensor], torch.Tensor], nn.Module]): 活性化関数。
-                        torch.relu や enchanter.addons.Mish() 等の微分可能な Callableなオブジェクト
-        """
         super().__init__()
         self.layers = []
         self.activation = activation
@@ -62,19 +60,24 @@ class PositionWiseFeedForward(nn.Module):
     """
     Attention is all you need. で提案された PositionWiseFeedForward の 1×1 Conv1d を使ったバージョン
 
+
+    Args:
+        d_model: the number of expected features in the Position Wise Feed Forward inputs.
+
     Examples:
         >>> import torch
         >>> import enchanter.addons as addons
         >>> x = torch.randn(1, 128, 512)    # [N, seq_len, features]
         >>> ff = addons.layers.PositionWiseFeedForward(512)
         >>> out = ff(x)
+
     """
-    def __init__(self, hidden_size):
+    def __init__(self, d_model):
         super().__init__()
         self.conv = nn.Sequential(
-            nn.Conv1d(hidden_size, hidden_size*2, 1),
+            nn.Conv1d(d_model, d_model*2, 1),
             nn.ReLU(),
-            nn.Conv1d(hidden_size*2, hidden_size, 1)
+            nn.Conv1d(d_model*2, d_model, 1)
         )
 
     def forward(self, x):

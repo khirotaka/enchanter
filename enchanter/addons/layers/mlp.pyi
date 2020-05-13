@@ -17,7 +17,7 @@ class MLP(nn.Module):
 
 class PositionWiseFeedForward(nn.Module):
     conv: nn.Module
-    def __init__(self, hidden_size: int) -> None:
+    def __init__(self, d_model: int) -> None:
         super().__init__()
         ...
     def forward(self, x: torch.Tensor) -> torch.Tensor: ...
