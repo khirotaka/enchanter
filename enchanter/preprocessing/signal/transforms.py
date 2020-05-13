@@ -41,18 +41,25 @@ class FixedWindow:
 
     """
     def __init__(self, window_size, start_position=None):
-        self.window_size = window_size
+        if isinstance(window_size, int):
+            self.window_size = window_size
+        else:
+            raise TypeError("`window_size` must be integer.")
+
         self.start_position = start_position
 
     def __call__(self, data):
         seq_len = data.shape[0]
 
         if not seq_len > self.window_size:
-            raise Exception("window size must be smaller then input sequence length.")
+            raise Exception("`window size` must be smaller then input sequence length.")
 
         if not self.start_position:
             start = random.choice([i for i in range(seq_len - self.window_size)])
         else:
-            start = self.start_position
+            if (seq_len - self.window_size) >= self.start_position:
+                start = self.start_position
+            else:
+                raise IndexError("The start position must be in the range 0 ~ (seq_len - window_size).")
 
         return data[start:start+self.window_size]

@@ -18,6 +18,13 @@ __all__ = [
 
 
 class DenseInterpolation(nn.Module):
+    """
+
+    Args:
+        seq_len: length of input sequence.
+        factor:
+
+    """
     def __init__(self, seq_len, factor):
         super().__init__()
         W = np.zeros((factor, seq_len), dtype=np.float32)
