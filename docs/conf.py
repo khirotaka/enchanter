@@ -90,6 +90,12 @@ html_theme_options = {
     },
     "theme_color": "#2196f3",
 
+    "version_dropdown": True,
+    "version_json": "_static/versions.json",
+    "version_info": {
+        "Release": "https://enchanter.readthedocs.io/ja/latest/",
+        "Development": "https://enchanter.readthedocs.io/ja/develop/",
+    },
 }
 
 html_sidebars = {
