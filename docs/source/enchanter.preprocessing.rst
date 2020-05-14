@@ -30,6 +30,23 @@ Transforms
     :show-inheritance:
 
 
+`GaussianNoise`
+^^^^^^^^^^^^^^^^
+
+.. autoclass:: GaussianNoise
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+`RandomScaling`
+^^^^^^^^^^^^^^^^
+
+.. autoclass:: RandomScaling
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 Functions
 ~~~~~~~~~~
 

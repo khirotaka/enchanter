@@ -9,9 +9,14 @@ class Compose:
         transforms (list of ``Transform`` objects): list of transforms to compose.
 
     Examples:
-        >>> Compose([
-        >>>     FixedWindow(128)
+        >>> import torch
+        >>> x = torch.randn(512, 10)
+        >>> transform = Compose([
+        >>>     FixedWindow(128),
+        >>>     GaussianNoise(),
+        >>>     RandomScaling()
         >>> ])
+        >>> y = transform(x)
 
     """
     def __init__(self, transforms):
@@ -63,3 +68,54 @@ class FixedWindow:
                 raise IndexError("The start position must be in the range 0 ~ (seq_len - window_size).")
 
         return data[start:start+self.window_size]
+
+
+class GaussianNoise:
+    """
+    Apply gaussian noise to input data.
+
+    Examples:
+        >>> import torch
+        >>> x = torch.randn(512, 10)
+        >>> noise = GaussianNoise()
+        >>> y = noise(x)
+
+    Args:
+        sigma: 正規分布の :math:`\sigma`
+        mu: 正規分布の :math:`\mu`
+
+    """
+    def __init__(self, sigma=0.01, mu=0.0):
+        self.noise = random.gauss(mu=mu, sigma=sigma)
+
+    def __call__(self, data):
+        return data + self.noise
+
+
+class RandomScaling:
+    """
+    Scaling the original sequence by a random value in the range `start` and `end` following Eq.
+
+    .. math::
+
+        \mathcal{L_r}(\mathbf{ S }) = \mathbf{ S } \cdot ((\mathrm{end} - \mathrm{start}) * rand() + \mathrm{start})
+
+    References:
+        An End-to-End Multi-Task and Fusion CNN for Inertial-Based Gait Recognition
+
+    Examples:
+        >>> import torch
+        >>> x = torch.randn(512, 10)
+        >>> scale = RandomScaling()
+        >>> y = scale(x)
+
+    Args:
+        start: スケーリングの開始点
+        end:　スケーリングの終了点
+
+    """
+    def __init__(self, start=0.7, end=1.1):
+        self.scale = (end - start) * random.uniform(0.0, 1.0) + start
+
+    def __call__(self, data):
+        return data * self.scale
