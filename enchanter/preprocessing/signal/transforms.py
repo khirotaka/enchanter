@@ -39,7 +39,7 @@ class FixedWindow:
 
     Examples:
         >>> import numpy as np
-        >>> x = np.random.randn(512, 18)    # [N, features]
+        >>> x = np.random.randn(512, 18)    # [seq_len, features]
         >>> fw = FixedWindow(128)
         >>> out = fw(x)
         >>> out.shape       # [128, 18]
@@ -51,16 +51,31 @@ class FixedWindow:
         else:
             raise TypeError("`window_size` must be integer.")
 
-        self.start_position = start_position
+        if start_position:
+            if start_position >= 0:
+                self.start_position = start_position
+            else:
+                raise ValueError("`start_position` must be 0 and over.")
+        else:
+            self.start_position = start_position
 
     def __call__(self, data):
+        """
+
+        Args:
+            data: input shape must be `[the length of sequence, features]`
+
+        Returns:
+            Cropped the data
+
+        """
         seq_len = data.shape[0]
 
         if not seq_len > self.window_size:
-            raise Exception("`window size` must be smaller then input sequence length.")
+            raise IndexError("`window size` must be smaller then input sequence length.")
 
         if not self.start_position:
-            start = random.choice([i for i in range(seq_len - self.window_size)])
+            start = random.choice([i for i in range(seq_len - self.window_size)])       #nosec
         else:
             if (seq_len - self.window_size) >= self.start_position:
                 start = self.start_position
@@ -110,12 +125,12 @@ class RandomScaling:
         >>> y = scale(x)
 
     Args:
-        start: スケーリングの開始点
-        end:　スケーリングの終了点
+        start(float): スケーリング範囲の開始点
+        end(float):　スケーリング範囲の終了点
 
     """
     def __init__(self, start=0.7, end=1.1):
-        self.scale = (end - start) * random.uniform(0.0, 1.0) + start
+        self.scale = ((end - start) * random.uniform(0.0, 1.0)) + start     #nosec
 
     def __call__(self, data):
         return data * self.scale
