@@ -118,3 +118,17 @@ def test_scaling_np():
 
     assert (start * np_x_int < y).sum().item() == (seq_len * features)
     assert (y < end * np_x_int).sum().item() == (seq_len * features)
+
+
+def test_pad_1():
+    pad = transforms.Pad(1000)
+    y = pad(torch_x)
+
+    assert y[512:].sum() == 0
+
+
+def test_pad_2():
+    pad = transforms.Pad(1000, 10.0)
+    length = pad.length - seq_len
+    y = pad(torch_x)
+    assert y[512:].sum().item() == (10.0 * length * features)

@@ -1,4 +1,17 @@
+# ***************************************************
+#  _____            _                 _
+# | ____|_ __   ___| |__   __ _ _ __ | |_ ___ _ __
+# |  _| | '_ \ / __| '_ \ / _` | '_ \| __/ _ \ '__|
+# | |___| | | | (__| | | | (_| | | | | ||  __/ |
+# |_____|_| |_|\___|_| |_|\__,_|_| |_|\__\___|_|
+#
+# ***************************************************
+
 import random
+
+import numpy as np
+import torch
+import torch.nn.functional as F
 
 
 class Compose:
@@ -134,3 +147,48 @@ class RandomScaling:
 
     def __call__(self, data):
         return data * self.scale
+
+
+class Pad:
+    """
+    Fills the end of the given series with the specified method.
+
+    Examples:
+        >>> x = torch.randn(10, 3)  # [seq_len, features]
+        >>> pad = Pad(20)
+        >>> y = pad(x)              # [20, 3]
+        >>> # OR
+        >>> pad = Pad(20, 1.0)
+        >>> y = pad(x)
+
+    Args:
+        length(int): Length of output series.
+        value(Optional[float]): Value to fill.
+
+    """
+    def __init__(self, length, value=None):
+        self.length = length
+        if value:
+            self.value = value
+        else:
+            self.value = 0.0
+
+    def __call__(self, data):
+        from_np = False
+
+        if isinstance(data, np.ndarray):
+            from_np = True
+            data = torch.from_numpy(data)
+
+        seq_len, features = data.shape
+        pad_size = self.length - data.shape[0]
+        if pad_size < 0:
+            raise ValueError("The length of the input series is too short for the padding size.")
+
+        data = data.reshape(1, seq_len, features)
+        result = F.pad(data, [0, 0, 0, pad_size], value=self.value)[0]
+
+        if from_np:
+            result = result.numpy()
+
+        return result

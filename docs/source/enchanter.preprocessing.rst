@@ -46,6 +46,14 @@ Transforms
     :undoc-members:
     :show-inheritance:
 
+`Pad`
+^^^^^^^^^^^^^^^^
+
+.. autoclass:: Pad
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Functions
 ~~~~~~~~~~
