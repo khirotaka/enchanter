@@ -27,6 +27,14 @@ class PositionalEncoding(nn.Module):
 
     """
     def __init__(self, d_model, seq_len, dropout=0.1):
+        """
+
+
+        Args:
+            d_model: the number of expected features in the encoder/decoder inputs.
+            seq_len: length of input sequence.
+            dropout: dropout rate.
+        """
         super().__init__()
         self.dropout = nn.Dropout(p=dropout)
 
