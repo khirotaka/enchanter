@@ -1,5 +1,5 @@
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 PATH_ROOT = os.path.dirname(__file__)
 
@@ -24,13 +24,10 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='enchanter',
-    version='0.5.2',
-    packages=[
-        'enchanter', 'enchanter.addons', 'enchanter.addons.layers',
-        'enchanter.callbacks', 'enchanter.engine', 'enchanter.metrics',
-        'enchanter.preprocessing', 'enchanter.wrappers', 'enchanter.utils'
-    ],
+    version='0.5.3',
+    packages=find_packages(exclude=["examples", "tests"]),
     url='https://github.com/khirotaka/enchanter',
+    keywords="pytorch comet_ml",
     license='Apache-2.0',
     author='Hirotaka Kawashima',
     author_email='',
