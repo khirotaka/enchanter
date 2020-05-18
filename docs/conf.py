@@ -95,9 +95,11 @@ html_theme_options = {
     "version_info": {
         "master": "https://enchanter.readthedocs.io/ja/latest/",
         "develop": "https://enchanter.readthedocs.io/ja/develop/",
-        "v0.5.0":  "https://enchanter.readthedocs.io/ja/v0.5.0/",
-        "v0.5.1":  "https://enchanter.readthedocs.io/ja/v0.5.1/",
-        "v0.5.2":  "https://enchanter.readthedocs.io/ja/v0.5.2/"
+        "v0.5.0": "https://enchanter.readthedocs.io/ja/v0.5.0/",
+        "v0.5.1": "https://enchanter.readthedocs.io/ja/v0.5.1/",
+        "v0.5.2": "https://enchanter.readthedocs.io/ja/v0.5.2/",
+        "v0.5.3": "https://enchanter.readthedocs.io/ja/v0.5.3/",
+        "v0.6.0": "https://enchanter.readthedocs.io/ja/v0.6.0/",
     },
 }
 
