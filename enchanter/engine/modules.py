@@ -8,7 +8,7 @@
 # ***************************************************
 
 from random import seed as std_seed
-from torch import manual_seed, Tensor
+from torch import manual_seed, Tensor, as_tensor
 from numpy.random import seed as np_seed
 
 from torch.utils.data import TensorDataset
@@ -35,7 +35,6 @@ def is_jupyter():
     return True
 
 
-
 def get_dataset(x, y=None):
     """
     入力された値をもとに `torch.utils.data.TensorDataset` を生成します。
@@ -52,10 +51,10 @@ def get_dataset(x, y=None):
     Returns:
         `torch.utils.data.TensorDataset`
     """
-    x = numpy2tensor(x)
+    x = as_tensor(x)
 
     if y is not None:
-        y = numpy2tensor(y)
+        y = as_tensor(y)
         ds = TensorDataset(x, y)
     else:
         ds = TensorDataset(x)
