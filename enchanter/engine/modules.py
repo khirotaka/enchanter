@@ -7,14 +7,15 @@
 #
 # ***************************************************
 
-import random
-import torch
-import numpy as np
+from random import seed as std_seed
+from torch import manual_seed, Tensor
+from numpy.random import seed as np_seed
+
 from torch.utils.data import TensorDataset
 
 
 __all__ = [
-    "is_jupyter", "numpy2tensor", "get_dataset", "fix_seed"
+    "is_jupyter", "get_dataset", "fix_seed"
 ]
 
 
@@ -33,25 +34,6 @@ def is_jupyter():
         return False
     return True
 
-
-def numpy2tensor(inputs):
-    """
-    入力された `np.ndarray` を `torch.Tensor` に変換します。単に `torch.Tensor` が入力された場合は、そのまま値を返します。
-
-    Examples:
-        >>> x = np.random.randn(512, 6)     # np.ndarray (dtype=np.float64)
-        >>> x = numpy2tensor(x)             # torch.Tensor (dtype=torch.DoubleTensor)
-
-    Args:
-        inputs (Union[np.ndarray, torch.Tensor]):
-
-    Returns:
-        `torch.Tensor`
-    """
-    if isinstance(inputs, np.ndarray):
-        inputs = torch.from_numpy(inputs)
-
-    return inputs
 
 
 def get_dataset(x, y=None):
@@ -94,7 +76,7 @@ def send(batch, device):
 
     """
 
-    return tuple(map(lambda x: x.to(device) if isinstance(x, torch.Tensor) else x, batch))
+    return tuple(map(lambda x: x.to(device) if isinstance(x, Tensor) else x, batch))
 
 
 def fix_seed(seed):
@@ -112,6 +94,6 @@ def fix_seed(seed):
     Returns:
         None
     """
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
+    std_seed(seed)
+    np_seed(seed)
+    manual_seed(seed)
