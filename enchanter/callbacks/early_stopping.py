@@ -8,7 +8,7 @@
 # ***************************************************
 
 from typing import Dict
-import numpy as np
+from numpy import greater, less, Inf
 from .base import Callback
 
 
@@ -27,16 +27,16 @@ class EarlyStopping(Callback):
         self.stopped_epoch = 0
 
         mode_dict = {
-            "min": np.less,
-            "max": np.greater,
-            "auto": np.greater if "acc" in self.monitor else np.less
+            "min": less,
+            "max": greater,
+            "auto": greater if "acc" in self.monitor else less
         }
         if mode not in mode_dict:
             mode = "auto"
 
         self.monitor_op = mode_dict[mode]
-        self.min_delta *= 1 if self.monitor_op == np.greater else -1
-        self.best = np.Inf if self.monitor_op == np.less else -np.Inf
+        self.min_delta *= 1 if self.monitor_op == greater else -1
+        self.best = Inf if self.monitor_op == less else -Inf
 
     def check_metrics(self, logs):
         monitor_val = logs.get(self.monitor)

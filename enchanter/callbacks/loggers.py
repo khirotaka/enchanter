@@ -8,8 +8,8 @@
 # ***************************************************
 
 from contextlib import contextmanager
-import torch
-import numpy as np
+from torch import Tensor
+from numpy import ndarray
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -78,8 +78,8 @@ class TensorBoardLogger(BaseLogger):
             self.writer.add_scalar(k, v)
 
     def log_parameter(self, name, value, step=None):
-        if isinstance(value, torch.Tensor) or\
-                isinstance(value, np.ndarray) or\
+        if isinstance(value, Tensor) or\
+                isinstance(value, ndarray) or\
                 isinstance(value, float) or\
                 isinstance(value, int):
             self.writer.add_scalar("{}/{}/{}".format(self.context, "params", name), value, step)

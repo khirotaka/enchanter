@@ -7,11 +7,11 @@
 #
 # ***************************************************
 
-import random
+from random import choice, gauss, uniform
 
-import numpy as np
-import torch
-import torch.nn.functional as F
+from numpy import ndarray
+from torch import from_numpy
+from torch.nn.functional import pad
 
 
 class Compose:
@@ -88,7 +88,7 @@ class FixedWindow:
             raise IndexError("`window size` must be smaller then input sequence length.")
 
         if not self.start_position:
-            start = random.choice([i for i in range(seq_len - self.window_size)])       #nosec
+            start = choice([i for i in range(seq_len - self.window_size)])       #nosec
         else:
             if (seq_len - self.window_size) >= self.start_position:
                 start = self.start_position
@@ -114,7 +114,7 @@ class GaussianNoise:
 
     """
     def __init__(self, sigma=0.01, mu=0.0):
-        self.noise = random.gauss(mu=mu, sigma=sigma)
+        self.noise = gauss(mu=mu, sigma=sigma)
 
     def __call__(self, data):
         return data + self.noise
@@ -143,7 +143,7 @@ class RandomScaling:
 
     """
     def __init__(self, start=0.7, end=1.1):
-        self.scale = ((end - start) * random.uniform(0.0, 1.0)) + start     #nosec
+        self.scale = ((end - start) * uniform(0.0, 1.0)) + start     #nosec
 
     def __call__(self, data):
         return data * self.scale
@@ -176,9 +176,9 @@ class Pad:
     def __call__(self, data):
         from_np = False
 
-        if isinstance(data, np.ndarray):
+        if isinstance(data, ndarray):
             from_np = True
-            data = torch.from_numpy(data)
+            data = from_numpy(data)
 
         seq_len, features = data.shape
         pad_size = self.length - data.shape[0]
@@ -186,7 +186,7 @@ class Pad:
             raise ValueError("The length of the input series is too short for the padding size.")
 
         data = data.reshape(1, seq_len, features)
-        result = F.pad(data, [0, 0, 0, pad_size], value=self.value)[0]
+        result = pad(data, [0, 0, 0, pad_size], value=self.value)[0]
 
         if from_np:
             result = result.numpy()

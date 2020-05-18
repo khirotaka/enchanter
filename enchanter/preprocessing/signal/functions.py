@@ -9,8 +9,8 @@
 
 from collections import Counter
 
-import numpy as np
-import pandas as pd
+from numpy import array, stack, ndarray, max as np_max, zeros, nan, float32, dstack
+from pandas import DataFrame
 from enchanter.engine.modules import is_jupyter
 
 if is_jupyter():
@@ -80,7 +80,7 @@ class FixedSlidingWindow:
         else:
             data = [inputs[i:i + self.window_size] for i in range(0, seq_len-self.window_size, self.overlap)]
 
-        data = np.stack(data, 0)
+        data = stack(data, 0)
         return data
 
     @staticmethod
@@ -104,7 +104,7 @@ class FixedSlidingWindow:
 
             tmp.append(label)
 
-        return np.array(tmp)
+        return array(tmp)
 
     def __call__(self, data, target):
         data = self.transform(data)
@@ -113,7 +113,7 @@ class FixedSlidingWindow:
         return data, label
 
 
-def adjust_sequences(sequences, max_len=None, fill="ffill", dtype=np.float32):
+def adjust_sequences(sequences, max_len=None, fill="ffill", dtype=float32):
     """
     長さが一定でない系列データを一定の長さに整える関数。
     各サンプルに対して、 `max_len` よりもサンプルの系列が長い場合は、`max_len` まででそれ以降は無視され、
@@ -131,6 +131,7 @@ def adjust_sequences(sequences, max_len=None, fill="ffill", dtype=np.float32):
         dtype:  NumPy のデータ型を指定してください。この値を元に出力系列のデータ型が決定されます。
 
     Examples:
+        >>> import numpy as np
         >>> x = [
         >>>         np.array([[i] for i in [1, 2, 3, 4, 5]]),
         >>>         np.array([[i] for i in [1, 2, 3, 4, 5, 6, 7, 8]]),
@@ -167,19 +168,19 @@ def adjust_sequences(sequences, max_len=None, fill="ffill", dtype=np.float32):
 
     lengths = []
     for item in sequences:
-        if isinstance(item, np.ndarray):
+        if isinstance(item, ndarray):
             lengths.append(item.shape[0])
 
     if max_len is None:
-        max_len = np.max(lengths)
+        max_len = np_max(lengths)
     elif hasattr(max_len, "__call__"):
         max_len = int(max_len(lengths))
 
     new_seqs = []
     for seq in sequences:
-        new_seq = np.zeros((max_len, features), dtype=dtype)
-        new_seq[:, :] = np.nan
-        new_seq = pd.DataFrame(new_seq)
+        new_seq = zeros((max_len, features), dtype=dtype)
+        new_seq[:, :] = nan
+        new_seq = DataFrame(new_seq)
 
         if seq.dtype != dtype:
             seq = seq.astype(dtype)
@@ -197,4 +198,4 @@ def adjust_sequences(sequences, max_len=None, fill="ffill", dtype=np.float32):
 
         new_seqs.append(new_seq.values)
 
-    return np.dstack(new_seqs).transpose((2, 0, 1))
+    return dstack(new_seqs).transpose((2, 0, 1))

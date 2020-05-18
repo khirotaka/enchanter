@@ -1,7 +1,7 @@
-import abc
+from abc import ABC
 from typing import Any
 
-class Callback(abc.ABC):
+class Callback(ABC):
     def on_epoch_start(self, *args: Any, **kwargs: Any) -> None: ...
     def on_epoch_end(self, *args: Any, **kwargs: Any) -> None: ...
     def on_step_start(self, *args: Any, **kwargs: Any) -> None: ...

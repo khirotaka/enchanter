@@ -1,4 +1,4 @@
-import torch
+from torch import narrow
 
 
 def slice_axis(data, axis, begin, end):
@@ -48,4 +48,4 @@ def slice_axis(data, axis, begin, end):
 
     if end < 0:
         end = data.shape[axis] + end
-    return torch.narrow(data, axis, begin, end - begin)
+    return narrow(data, axis, begin, end - begin)

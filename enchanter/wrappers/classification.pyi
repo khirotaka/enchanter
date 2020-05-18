@@ -1,27 +1,28 @@
 from typing import Tuple, List, Union, Optional
 
-import torch
-import numpy as np
+from torch import Tensor
+from torch.nn import Module
+from numpy import ndarray
 from sklearn.base import ClassifierMixin
 from torch.nn.modules.loss import _Loss
 from torch.optim.optimizer import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
 from comet_ml.experiment import BaseExperiment as BaseExperiment
 
-import enchanter
+from enchanter.engine import BaseRunner
 from enchanter.callbacks import EarlyStopping
 from enchanter.callbacks import BaseLogger
 
 
-class ClassificationRunner(enchanter.engine.BaseRunner, ClassifierMixin):
-    model: torch.nn.Module = ...
+class ClassificationRunner(BaseRunner, ClassifierMixin):
+    model: Module = ...
     optimizer: Optimizer = ...
     criterion: _Loss = ...
     experiment: Union[BaseExperiment, BaseLogger] = ...
 
     def __init__(
             self,
-            model: torch.nn.Module,
+            model: Module,
             optimizer: Optimizer,
             criterion: _Loss,
             experiment: Union[BaseExperiment, BaseLogger],
@@ -37,4 +38,4 @@ class ClassificationRunner(enchanter.engine.BaseRunner, ClassifierMixin):
     def val_end(self, outputs: List): ...
     def test_step(self, batch: Tuple): ...
     def test_end(self, outputs: List): ...
-    def predict(self, x: Union[torch.Tensor, np.ndarray]) -> np.ndarray: ...
+    def predict(self, x: Union[Tensor, ndarray]) -> ndarray: ...

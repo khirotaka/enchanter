@@ -9,10 +9,10 @@
 
 
 from pprint import pformat
-import pkg_resources
+from pkg_resources import working_set
 
 
-if "comet-ml" not in [d.project_name for d in pkg_resources.working_set]:
+if "comet-ml" not in [d.project_name for d in working_set]:
     raise ImportError("You have to install `comet_ml` if you want to use `enchanter.utils.comet` module.")
 
 
@@ -136,6 +136,7 @@ class TunerConfigGenerator:
             dtype: データ型。指定されない場合、`min_value` と `max_value` の値から自動的に推定されます。
 
         Examples:
+            >>> import comet_ml
             >>> config = TunerConfigGenerator()
             >>> config.suggest_uniform("uniform", 0.0, 1.0)
             >>> opt = comet_ml.Optimizer(config.generate())
@@ -159,6 +160,7 @@ class TunerConfigGenerator:
             dtype: データ型。指定されない場合、`min_value` と `max_value` の値から自動的に推定されます。
 
         Examples:
+            >>> import comet_ml
             >>> config = TunerConfigGenerator()
             >>> config.suggest_normal("normal", 0.0, 1.0)
             >>> opt = comet_ml.Optimizer(config.generate())
@@ -182,6 +184,7 @@ class TunerConfigGenerator:
             dtype: データ型。指定されない場合、`min_value` と `max_value` の値から自動的に推定されます。
 
         Examples:
+            >>> import comet_ml
             >>> config = TunerConfigGenerator()
             >>> config.suggest_lognormal("lognormal", 0.0, 1.0)
             >>> opt = comet_ml.Optimizer(config.generate())
@@ -203,6 +206,7 @@ class TunerConfigGenerator:
             dtype: データ型。指定されない場合、`min_value` と `max_value` の値から自動的に推定されます。
 
         Examples:
+            >>> import comet_ml
             >>> config = TunerConfigGenerator()
             >>> config.suggest_loguniform("loguniform", 0.0, 1.0)
             >>> opt = comet_ml.Optimizer(config.generate())
@@ -222,6 +226,7 @@ class TunerConfigGenerator:
             values: 数値型の要素で構成されたリスト
 
         Examples:
+            >>> import comet_ml
             >>> config = TunerConfigGenerator()
             >>> config.suggest_discrete("discrete", [10, 20, 30])
             >>> opt = comet_ml.Optimizer(config.generate())
