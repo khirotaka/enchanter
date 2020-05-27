@@ -7,24 +7,23 @@
 #
 # ***************************************************
 
-from io import BytesIO
-from time import ctime
-from pathlib import Path
-from copy import deepcopy
+
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
 from numpy import floor
 from sklearn.base import BaseEstimator
-from torch.nn import DataParallel
 from torch.cuda import is_available
-from torch import device, no_grad, Tensor, load, save
+from torch import device
+from torch.tensor import Tensor
+from torch.autograd import no_grad
 from torch.utils.data import DataLoader, SubsetRandomSampler
 
+from enchanter.engine.saving import RunnerIO
 from enchanter.engine.modules import is_jupyter, send, get_dataset
 
 if is_jupyter():
-    from tqdm.notebook import tqdm
+    from tqdm.notebook import tqdm_notebook as tqdm
 else:
     from tqdm import tqdm
 
@@ -58,12 +57,14 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
 
     """
     def __init__(self):
+        super().__init__()
         self.device = device("cuda" if is_available() else "cpu")
         self.model = NotImplemented
         self.optimizer = NotImplemented
         self.scheduler = None
         self.experiment = NotImplemented
         self.early_stop = None
+        self._global_step = 0
 
         self._epochs = 1
         self.pbar = None
@@ -197,6 +198,7 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
                 self.experiment.log_metrics(outputs, step=step, epoch=epoch)
                 results.append(outputs)
                 # on_step_end()
+                self._global_step += 1
 
             dic = self.train_end(results)        # pylint: disable=E1111
 
@@ -236,7 +238,7 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
                         key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                         for key in outputs.keys()
                     }
-                    self.experiment.log_metrics(outputs, step=step, epoch=epoch)
+                    self.experiment.log_metrics(outputs, step=step)
                     results.append(outputs)
                     # on_step_end()
 
@@ -244,7 +246,7 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
 
                 if len(dic) != 0:
                     self._metrics.update(dic)
-                    self.experiment.log_metrics(dic, step=epoch)
+                    self.experiment.log_metrics(dic, step=epoch, prefix="epoch")
 
     def test_cycle(self, loader):
         """
@@ -279,7 +281,7 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
                         for key in outputs.keys()
                     }
 
-                    self.experiment.log_metrics(outputs, step=step)
+                    self.experiment.log_metrics(outputs, step=self.global_step)
                     results.append(outputs)
                     # on_step_end()
 
@@ -335,6 +337,8 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
         Returns:
             None
         """
+        self._global_step = 0
+
         if self.model is None:
             raise Exception("self.model is not defined.")
 
@@ -386,7 +390,7 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
                     # .on_epoch_end()
 
                 if self._checkpoint_path:
-                    self.save(self._checkpoint_path, epoch=epoch)
+                    super().save(self._checkpoint_path, epoch=epoch)
 
         if "test" in self.loaders:
             # on_test_start()
@@ -432,6 +436,10 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
     @property
     def loaders(self):
         return self._loaders
+
+    @property
+    def global_step(self):
+        return self._global_step
 
     def fit(self, x, y, **kwargs):
         """
@@ -500,93 +508,3 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
             param.requires_grad = True
 
         self.model.train()
-
-
-class RunnerIO:
-    def __init__(self):
-        self.model = NotImplemented
-        self.optimizer = NotImplemented
-        self.experiment = NotImplemented
-        self._checkpoint_path =NotImplemented
-
-    def save_checkpoint(self):
-        """
-        ニューラルネットの重みと、 Optimizerの状態を辞書として出力するメソッドです。
-
-        Returns:
-            以下のキーと値を持つ辞書を返します。
-                - "model_state_dict": ニューラルネットの重み
-                - "optimizer_state_dict": Optimizer の状態
-
-        """
-        if isinstance(self.model, DataParallel):
-            model = self.model.module.state_dict()
-        else:
-            model = self.model.state_dict()
-
-        checkpoint = {
-            "model_state_dict": deepcopy(model),
-            "optimizer_state_dict": deepcopy(self.optimizer.state_dict())
-        }
-        return checkpoint
-
-    def load_checkpoint(self, checkpoint):
-        """
-        'model_state_dict', 'optimizer_state_dict' を持つ辞書を受け取り、それらを元に モデル と Optimizer の状態を復元します。
-
-        Args:
-            checkpoint:
-                以下のキーと値を持つ辞書。
-                    - "model_state_dict": ニューラルネットの重み
-                    - "optimizer_state_dict": Optimizer の状態
-        """
-        self.model.load_state_dict(checkpoint["model_state_dict"])
-        self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-        return self
-
-    def save(self, directory=None, epoch=None):
-
-        """
-        指定したディレクトリにモデルとOptimizerの状態を記録したファイルを保存します。
-
-        Args:
-            directory (Optional[str]):
-            epoch (Optional[int]):
-
-        """
-        if directory is None and self._checkpoint_path is not None:
-            directory = self._checkpoint_path
-
-        elif directory is None and self._checkpoint_path is None:
-            raise ValueError("The argument `directory` must be specified.")
-
-        directory = Path(directory)
-        if not directory.exists():
-            directory.mkdir(parents=True)
-        checkpoint = self.save_checkpoint()
-
-        if epoch is None:
-            epoch = ctime().replace(" ", "_")
-
-        filename = "checkpoint_epoch_{}.pth".format(epoch)
-        path = directory / filename
-        save(checkpoint, path)
-
-        if hasattr(self.experiment, "log_asset_data"):
-            buffer = BytesIO()
-            save(checkpoint, buffer)
-            self.experiment.log_asset_data(buffer.getvalue(), filename)
-
-    def load(self, filename, map_location="cpu"):
-        """
-        指定したファイルを元にモデルとOptimizerの状態を復元します。
-
-        Args:
-            filename (str):
-            map_location (str):
-
-        """
-        checkpoint = load(filename, map_location=map_location)
-        self.load_checkpoint(checkpoint)
-
-        return self
