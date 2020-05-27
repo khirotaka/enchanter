@@ -7,23 +7,23 @@
 #
 # ***************************************************
 
-import io
-import time
+from io import BytesIO
+from time import ctime
 from pathlib import Path
 from copy import deepcopy
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
-import numpy as np
-import torch
-import torch.nn as nn
-from sklearn import base
-from torch.utils.data import DataLoader
-from torch.utils.data import SubsetRandomSampler
+from numpy import floor
+from sklearn.base import BaseEstimator
+from torch.nn import DataParallel
+from torch.cuda import is_available
+from torch import device, no_grad, Tensor, load, save
+from torch.utils.data import DataLoader, SubsetRandomSampler
 
-from enchanter.engine import modules
+from enchanter.engine.modules import is_jupyter, send, get_dataset
 
-if modules.is_jupyter():
+if is_jupyter():
     from tqdm.notebook import tqdm
 else:
     from tqdm import tqdm
@@ -34,7 +34,7 @@ __all__ = [
 ]
 
 
-class BaseRunner(base.BaseEstimator, ABC):
+class BaseRunner(ABC, BaseEstimator, RunnerIO):
     """
     PyTorchモデルの訓練に用いる Runner を作成する為のクラスです。
 
@@ -58,7 +58,7 @@ class BaseRunner(base.BaseEstimator, ABC):
 
     """
     def __init__(self):
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = device("cuda" if is_available() else "cpu")
         self.model = NotImplemented
         self.optimizer = NotImplemented
         self.scheduler = None
@@ -70,6 +70,12 @@ class BaseRunner(base.BaseEstimator, ABC):
         self._loaders = {}
         self._metrics = {}
         self._checkpoint_path = None
+
+    def backward(self, loss):
+        loss.backward()
+
+    def update_optimizer(self):
+        self.optimizer.step()
 
     @abstractmethod
     def train_step(self, batch):
@@ -172,11 +178,11 @@ class BaseRunner(base.BaseEstimator, ABC):
         with self.experiment.train():
             for step, batch in enumerate(loader):
                 self.optimizer.zero_grad()
-                batch = modules.send(batch, self.device)
+                batch = send(batch, self.device)
                 # on_step_start()
                 outputs = self.train_step(batch)
-                outputs["loss"].backward()
-                self.optimizer.step()
+                self.backward(outputs["loss"])
+                self.update_optimizer()
 
                 if hasattr(self.pbar, "set_postfix"):
                     per = "{:1.0%}".format(step / loader_size)
@@ -185,7 +191,7 @@ class BaseRunner(base.BaseEstimator, ABC):
                     )
 
                 outputs = {
-                    key: outputs[key].detach().cpu() if isinstance(outputs[key], torch.Tensor) else outputs[key]
+                    key: outputs[key].detach().cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                     for key in outputs.keys()
                 }
                 self.experiment.log_metrics(outputs, step=step, epoch=epoch)
@@ -214,9 +220,9 @@ class BaseRunner(base.BaseEstimator, ABC):
 
         self.model.eval()
         with self.experiment.validate():
-            with torch.no_grad():
+            with no_grad():
                 for step, batch in enumerate(loader):
-                    batch = modules.send(batch, self.device)
+                    batch = send(batch, self.device)
                     # on_step_start()
                     outputs = self.val_step(batch)        # pylint: disable=E1111
 
@@ -227,7 +233,7 @@ class BaseRunner(base.BaseEstimator, ABC):
                         )
 
                     outputs = {
-                        key: outputs[key].cpu() if isinstance(outputs[key], torch.Tensor) else outputs[key]
+                        key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                         for key in outputs.keys()
                     }
                     self.experiment.log_metrics(outputs, step=step, epoch=epoch)
@@ -255,9 +261,9 @@ class BaseRunner(base.BaseEstimator, ABC):
 
         self.model.eval()
         with self.experiment.test():
-            with torch.no_grad():
+            with no_grad():
                 for step, batch in enumerate(loader):
-                    batch = modules.send(batch, self.device)
+                    batch = send(batch, self.device)
                     # on_step_start()
                     outputs = self.test_step(batch)        # pylint: disable=E1111
 
@@ -269,7 +275,7 @@ class BaseRunner(base.BaseEstimator, ABC):
                         self.pbar.update(1)
 
                     outputs = {
-                        key: outputs[key].cpu() if isinstance(outputs[key], torch.Tensor) else outputs[key]
+                        key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                         for key in outputs.keys()
                     }
 
@@ -448,11 +454,11 @@ class BaseRunner(base.BaseEstimator, ABC):
         else:
             epochs = self._epochs
 
-        train_ds = modules.get_dataset(x, y)
-        val_ds = modules.get_dataset(x, y)
+        train_ds = get_dataset(x, y)
+        val_ds = get_dataset(x, y)
         n_train = len(train_ds)
         indices = list(range(n_train))
-        split = int(np.floor(val_size * n_train))
+        split = int(floor(val_size * n_train))
 
         train_idx, val_idx = indices[split:], indices[:split]
         train_sampler = SubsetRandomSampler(train_idx)
@@ -495,6 +501,14 @@ class BaseRunner(base.BaseEstimator, ABC):
 
         self.model.train()
 
+
+class RunnerIO:
+    def __init__(self):
+        self.model = NotImplemented
+        self.optimizer = NotImplemented
+        self.experiment = NotImplemented
+        self._checkpoint_path =NotImplemented
+
     def save_checkpoint(self):
         """
         ニューラルネットの重みと、 Optimizerの状態を辞書として出力するメソッドです。
@@ -505,7 +519,7 @@ class BaseRunner(base.BaseEstimator, ABC):
                 - "optimizer_state_dict": Optimizer の状態
 
         """
-        if isinstance(self.model, nn.DataParallel):
+        if isinstance(self.model, DataParallel):
             model = self.model.module.state_dict()
         else:
             model = self.model.state_dict()
@@ -552,15 +566,15 @@ class BaseRunner(base.BaseEstimator, ABC):
         checkpoint = self.save_checkpoint()
 
         if epoch is None:
-            epoch = time.ctime().replace(" ", "_")
+            epoch = ctime().replace(" ", "_")
 
         filename = "checkpoint_epoch_{}.pth".format(epoch)
         path = directory / filename
-        torch.save(checkpoint, path)
+        save(checkpoint, path)
 
         if hasattr(self.experiment, "log_asset_data"):
-            buffer = io.BytesIO()
-            torch.save(checkpoint, buffer)
+            buffer = BytesIO()
+            save(checkpoint, buffer)
             self.experiment.log_asset_data(buffer.getvalue(), filename)
 
     def load(self, filename, map_location="cpu"):
@@ -572,7 +586,7 @@ class BaseRunner(base.BaseEstimator, ABC):
             map_location (str):
 
         """
-        checkpoint = torch.load(filename, map_location=map_location)
+        checkpoint = load(filename, map_location=map_location)
         self.load_checkpoint(checkpoint)
 
         return self
