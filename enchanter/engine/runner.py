@@ -372,7 +372,7 @@ class BaseRunner(base.BaseEstimator, ABC):
 
                 if self.scheduler:
                     self.scheduler.step(epoch=None)
-                    self.experiment.log_metric("scheduler_lr", self.scheduler.get_lr(), epoch=epoch)
+                    self.experiment.log_metric("scheduler_lr", self.scheduler.get_last_lr(), epoch=epoch)
 
                 if self.early_stop:
                     if self.early_stop.on_epoch_end(self._metrics, epoch):
