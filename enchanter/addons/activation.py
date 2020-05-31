@@ -7,9 +7,9 @@
 #
 # ***************************************************
 
-import torch
-import torch.jit
-import torch.nn as nn
+from torch import sigmoid, tanh, tensor
+from torch.nn.functional import softplus
+from torch.nn import Module, Tanh, Softplus, Parameter
 
 
 __all__ = [
@@ -17,14 +17,14 @@ __all__ = [
 ]
 
 
-class Swish(nn.Module):
+class Swish(Module):
     """
     Swish活性化関数を適用します。
     """
     def __init__(self, beta=False):
-        nn.Module.__init__(self)
+        Module.__init__(self)
         if beta:
-            self.weight = nn.Parameter(torch.tensor([1.]), requires_grad=True)
+            self.weight = Parameter(tensor([1.]), requires_grad=True)
         else:
             self.weight = 1.0
 
@@ -44,7 +44,7 @@ class Swish(nn.Module):
             Swishを適用した結果
 
         """
-        out = inputs * torch.sigmoid(self.weight * inputs)
+        out = inputs * sigmoid(self.weight * inputs)
         return out
 
 
@@ -63,18 +63,18 @@ def mish(x):
         mishを適用した結果 (torch.Tensor)
 
     """
-    return x * torch.tanh(nn.functional.softplus(x))
+    return x * tanh(softplus(x))
 
 
-class Mish(nn.Module):
+class Mish(Module):
     """
     Mish活性化関数を適用します。
 
     """
     def __init__(self):
-        nn.Module.__init__(self)
-        self.tanh = nn.Tanh()
-        self.softplus = nn.Softplus()
+        Module.__init__(self)
+        self.tanh = Tanh()
+        self.softplus = Softplus()
 
     def forward(self, inputs):
         """

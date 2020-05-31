@@ -7,8 +7,8 @@
 #
 # ***************************************************
 
-import torch
-import torch.nn as nn
+from torch import relu
+from torch.nn import Module, ModuleList, Linear, Sequential, Conv1d, ReLU
 
 
 __all__ = [
@@ -16,7 +16,7 @@ __all__ = [
 ]
 
 
-class MLP(nn.Module):
+class MLP(Module):
     """
     MLPを作成するクラス
 
@@ -36,16 +36,18 @@ class MLP(nn.Module):
         >>> #    (1): Linear(in_features=512, out_features=128, bias=True)
         >>> #    (2): Linear(in_features=128, out_features=5, bias=True)
         >>> #)
+
     """
-    def __init__(self, shapes, activation=torch.relu):
+
+    def __init__(self, shapes, activation=relu):
         super().__init__()
         self.layers = []
         self.activation = activation
 
         for i in range(len(shapes) - 1):
-            self.layers.append(nn.Linear(shapes[i], shapes[i+1]))
+            self.layers.append(Linear(shapes[i], shapes[i+1]))
 
-        self.layers = nn.ModuleList(self.layers)
+        self.layers = ModuleList(self.layers)
 
     def forward(self, x):
         for layer in self.layers[:-1]:
@@ -56,7 +58,7 @@ class MLP(nn.Module):
         return x
 
 
-class PositionWiseFeedForward(nn.Module):
+class PositionWiseFeedForward(Module):
     """
     Attention is all you need. で提案された PositionWiseFeedForward の 1×1 Conv1d を使ったバージョン
 
@@ -74,10 +76,10 @@ class PositionWiseFeedForward(nn.Module):
     """
     def __init__(self, d_model):
         super().__init__()
-        self.conv = nn.Sequential(
-            nn.Conv1d(d_model, d_model*2, 1),
-            nn.ReLU(),
-            nn.Conv1d(d_model*2, d_model, 1)
+        self.conv = Sequential(
+            Conv1d(d_model, d_model*2, 1),
+            ReLU(),
+            Conv1d(d_model*2, d_model, 1)
         )
 
     def forward(self, x):
