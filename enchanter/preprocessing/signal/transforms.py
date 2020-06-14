@@ -7,6 +7,7 @@
 #
 # ***************************************************
 
+from pprint import pformat
 from random import choice, gauss, uniform
 
 from numpy import ndarray
@@ -40,6 +41,18 @@ class Compose:
             data = t(data)
 
         return data
+
+    def insert(self, index, modules):
+        self.transforms.insert(index, modules)
+
+    def append(self, module):
+        self.transforms.append(module)
+
+    def extend(self, modules):
+        self.transforms.extend(modules)
+
+    def __repr__(self):
+        return pformat(["({}): {}".format(i, j.__class__.__name__) for i, j in enumerate(self.transforms)], width=40)
 
 
 class FixedWindow:
