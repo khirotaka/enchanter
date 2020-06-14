@@ -56,8 +56,9 @@ class PositionalEncoding(nn.Module):
             L ... seq len
 
         Returns:
+            (N, E, L)
 
         """
-        x = x.permute(2, 0, 1)
+        x = x.permute(2, 0, 1)      # [L, N, E]
         x = x + self.pe[:x.size(0), :]
-        return self.dropout(x)
+        return self.dropout(x).permute(1, 2, 0)
