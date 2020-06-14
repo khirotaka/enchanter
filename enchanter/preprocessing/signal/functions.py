@@ -71,7 +71,9 @@ class FixedSlidingWindow:
         """
         seq_len = inputs.shape[0]
         if not seq_len > self.window_size:
-            raise Exception("window size must be smaller then input sequence length.")
+            raise IndexError(
+                "window size ({}) must be smaller then input sequence length ({}).".format(self.window_size, seq_len)
+            )
 
         if verbose:
             data = []
