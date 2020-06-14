@@ -44,7 +44,7 @@ class DenseInterpolation(Module):
         Dense Interpolation を入力に適用する。
 
         Args:
-            x (torch.Tensor): 入力する配列の形状は、 `[N, features, seq_len]` を想定
+            x (torch.Tensor): 入力する配列の形状は、 `[N, seq_len, features]` を想定
 
         Returns:
             適用した結果 (torch.Tensor)
