@@ -65,6 +65,7 @@ class PositionWiseFeedForward(Module):
 
     Args:
         d_model: the number of expected features in the Position Wise Feed Forward inputs.
+        expansion: Magnification rate of the number of hidden dimensions. Default: 2
 
     Examples:
         >>> import torch
@@ -74,12 +75,12 @@ class PositionWiseFeedForward(Module):
         >>> out = ff(x)
 
     """
-    def __init__(self, d_model):
+    def __init__(self, d_model, expansion=2):
         super().__init__()
         self.conv = Sequential(
-            Conv1d(d_model, d_model*2, 1),
+            Conv1d(d_model, d_model*expansion, 1),
             ReLU(),
-            Conv1d(d_model*2, d_model, 1)
+            Conv1d(d_model*expansion, d_model, 1)
         )
 
     def forward(self, x):
