@@ -9,7 +9,7 @@ def test_fsw_1():
         error_occur = False
         sw = signal.FixedSlidingWindow(256, overlap_rate=0.5)
         x, y = sw(x, y)
-    except Exception:
+    except IndexError:
         error_occur = True
 
     assert error_occur
