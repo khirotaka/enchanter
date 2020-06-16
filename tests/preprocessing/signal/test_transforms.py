@@ -132,3 +132,38 @@ def test_pad_2():
     length = pad.length - seq_len
     y = pad(torch_x)
     assert y[512:].sum().item() == (10.0 * length * features)
+
+
+def test_insert_compose():
+    comp = transforms.Compose([
+        transforms.GaussianNoise()
+    ])
+    comp.insert(0, transforms.FixedWindow(100))
+    assert isinstance(comp.transforms[0], transforms.FixedWindow)
+
+    comp = transforms.Compose([
+        transforms.GaussianNoise()
+    ])
+    comp.insert(1, transforms.FixedWindow(100))
+    assert isinstance(comp.transforms[1], transforms.FixedWindow)
+
+
+def test_append_compose():
+    comp = transforms.Compose([
+        transforms.GaussianNoise()
+    ])
+    comp.append(transforms.FixedWindow(100))
+    assert isinstance(comp.transforms[-1], transforms.FixedWindow)
+
+
+def test_extend_compose():
+    comp = transforms.Compose([
+        transforms.GaussianNoise()
+    ])
+    comp.extend([
+        transforms.FixedWindow(100),
+        transforms.RandomScaling()
+    ])
+    assert isinstance(comp.transforms[0], transforms.GaussianNoise)
+    assert isinstance(comp.transforms[1], transforms.FixedWindow)
+    assert isinstance(comp.transforms[2], transforms.RandomScaling)
