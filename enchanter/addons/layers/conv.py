@@ -1,7 +1,7 @@
-import torch
-import torch.nn as nn
+from torch import relu
+from torch.nn import Module, Conv1d
 
-from enchanter.utils import backend as bf
+from enchanter.utils.backend import slice_axis
 
 
 __all__ = [
@@ -9,8 +9,8 @@ __all__ = [
 ]
 
 
-class CausalConv1d(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, dilation=1, activation=torch.relu, **kwargs):
+class CausalConv1d(Module):
+    def __init__(self, in_channels, out_channels, kernel_size, dilation=1, activation=relu, **kwargs):
         """
         Causal Conv 1d
 
@@ -32,7 +32,7 @@ class CausalConv1d(nn.Module):
         self.padding = dilation * (kernel_size - 1)
         self.activation = activation
 
-        self.conv1d = nn.Conv1d(
+        self.conv1d = Conv1d(
             in_channels,
             out_channels,
             kernel_size,
@@ -58,6 +58,6 @@ class CausalConv1d(nn.Module):
             out = self.activation(out)
 
         if self.kernel_size > 0:
-            out = bf.slice_axis(out, axis=2, begin=0, end=-self.padding)
+            out = slice_axis(out, axis=2, begin=0, end=-self.padding)
 
         return out

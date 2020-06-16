@@ -79,6 +79,7 @@ Enchanter with Hydra
     import enchanter.addons.layers as layers
 
 
+    experiment = Experiment()
     x, y = load_iris(return_X_y=True)
     x = x.astype("float32")
     y = y.astype("int64")
@@ -93,7 +94,6 @@ Enchanter with Hydra
         shapes = cfg.model.shapes
         opt_params = cfg.optimizer.params
 
-        experiment = Experiment()
         experiment.add_tag("with_hydra")
         model = layers.MLP(shapes)
         optimizer = optim.Adam(model.parameters(), **opt_params)

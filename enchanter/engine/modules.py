@@ -7,9 +7,13 @@
 #
 # ***************************************************
 
+from os import environ as os_environ
 from random import seed as std_seed
-from torch import manual_seed, Tensor, as_tensor
 from numpy.random import seed as np_seed
+from torch.backends import cudnn
+from torch.cuda import is_available as cuda_is_available
+from torch import manual_seed, Tensor, as_tensor
+
 
 from torch.utils.data import TensorDataset
 
@@ -78,7 +82,7 @@ def send(batch, device):
     return tuple(map(lambda x: x.to(device) if isinstance(x, Tensor) else x, batch))
 
 
-def fix_seed(seed):
+def fix_seed(seed, deterministic=False, benchmark=False):
     """
     PyTorch, NumPy, Pure Python Random のSEED値を一括固定します。
 
@@ -89,10 +93,21 @@ def fix_seed(seed):
 
     Args:
         seed (int): SEED値
+        deterministic (bool): CuDNN上で可能な限り再現性を担保するかどうか
+        benchmark (bool):
 
     Returns:
         None
     """
     std_seed(seed)
+    os_environ["PYTHONHASHSEED"] = str(seed)
     np_seed(seed)
     manual_seed(seed)
+
+    if cuda_is_available():
+        if deterministic:
+            cudnn.deterministic = True
+        if benchmark:
+            cudnn.benchmark = False
+
+

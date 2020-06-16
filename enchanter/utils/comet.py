@@ -24,7 +24,7 @@ __all__ = [
 class TunerConfigGenerator:
     def __init__(
             self, algorithm="bayes", metric="validate_avg_loss", objective="minimize", seed=None, max_combo=0,
-            grid_size=10, min_sample_size=100, retry_limit=20,  retry_assign_limit=0, name=None, trials=1
+            grid_size=10, min_sample_size=100, retry_limit=20, retry_assign_limit=0, name=None, trials=1
     ):
         """
         各引数のより詳しい説明は https://www.comet.ml/docs/python-sdk/introduction-optimizer/ を参照してください。
