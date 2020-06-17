@@ -35,6 +35,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "sphinx_copybutton",
     "sphinx_material"
 ]
 
@@ -81,8 +82,8 @@ highlight_language = "python"
 
 html_theme_options = {
     'nav_title': 'Enchanter',
-    'color_primary': 'blue',
-    'color_accent': 'cyan',
+    'color_primary': 'indigo',
+    'color_accent': 'light-blue',
     'repo_url': 'https://github.com/khirotaka/enchanter',
     'repo_name': 'Enchanter',
     'heroes': {

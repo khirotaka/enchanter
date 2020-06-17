@@ -1,7 +1,8 @@
-:tocdepth: 3
+:tocdepth: 4
 
 enchanter.preprocessing
 ==============================
+
 
 Signal
 -------------------------------
