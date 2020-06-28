@@ -417,9 +417,6 @@ class BaseRunner(base.BaseEstimator, ABC):
         if not isinstance(loader, DataLoader):
             raise Exception("The argument `loader` must be an instance of `torch.utils.data.DataLoader`.")
 
-        self.experiment.log_parameters(loader.__dict__, prefix=mode)
-        self.experiment.log_parameter("{}_dataset_len".format(mode), len(loader))
-
         self._loaders[mode] = loader
         return self
 
