@@ -350,53 +350,72 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
 
         self.model = self.model.to(self.device)
 
-    def run(self, verbose=True):
+    def run(self, phase="all", verbose=True):
         """
         Runnerを実行します。
         実行には、事前に self.add_loader("train", train_loader) で訓練用のデータローダを登録するしておく必要があります。
 
         Args:
+            phase:
+                - `train`
+                - `val`
+                - `test`
+                - `all`
+                - `debug`
+                のいずれかを指定してする事で、実行フェーズを決定します。デフォルト: all
+
             verbose: True の場合、学習の進行を表示します。
 
         Returns:
             None
+
         """
+        phases = {"train", "train/val", "test", "all", "debug"}
+        if phase not in phases:
+            raise KeyError("The argument 'phase' must be one of the following. {}".format(phases))
+
+        if phase == "debug":
+            self.experiment.add_tag("debug")
+
         self.initialize()
         self.log_hyperparams()
 
         if not self.loaders:
             raise Exception("At least one DataLoader must be provided.")
 
-        if "train" in self.loaders:
-            self.pbar = tqdm(range(self._epochs), desc="Epochs") if verbose else range(self._epochs)
-            # .on_epoch_start()
-            for epoch in self.pbar:
-                # on_train_start()
-                self.train_cycle(epoch, self.loaders["train"])
-                # on_train_end()
+        if phase in {"all", "train", "train/val", "debug"}:
+            if "train" in self.loaders:
+                self.pbar = tqdm(range(self._epochs), desc="Epochs") if verbose else range(self._epochs)
+                # .on_epoch_start()
+                for epoch in self.pbar:
+                    # on_train_start()
+                    self.train_cycle(epoch, self.loaders["train"])
+                    # on_train_end()
 
-                if "val" in self.loaders:
-                    # on_validation_start()
-                    self.val_cycle(epoch, self.loaders["val"])
-                    # on_validation_end()
+                    if phase in {"all", "train/val", "debug"}:
+                        if "val" in self.loaders:
+                            # on_validation_start()
+                            self.val_cycle(epoch, self.loaders["val"])
+                            # on_validation_end()
 
-                if self.scheduler:
-                    self.scheduler.step(epoch=None)
-                    self.experiment.log_metric("scheduler_lr", self.scheduler.get_lr(), epoch=epoch)
+                    if self.scheduler:
+                        self.scheduler.step(epoch=None)
+                        self.experiment.log_metric("scheduler_lr", self.scheduler.get_lr(), epoch=epoch)
 
-                if self.early_stop:
-                    if self.early_stop.on_epoch_end(self._metrics, epoch):
-                        break
-                    # .on_epoch_end()
+                    if self.early_stop:
+                        if self.early_stop.on_epoch_end(self._metrics, epoch):
+                            break
+                        # .on_epoch_end()
 
-                if self._checkpoint_path:
-                    super().save(self._checkpoint_path, epoch=epoch)
+                    if self._checkpoint_path:
+                        super().save(self._checkpoint_path, epoch=epoch)
 
-        if "test" in self.loaders:
-            # on_test_start()
-            self.pbar = tqdm(total=len(self.loaders["test"]), desc="Evaluating") if verbose else None
-            self.test_cycle(self.loaders["test"])
-            # on_test_end()
+        if phase in {"all", "test", "debug"}:
+            if "test" in self.loaders:
+                # on_test_start()
+                self.pbar = tqdm(total=len(self.loaders["test"]), desc="Evaluating") if verbose else None
+                self.test_cycle(self.loaders["test"])
+                # on_test_end()
 
         return self
 
