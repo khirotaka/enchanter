@@ -8,13 +8,14 @@
 # ***************************************************
 
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from collections import OrderedDict
 
 from numpy import floor
-from sklearn.base import BaseEstimator
-from torch.cuda import is_available
 from torch import device
+from torch.nn import Module
+from torch.optim.optimizer import Optimizer
+from torch.cuda import is_available
 from torch.tensor import Tensor
 from torch.autograd import no_grad
 from torch.utils.data import DataLoader, SubsetRandomSampler
@@ -33,7 +34,7 @@ __all__ = [
 ]
 
 
-class BaseRunner(ABC, BaseEstimator, RunnerIO):
+class BaseRunner(ABC, RunnerIO):
     """
     PyTorchモデルの訓練に用いる Runner を作成する為のクラスです。
 
@@ -78,7 +79,6 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
     def update_optimizer(self):
         self.optimizer.step()
 
-    @abstractmethod
     def train_step(self, batch):
         """
         ニューラルネットの訓練時、
@@ -195,7 +195,7 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
                     key: outputs[key].detach().cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                     for key in outputs.keys()
                 }
-                self.experiment.log_metrics(outputs, step=step, epoch=epoch)
+                self.experiment.log_metrics(outputs)
                 results.append(outputs)
                 # on_step_end()
                 self._global_step += 1
@@ -204,7 +204,7 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
 
             if len(dic) != 0:
                 self._metrics.update(dic)
-                self.experiment.log_metrics(dic, step=epoch)
+                self.experiment.log_metrics(dic)
 
     def val_cycle(self, epoch, loader):
         """
@@ -238,7 +238,7 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
                         key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                         for key in outputs.keys()
                     }
-                    self.experiment.log_metrics(outputs, step=step)
+                    self.experiment.log_metrics(outputs)
                     results.append(outputs)
                     # on_step_end()
 
@@ -246,7 +246,7 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
 
                 if len(dic) != 0:
                     self._metrics.update(dic)
-                    self.experiment.log_metrics(dic, step=epoch, prefix="epoch")
+                    self.experiment.log_metrics(dic)
 
     def test_cycle(self, loader):
         """
@@ -281,7 +281,7 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
                         for key in outputs.keys()
                     }
 
-                    self.experiment.log_metrics(outputs, step=self.global_step)
+                    self.experiment.log_metrics(outputs)
                     results.append(outputs)
                     # on_step_end()
 
@@ -339,14 +339,14 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
         """
         self._global_step = 0
 
-        if self.model is None:
-            raise Exception("self.model is not defined.")
+        if not isinstance(self.model, Module):
+            raise NotImplementedError("`self.model` is not defined.")
 
-        if self.optimizer is None:
-            raise Exception("self.optimizer is not defined.")
+        if not isinstance(self.optimizer, Optimizer):
+            raise NotImplementedError("`self.optimizer` is not defined.")
 
-        if self.experiment is None:
-            raise Exception("self.experiment is not defined.")
+        if self.experiment is NotImplemented:
+            raise NotImplementedError("`self.experiment` is not defined.")
 
         self.model = self.model.to(self.device)
 
@@ -441,10 +441,10 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
 
         """
         if mode not in ["train", "val", "test"]:
-            raise Exception("argument `mode` must be one of 'train', 'val', or 'test'.")
+            raise KeyError("argument `mode` must be one of 'train', 'val', or 'test'.")
 
         if not isinstance(loader, DataLoader):
-            raise Exception("The argument `loader` must be an instance of `torch.utils.data.DataLoader`.")
+            raise TypeError("The argument `loader` must be an instance of `torch.utils.data.DataLoader`.")
 
         self.experiment.log_parameters(loader.__dict__, prefix=mode)
         self.experiment.log_parameter("{}_dataset_len".format(mode), len(loader))
