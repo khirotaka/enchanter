@@ -504,7 +504,7 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
         self.add_loader("train", train_loader)
         self.add_loader("val", val_loader)
         self.train_config(epochs, checkpoint_path=self._checkpoint_path)
-        self.run(verbose)
+        self.run(verbose=verbose)
 
         return self
 
