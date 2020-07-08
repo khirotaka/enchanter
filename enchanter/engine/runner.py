@@ -7,7 +7,8 @@
 #
 # ***************************************************
 
-
+import re
+import operator
 from abc import ABC
 from collections import OrderedDict
 
@@ -24,7 +25,7 @@ from enchanter.engine.saving import RunnerIO
 from enchanter.engine.modules import is_jupyter, send, get_dataset
 
 if is_jupyter():
-    from tqdm.notebook import tqdm_notebook as tqdm
+    from tqdm.notebook import tqdm
 else:
     from tqdm import tqdm
 
@@ -66,12 +67,14 @@ class BaseRunner(ABC, RunnerIO):
         self.experiment = NotImplemented
         self.early_stop = None
         self._global_step = 0
+        self.configures = {
+            "epochs": 1
+        }
 
-        self._epochs = 1
         self.pbar = None
         self._loaders = {}
         self._metrics = {}
-        self._checkpoint_path = None
+
 
     def backward(self, loss):
         loss.backward()
@@ -291,24 +294,38 @@ class BaseRunner(ABC, RunnerIO):
                     self._metrics.update(dic)
                     self.experiment.log_metrics(dic)
 
-    def train_config(self, epochs, **kwargs):
+    def train_config(self, epochs, checkpoint_path=None, monitor=None):
         """
         .run() メソッドを用いて訓練を行う際に、 epochs などを指定する為のメソッドです。
 
+        Examples:
+            >>> runner: BaseRunner = ...
+            >>> runner.train_config(
+            >>>     epochs=10,
+            >>>     checkpoint_path="/path/to/checkpoint_dir",
+            >>>     monitor="validate_avg_acc >= 0.75"
+            >>> )
+
         Args:
             epochs (int):
-            **kwargs:
+            checkpoint_path:
+            monitor:
 
         Returns:
+            None
 
         """
 
-        self._checkpoint_path = kwargs.get("checkpoint_path", None)
+        self.configures["checkpoint_path"]: str = checkpoint_path
+        if monitor:
+            mode = re.search("train|validate", monitor)
+            trigger = re.split("train\w|validate\w", monitor)[1]
+            self.configures["monitor"] = {"mode": mode, "trigger": trigger}
 
         if epochs > 0:
-            self._epochs = epochs
+            self.configures["epochs"] = epochs
         else:
-            self._epochs = 1
+            self.configures["epochs"] = 1
 
         return self
 
@@ -385,7 +402,7 @@ class BaseRunner(ABC, RunnerIO):
 
         if phase in {"all", "train", "train/val", "debug"}:
             if "train" in self.loaders:
-                self.pbar = tqdm(range(self._epochs), desc="Epochs") if verbose else range(self._epochs)
+                self.pbar = tqdm(range(self.configures["epochs"]), desc="Epochs") if verbose else range(self.configures["epochs"])
                 # .on_epoch_start()
                 for epoch in self.pbar:
                     # on_train_start()
@@ -400,15 +417,38 @@ class BaseRunner(ABC, RunnerIO):
 
                     if self.scheduler:
                         self.scheduler.step(epoch=None)
-                        self.experiment.log_metric("scheduler_lr", self.scheduler.get_lr(), epoch=epoch)
+                        self.experiment.log_metric("scheduler_lr", self.scheduler.get_last_lr(), epoch=epoch)
 
                     if self.early_stop:
                         if self.early_stop.on_epoch_end(self._metrics, epoch):
                             break
                         # .on_epoch_end()
 
-                    if self._checkpoint_path:
-                        super().save(self._checkpoint_path, epoch=epoch)
+                    if self.configures["checkpoint_path"]:
+                        ops = {
+                            "==": operator.eq, "!=": operator.ne, "<": operator.lt,
+                            "<=": operator.le, ">": operator.gt, ">=": operator.ge
+                        }
+
+                        def _save(o, k, v, e):
+                            # o: Operation, k: Key, v: Value, e: Epoch
+                            if ops[o](self.experiment.get_metric(k), v):
+                                super().save(self.configures["checkpoint_path"], epoch=e)
+
+                        if "monitor" in self.configures.keys():
+                            mode = self.configures["monitor"]["mode"]
+                            key, op, value = self.configures["monitor"]["trigger"].split(" ")
+
+                            if mode == "train":
+                                with self.experiment.train():
+                                    _save(op, key, value, epoch)
+                            elif mode == "validate":
+                                with self.experiment.validate():
+                                    _save(op, key, value, epoch)
+                            else:
+                                pass
+
+                        super().save(self.configures["checkpoint_path"], epoch=epoch)
 
         if phase in {"all", "test", "debug"}:
             if "test" in self.loaders:
@@ -476,10 +516,10 @@ class BaseRunner(ABC, RunnerIO):
         pin_memory = kwargs.get("pin_memory", False)
         verbose = kwargs.get("verbose", True)
 
-        if self._epochs == 0:
+        if self.configures["epochs"] == 0:
             epochs = kwargs.get("epochs", 1)
         else:
-            epochs = self._epochs
+            epochs = self.configures["epochs"]
 
         train_ds = get_dataset(x, y)
         val_ds = get_dataset(x, y)
@@ -503,7 +543,7 @@ class BaseRunner(ABC, RunnerIO):
 
         self.add_loader("train", train_loader)
         self.add_loader("val", val_loader)
-        self.train_config(epochs, checkpoint_path=self._checkpoint_path)
+        self.train_config(epochs, checkpoint_path=self.configures["checkpoint_path"])
         self.run(verbose=verbose)
 
         return self
