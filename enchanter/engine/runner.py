@@ -75,8 +75,21 @@ class BaseRunner(ABC, RunnerIO):
         self._loaders = {}
         self._metrics = {}
 
+    @staticmethod
+    def backward(loss):
+        """
+        calculate the gradient
 
-    def backward(self, loss):
+        Warnings:
+            This method may be changed from staticmethod in the future to support FP16 and others.
+
+        Args:
+            loss (torch.Tensor):
+
+        Returns:
+            None
+            
+        """
         loss.backward()
 
     def update_optimizer(self):
