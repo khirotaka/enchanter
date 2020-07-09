@@ -63,6 +63,7 @@ def test_custom_runner_1():
 
     try:
         runner.add_loader("train", loader)
+        runner.train_config(epochs=1)
         runner.run()
         is_pass = True
 
@@ -80,6 +81,7 @@ def test_custom_runner_2():
 
     try:
         runner.add_loader("test", loader)
+        runner.train_config(epochs=1)
         runner.run()
         is_pass = True
 
@@ -100,6 +102,7 @@ def test_custom_runner_3():
         runner.add_loader("train", loader)
         runner.add_loader("val", loader)
         runner.add_loader("test", loader)
+        runner.train_config(epochs=1)
         runner.run()
         is_pass = True
 

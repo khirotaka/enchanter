@@ -7,14 +7,16 @@
 #
 # ***************************************************
 
-
-from abc import ABC, abstractmethod
+import re
+import operator
+from abc import ABC
 from collections import OrderedDict
 
 from numpy import floor
-from sklearn.base import BaseEstimator
-from torch.cuda import is_available
 from torch import device
+from torch.nn import Module
+from torch.optim.optimizer import Optimizer
+from torch.cuda import is_available
 from torch.tensor import Tensor
 from torch.autograd import no_grad
 from torch.utils.data import DataLoader, SubsetRandomSampler
@@ -23,7 +25,7 @@ from enchanter.engine.saving import RunnerIO
 from enchanter.engine.modules import is_jupyter, send, get_dataset
 
 if is_jupyter():
-    from tqdm.notebook import tqdm_notebook as tqdm
+    from tqdm.notebook import tqdm
 else:
     from tqdm import tqdm
 
@@ -33,7 +35,7 @@ __all__ = [
 ]
 
 
-class BaseRunner(ABC, BaseEstimator, RunnerIO):
+class BaseRunner(ABC, RunnerIO):
     """
     PyTorchモデルの訓練に用いる Runner を作成する為のクラスです。
 
@@ -65,20 +67,34 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
         self.experiment = NotImplemented
         self.early_stop = None
         self._global_step = 0
+        self.configures = {
+            "epochs": 0
+        }
 
-        self._epochs = 1
         self.pbar = None
         self._loaders = {}
         self._metrics = {}
-        self._checkpoint_path = None
 
-    def backward(self, loss):
+    @staticmethod
+    def backward(loss):
+        """
+        calculate the gradient
+
+        Warnings:
+            This method may be changed from staticmethod in the future to support FP16 and others.
+
+        Args:
+            loss (torch.Tensor):
+
+        Returns:
+            None
+
+        """
         loss.backward()
 
     def update_optimizer(self):
         self.optimizer.step()
 
-    @abstractmethod
     def train_step(self, batch):
         """
         ニューラルネットの訓練時、
@@ -163,12 +179,11 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
         """
         return {}
 
-    def train_cycle(self, epoch, loader):
+    def train_cycle(self, loader):
         """
         ニューラルネットの訓練ループです。
 
         Args:
-            epoch (int):
             loader (torch.utils.data.DataLoader):
 
         """
@@ -195,7 +210,7 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
                     key: outputs[key].detach().cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                     for key in outputs.keys()
                 }
-                self.experiment.log_metrics(outputs, step=step, epoch=epoch)
+                self.experiment.log_metrics(outputs)
                 results.append(outputs)
                 # on_step_end()
                 self._global_step += 1
@@ -204,14 +219,13 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
 
             if len(dic) != 0:
                 self._metrics.update(dic)
-                self.experiment.log_metrics(dic, step=epoch)
+                self.experiment.log_metrics(dic)
 
-    def val_cycle(self, epoch, loader):
+    def val_cycle(self, loader):
         """
         ニューラルネットの評価用ループです。
 
         Args:
-            epoch:
             loader:
 
         Returns:
@@ -238,7 +252,7 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
                         key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                         for key in outputs.keys()
                     }
-                    self.experiment.log_metrics(outputs, step=step)
+                    self.experiment.log_metrics(outputs)
                     results.append(outputs)
                     # on_step_end()
 
@@ -246,7 +260,7 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
 
                 if len(dic) != 0:
                     self._metrics.update(dic)
-                    self.experiment.log_metrics(dic, step=epoch, prefix="epoch")
+                    self.experiment.log_metrics(dic)
 
     def test_cycle(self, loader):
         """
@@ -281,7 +295,7 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
                         for key in outputs.keys()
                     }
 
-                    self.experiment.log_metrics(outputs, step=self.global_step)
+                    self.experiment.log_metrics(outputs)
                     results.append(outputs)
                     # on_step_end()
 
@@ -291,24 +305,38 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
                     self._metrics.update(dic)
                     self.experiment.log_metrics(dic)
 
-    def train_config(self, epochs, **kwargs):
+    def train_config(self, epochs, checkpoint_path=None, monitor=None):
         """
         .run() メソッドを用いて訓練を行う際に、 epochs などを指定する為のメソッドです。
 
+        Examples:
+            >>> runner: BaseRunner = ...
+            >>> runner.train_config(
+            >>>     epochs=10,
+            >>>     checkpoint_path="/path/to/checkpoint_dir",
+            >>>     monitor="validate_avg_acc >= 0.75"
+            >>> )
+
         Args:
             epochs (int):
-            **kwargs:
+            checkpoint_path:
+            monitor:
 
         Returns:
+            None
 
         """
 
-        self._checkpoint_path = kwargs.get("checkpoint_path", None)
+        self.configures["checkpoint_path"]: str = checkpoint_path
+        if monitor:
+            mode = re.search("train|validate", monitor)
+            trigger = re.split("train\w|validate\w", monitor)[1]
+            self.configures["monitor"] = {"mode": mode, "trigger": trigger}
 
         if epochs > 0:
-            self._epochs = epochs
+            self.configures["epochs"] = epochs
         else:
-            self._epochs = 1
+            self.configures["epochs"] = 1
 
         return self
 
@@ -339,64 +367,107 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
         """
         self._global_step = 0
 
-        if self.model is None:
-            raise Exception("self.model is not defined.")
+        if not isinstance(self.model, Module):
+            raise NotImplementedError("`self.model` is not defined.")
 
-        if self.optimizer is None:
-            raise Exception("self.optimizer is not defined.")
+        if not isinstance(self.optimizer, Optimizer):
+            raise NotImplementedError("`self.optimizer` is not defined.")
 
-        if self.experiment is None:
-            raise Exception("self.experiment is not defined.")
+        if self.experiment is NotImplemented:
+            raise NotImplementedError("`self.experiment` is not defined.")
 
         self.model = self.model.to(self.device)
 
-    def run(self, verbose=True):
+    def run(self, phase="all", verbose=True):
         """
         Runnerを実行します。
         実行には、事前に self.add_loader("train", train_loader) で訓練用のデータローダを登録するしておく必要があります。
 
         Args:
+            phase:
+                - `train`
+                - `val`
+                - `test`
+                - `all`
+                - `debug`
+                のいずれかを指定してする事で、実行フェーズを決定します。デフォルト: all
+
             verbose: True の場合、学習の進行を表示します。
 
         Returns:
             None
+
         """
+        phases = {"train", "train/val", "test", "all", "debug"}
+        if phase not in phases:
+            raise KeyError("The argument 'phase' must be one of the following. {}".format(phases))
+
+        if phase == "debug":
+            self.experiment.add_tag("debug")
+
         self.initialize()
         self.log_hyperparams()
 
         if not self.loaders:
             raise Exception("At least one DataLoader must be provided.")
 
-        if "train" in self.loaders:
-            self.pbar = tqdm(range(self._epochs), desc="Epochs") if verbose else range(self._epochs)
-            # .on_epoch_start()
-            for epoch in self.pbar:
-                # on_train_start()
-                self.train_cycle(epoch, self.loaders["train"])
-                # on_train_end()
+        if phase in {"all", "train", "train/val", "debug"}:
+            if "train" in self.loaders:
+                self.pbar = tqdm(range(self.configures["epochs"]), desc="Epochs") if verbose \
+                    else range(self.configures["epochs"])
+                # .on_epoch_start()
+                for epoch in self.pbar:
+                    # on_train_start()
+                    self.train_cycle(self.loaders["train"])
+                    # on_train_end()
 
-                if "val" in self.loaders:
-                    # on_validation_start()
-                    self.val_cycle(epoch, self.loaders["val"])
-                    # on_validation_end()
+                    if phase in {"all", "train/val", "debug"}:
+                        if "val" in self.loaders:
+                            # on_validation_start()
+                            self.val_cycle(self.loaders["val"])
+                            # on_validation_end()
 
-                if self.scheduler:
-                    self.scheduler.step(epoch=None)
-                    self.experiment.log_metric("scheduler_lr", self.scheduler.get_last_lr(), epoch=epoch)
+                    if self.scheduler:
+                        self.scheduler.step(epoch=None)
+                        self.experiment.log_metric("scheduler_lr", self.scheduler.get_last_lr(), epoch=epoch)
 
-                if self.early_stop:
-                    if self.early_stop.on_epoch_end(self._metrics, epoch):
-                        break
-                    # .on_epoch_end()
+                    if self.early_stop:
+                        if self.early_stop.on_epoch_end(self._metrics, epoch):
+                            break
+                        # .on_epoch_end()
 
-                if self._checkpoint_path:
-                    super().save(self._checkpoint_path, epoch=epoch)
+                    if self.configures["checkpoint_path"]:
+                        ops = {
+                            "==": operator.eq, "!=": operator.ne, "<": operator.lt,
+                            "<=": operator.le, ">": operator.gt, ">=": operator.ge
+                        }
 
-        if "test" in self.loaders:
-            # on_test_start()
-            self.pbar = tqdm(total=len(self.loaders["test"]), desc="Evaluating") if verbose else None
-            self.test_cycle(self.loaders["test"])
-            # on_test_end()
+                        def _save(o, k, v, e):
+                            # o: Operation, k: Key, v: Value, e: Epoch
+                            if ops[o](self.experiment.get_metric(k), v):
+                                super().save(self.configures["checkpoint_path"], epoch=e)
+
+                        if "monitor" in self.configures.keys():
+                            mode = self.configures["monitor"]["mode"]
+                            key, op, value = self.configures["monitor"]["trigger"].split(" ")
+
+                            if mode == "train":
+                                with self.experiment.train():
+                                    _save(op, key, value, epoch)
+                            elif mode == "validate":
+                                with self.experiment.validate():
+                                    _save(op, key, value, epoch)
+                            else:
+                                pass
+
+                        super().save(self.configures["checkpoint_path"], epoch=epoch)
+
+        if phase in {"all", "test", "debug"}:
+            if "test" in self.loaders:
+                # on_test_start()
+                self.pbar = tqdm(total=len(self.loaders["test"]), desc="Evaluating") if verbose else None
+                self.test_cycle(self.loaders["test"])
+                # on_test_end()
 
         return self
 
@@ -422,10 +493,10 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
 
         """
         if mode not in ["train", "val", "test"]:
-            raise Exception("argument `mode` must be one of 'train', 'val', or 'test'.")
+            raise KeyError("argument `mode` must be one of 'train', 'val', or 'test'.")
 
         if not isinstance(loader, DataLoader):
-            raise Exception("The argument `loader` must be an instance of `torch.utils.data.DataLoader`.")
+            raise TypeError("The argument `loader` must be an instance of `torch.utils.data.DataLoader`.")
 
         self.experiment.log_parameters(loader.__dict__, prefix=mode)
         self.experiment.log_parameter("{}_dataset_len".format(mode), len(loader))
@@ -456,11 +527,13 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
         batch_size = kwargs.get("batch_size", 1)
         pin_memory = kwargs.get("pin_memory", False)
         verbose = kwargs.get("verbose", True)
+        checkpoint_path = kwargs.get("checkpoint_path", None)
+        monitor = kwargs.get("monitor", None)
 
-        if self._epochs == 0:
+        if self.configures["epochs"] == 0:
             epochs = kwargs.get("epochs", 1)
         else:
-            epochs = self._epochs
+            epochs = self.configures["epochs"]
 
         train_ds = get_dataset(x, y)
         val_ds = get_dataset(x, y)
@@ -484,8 +557,8 @@ class BaseRunner(ABC, BaseEstimator, RunnerIO):
 
         self.add_loader("train", train_loader)
         self.add_loader("val", val_loader)
-        self.train_config(epochs, checkpoint_path=self._checkpoint_path)
-        self.run(verbose)
+        self.train_config(epochs, checkpoint_path=checkpoint_path, monitor=monitor)
+        self.run(verbose=verbose)
 
         return self
 

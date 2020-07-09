@@ -1,4 +1,3 @@
-from io import BytesIO
 from time import ctime
 from pathlib import Path
 from copy import deepcopy
@@ -86,10 +85,8 @@ class RunnerIO:
         path = directory / filename
         save(checkpoint, path)
 
-        if hasattr(self.experiment, "log_asset_data"):
-            buffer = BytesIO()
-            save(checkpoint, buffer)
-            self.experiment.log_asset_data(buffer.getvalue(), filename)
+        if hasattr(self.experiment, "log_asset"):
+            self.experiment.log_asset(path)
 
     def load(self, filename, map_location="cpu"):
         """
