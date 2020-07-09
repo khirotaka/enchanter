@@ -68,7 +68,7 @@ class BaseRunner(ABC, RunnerIO):
         self.early_stop = None
         self._global_step = 0
         self.configures = {
-            "epochs": 1
+            "epochs": 0
         }
 
         self.pbar = None
@@ -179,12 +179,11 @@ class BaseRunner(ABC, RunnerIO):
         """
         return {}
 
-    def train_cycle(self, epoch, loader):
+    def train_cycle(self, loader):
         """
         ニューラルネットの訓練ループです。
 
         Args:
-            epoch (int):
             loader (torch.utils.data.DataLoader):
 
         """
@@ -222,12 +221,11 @@ class BaseRunner(ABC, RunnerIO):
                 self._metrics.update(dic)
                 self.experiment.log_metrics(dic)
 
-    def val_cycle(self, epoch, loader):
+    def val_cycle(self, loader):
         """
         ニューラルネットの評価用ループです。
 
         Args:
-            epoch:
             loader:
 
         Returns:
@@ -415,17 +413,18 @@ class BaseRunner(ABC, RunnerIO):
 
         if phase in {"all", "train", "train/val", "debug"}:
             if "train" in self.loaders:
-                self.pbar = tqdm(range(self.configures["epochs"]), desc="Epochs") if verbose else range(self.configures["epochs"])
+                self.pbar = tqdm(range(self.configures["epochs"]), desc="Epochs") if verbose \
+                    else range(self.configures["epochs"])
                 # .on_epoch_start()
                 for epoch in self.pbar:
                     # on_train_start()
-                    self.train_cycle(epoch, self.loaders["train"])
+                    self.train_cycle(self.loaders["train"])
                     # on_train_end()
 
                     if phase in {"all", "train/val", "debug"}:
                         if "val" in self.loaders:
                             # on_validation_start()
-                            self.val_cycle(epoch, self.loaders["val"])
+                            self.val_cycle(self.loaders["val"])
                             # on_validation_end()
 
                     if self.scheduler:
@@ -528,6 +527,8 @@ class BaseRunner(ABC, RunnerIO):
         batch_size = kwargs.get("batch_size", 1)
         pin_memory = kwargs.get("pin_memory", False)
         verbose = kwargs.get("verbose", True)
+        checkpoint_path = kwargs.get("checkpoint_path", None)
+        monitor = kwargs.get("monitor", None)
 
         if self.configures["epochs"] == 0:
             epochs = kwargs.get("epochs", 1)
@@ -556,7 +557,7 @@ class BaseRunner(ABC, RunnerIO):
 
         self.add_loader("train", train_loader)
         self.add_loader("val", val_loader)
-        self.train_config(epochs, checkpoint_path=self.configures["checkpoint_path"])
+        self.train_config(epochs, checkpoint_path=checkpoint_path, monitor=monitor)
         self.run(verbose=verbose)
 
         return self
