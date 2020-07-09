@@ -7,14 +7,19 @@
 #
 # ***************************************************
 
-import random
-import torch
-import numpy as np
+from os import environ as os_environ
+from random import seed as std_seed
+from numpy.random import seed as np_seed
+from torch.backends import cudnn
+from torch.cuda import is_available as cuda_is_available
+from torch import manual_seed, Tensor, as_tensor
+
+
 from torch.utils.data import TensorDataset
 
 
 __all__ = [
-    "is_jupyter", "numpy2tensor", "get_dataset", "fix_seed"
+    "is_jupyter", "get_dataset", "fix_seed"
 ]
 
 
@@ -34,26 +39,6 @@ def is_jupyter():
     return True
 
 
-def numpy2tensor(inputs):
-    """
-    入力された `np.ndarray` を `torch.Tensor` に変換します。単に `torch.Tensor` が入力された場合は、そのまま値を返します。
-
-    Examples:
-        >>> x = np.random.randn(512, 6)     # np.ndarray (dtype=np.float64)
-        >>> x = numpy2tensor(x)             # torch.Tensor (dtype=torch.DoubleTensor)
-
-    Args:
-        inputs (Union[np.ndarray, torch.Tensor]):
-
-    Returns:
-        `torch.Tensor`
-    """
-    if isinstance(inputs, np.ndarray):
-        inputs = torch.from_numpy(inputs)
-
-    return inputs
-
-
 def get_dataset(x, y=None):
     """
     入力された値をもとに `torch.utils.data.TensorDataset` を生成します。
@@ -70,10 +55,10 @@ def get_dataset(x, y=None):
     Returns:
         `torch.utils.data.TensorDataset`
     """
-    x = numpy2tensor(x)
+    x = as_tensor(x)
 
     if y is not None:
-        y = numpy2tensor(y)
+        y = as_tensor(y)
         ds = TensorDataset(x, y)
     else:
         ds = TensorDataset(x)
@@ -94,10 +79,10 @@ def send(batch, device):
 
     """
 
-    return tuple(map(lambda x: x.to(device) if isinstance(x, torch.Tensor) else x, batch))
+    return tuple(map(lambda x: x.to(device) if isinstance(x, Tensor) else x, batch))
 
 
-def fix_seed(seed):
+def fix_seed(seed, deterministic=False, benchmark=False):
     """
     PyTorch, NumPy, Pure Python Random のSEED値を一括固定します。
 
@@ -108,10 +93,21 @@ def fix_seed(seed):
 
     Args:
         seed (int): SEED値
+        deterministic (bool): CuDNN上で可能な限り再現性を担保するかどうか
+        benchmark (bool):
 
     Returns:
         None
     """
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
+    std_seed(seed)
+    os_environ["PYTHONHASHSEED"] = str(seed)
+    np_seed(seed)
+    manual_seed(seed)
+
+    if cuda_is_available():
+        if deterministic:
+            cudnn.deterministic = True
+        if benchmark:
+            cudnn.benchmark = False
+
+

@@ -7,12 +7,11 @@
 #
 # ***************************************************
 
-import torch
 from sklearn.metrics import r2_score
 from sklearn.base import RegressorMixin
+from torch import stack, tensor, no_grad, as_tensor
 
-import enchanter
-import enchanter.engine.modules as modules
+from enchanter.engine import BaseRunner
 
 
 __all__ = [
@@ -20,7 +19,7 @@ __all__ = [
 ]
 
 
-class RegressionRunner(enchanter.engine.BaseRunner, RegressorMixin):
+class RegressionRunner(BaseRunner, RegressorMixin):
     """
     回帰問題を対象にしたRunner。
 
@@ -50,8 +49,8 @@ class RegressionRunner(enchanter.engine.BaseRunner, RegressorMixin):
         return {"loss": loss, "r2": r2}
 
     def train_end(self, outputs):
-        avg_loss = torch.stack([x["loss"] for x in outputs]).mean()
-        avg_r2 = torch.stack([torch.tensor(x["r2"]) for x in outputs]).mean()
+        avg_loss = stack([x["loss"] for x in outputs]).mean()
+        avg_r2 = stack([tensor(x["r2"]) for x in outputs]).mean()
         return {"avg_loss": avg_loss, "avg_r2": avg_r2}
 
     def val_step(self, batch):
@@ -68,8 +67,8 @@ class RegressionRunner(enchanter.engine.BaseRunner, RegressorMixin):
 
     def predict(self, x):
         self.model.eval()
-        with torch.no_grad():
-            x = modules.numpy2tensor(x).to(self.device)
+        with no_grad():
+            x = as_tensor(x, device=self.device)
             out = self.model(x)
 
         return out.cpu().numpy()

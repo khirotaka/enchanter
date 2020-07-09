@@ -7,7 +7,7 @@
 #
 # ***************************************************
 
-import abc
+from abc import ABC
 
 
 __all__ = [
@@ -15,7 +15,7 @@ __all__ = [
 ]
 
 
-class Callback(abc.ABC):
+class Callback(ABC):
     def on_epoch_start(self, *args, **kwargs):
         """Called when the epoch begins."""
         pass

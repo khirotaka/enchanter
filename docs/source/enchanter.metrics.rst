@@ -13,12 +13,3 @@ Classification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: calculate_accuracy
-
-
-Authentication
----------------
-
-`calculate_eer`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: calculate_eer

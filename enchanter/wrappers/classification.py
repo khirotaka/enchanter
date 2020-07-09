@@ -8,11 +8,10 @@
 # ***************************************************
 
 
-import torch
+from torch import no_grad, stack, tensor, as_tensor, max as torch_max
 from sklearn.base import ClassifierMixin
 
-import enchanter
-import enchanter.engine.modules as modules
+from enchanter.engine import BaseRunner
 from enchanter.metrics import calculate_accuracy as calculate_accuracy
 
 
@@ -21,12 +20,13 @@ __all__ = [
 ]
 
 
-class ClassificationRunner(enchanter.engine.BaseRunner, ClassifierMixin):
+class ClassificationRunner(BaseRunner, ClassifierMixin):
     """
     分類タスク向けの Runner です。
 
     Examples:
         >>> from comet_ml import Experiment
+        >>> import torch
         >>> model = torch.nn.Sequential(...)
         >>> optimizer = torch.optim.Adam(model.parameters())
         >>> criterion = torch.nn.CrossEntropyLoss()
@@ -60,8 +60,8 @@ class ClassificationRunner(enchanter.engine.BaseRunner, ClassifierMixin):
         return {"loss": loss, "accuracy": accuracy}
 
     def train_end(self, outputs):
-        avg_loss = torch.stack([x["loss"] for x in outputs]).mean()
-        avg_acc = torch.stack([torch.tensor(x["accuracy"]) for x in outputs]).mean()
+        avg_loss = stack([x["loss"] for x in outputs]).mean()
+        avg_acc = stack([tensor(x["accuracy"]) for x in outputs]).mean()
         return {"avg_loss": avg_loss, "avg_acc": avg_acc}
 
     def val_step(self, batch):
@@ -78,9 +78,9 @@ class ClassificationRunner(enchanter.engine.BaseRunner, ClassifierMixin):
 
     def predict(self, x):
         self.model.eval()
-        with torch.no_grad():
-            x = modules.numpy2tensor(x).to(self.device)
+        with no_grad():
+            x = as_tensor(x, device=self.device)
             out = self.model(x)
-            _, predicted = torch.max(out, 1)
+            _, predicted = torch_max(out, 1)
 
         return predicted.cpu().numpy()

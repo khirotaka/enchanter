@@ -8,8 +8,8 @@
 # ***************************************************
 
 import numpy as np
-import torch
-import torch.nn as nn
+from torch import tensor, bmm
+from torch.nn import Module
 
 
 __all__ = [
@@ -17,7 +17,7 @@ __all__ = [
 ]
 
 
-class DenseInterpolation(nn.Module):
+class DenseInterpolation(Module):
     """
 
     Args:
@@ -36,7 +36,7 @@ class DenseInterpolation(nn.Module):
                 w = np.power(tmp, 2, dtype=np.float32)
                 W[m, t] = w
 
-        W = torch.tensor(W).float().unsqueeze(0)
+        W = tensor(W).float().unsqueeze(0)
         self.register_buffer("W", W)
 
     def forward(self, x):
@@ -44,11 +44,11 @@ class DenseInterpolation(nn.Module):
         Dense Interpolation を入力に適用する。
 
         Args:
-            x (torch.Tensor): 入力する配列の形状は、 `[N, features, seq_len]` を想定
+            x (torch.Tensor): 入力する配列の形状は、 `[N, seq_len, features]` を想定
 
         Returns:
             適用した結果 (torch.Tensor)
         """
         w = self.W.repeat(x.shape[0], 1, 1).requires_grad_(False)
-        u = torch.bmm(w, x)
+        u = bmm(w, x)
         return u.transpose_(1, 2)

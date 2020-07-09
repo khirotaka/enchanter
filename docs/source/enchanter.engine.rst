@@ -3,13 +3,25 @@
 enchanter.engine
 ========================
 
+
+.. automodule:: enchanter.engine
+.. currentmodule:: enchanter.engine
+
 enchanter.engine.BaseRunner
 ----------------------------
 
-.. automodule:: enchanter.engine
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. autoclass:: BaseRunner
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+enchanter.engine.RunnerIO
+----------------------------
+
+.. autoclass:: RunnerIO
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 
 enchanter.engine.modules
@@ -23,12 +35,6 @@ enchanter.engine.modules
 ~~~~~~~~~~~~~~~~
 
 .. autofunction:: is_jupyter
-
-
-`numpy2tensor`
-~~~~~~~~~~~~~~~~
-
-.. autofunction:: numpy2tensor
 
 
 `get_dataset`
