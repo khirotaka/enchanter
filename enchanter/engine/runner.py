@@ -94,6 +94,35 @@ class BaseRunner(ABC, RunnerIO):
     def update_optimizer(self):
         self.optimizer.step()
 
+    def update_scheduler(self, epoch):
+        """
+        スケジューラの値を更新するために呼ばれるメソッドです。
+        Optimizerを更新した後に呼ばれます。
+
+        Args:
+            epoch (int): 現在のエポック数
+
+        Returns:
+            None
+
+        Examples:
+            >>> from torch.optim import lr_scheduler
+            >>> from enchanter.wrappers import ClassificationRunner
+            >>> runner: BaseRunner = ClassificationRunner(
+            >>>     model=...,
+            >>>     optimizer=...,
+            >>>     criterion=...,
+            >>>     scheduler=[
+            >>>         lr_scheduler.CosineAnnealingLR(...), lr_scheduler.StepLR(...)
+            >>>     ]
+            >>> )
+
+        """
+        for scheduler in self.scheduler:
+            scheduler.step()
+
+        self.experiment.log_metric("scheduler_lr", self.scheduler[-1].get_last_lr(), epoch=epoch)
+
     def train_step(self, batch):
         """
         ニューラルネットの訓練時、
@@ -347,6 +376,7 @@ class BaseRunner(ABC, RunnerIO):
 
         Returns:
             None
+
         """
         self.experiment.log_parameters(self.optimizer.__dict__["defaults"], prefix="optimizer")
         self.experiment.log_parameter("Optimizer", self.optimizer.__class__.__name__)
@@ -362,6 +392,7 @@ class BaseRunner(ABC, RunnerIO):
 
         Returns:
             None
+
         """
 
         if not isinstance(self.model, Module):
@@ -425,8 +456,7 @@ class BaseRunner(ABC, RunnerIO):
                             # on_validation_end()
 
                     if self.scheduler:
-                        self.scheduler.step(epoch=None)
-                        self.experiment.log_metric("scheduler_lr", self.scheduler.get_last_lr(), epoch=epoch)
+                        self.update_scheduler(epoch)
 
                     if self.early_stop:
                         if self.early_stop.on_epoch_end(self._metrics, epoch):
@@ -487,6 +517,11 @@ class BaseRunner(ABC, RunnerIO):
         Args:
             mode (str): ['train', 'val', 'test'] のいずれをか指定します。
             loader (torch.utils.data.DataLoader):
+
+        Examples:
+            >>> loader = DataLoader(...)
+            >>> runner: BaseRunner = ...
+            >>> runner.add_loader("train", loader)
 
         """
         if mode not in ["train", "val", "test"]:
