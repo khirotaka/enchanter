@@ -66,7 +66,6 @@ class BaseRunner(ABC, RunnerIO):
         self.scheduler = None
         self.experiment = NotImplemented
         self.early_stop = None
-        self._global_step = 0
         self.configures = {
             "epochs": 0
         }
@@ -213,7 +212,6 @@ class BaseRunner(ABC, RunnerIO):
                 self.experiment.log_metrics(outputs)
                 results.append(outputs)
                 # on_step_end()
-                self._global_step += 1
 
             dic = self.train_end(results)        # pylint: disable=E1111
 
@@ -365,7 +363,6 @@ class BaseRunner(ABC, RunnerIO):
         Returns:
             None
         """
-        self._global_step = 0
 
         if not isinstance(self.model, Module):
             raise NotImplementedError("`self.model` is not defined.")
@@ -507,10 +504,6 @@ class BaseRunner(ABC, RunnerIO):
     @property
     def loaders(self):
         return self._loaders
-
-    @property
-    def global_step(self):
-        return self._global_step
 
     def fit(self, x, y, **kwargs):
         """
