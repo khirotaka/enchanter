@@ -209,11 +209,12 @@ class BaseRunner(ABC, RunnerIO):
         """
         return {}
 
-    def train_cycle(self, loader):
+    def train_cycle(self, epoch, loader):
         """
         ニューラルネットの訓練ループです。
 
         Args:
+            epoch
             loader (torch.utils.data.DataLoader):
 
         """
@@ -248,13 +249,14 @@ class BaseRunner(ABC, RunnerIO):
 
             if len(dic) != 0:
                 self._metrics.update(dic)
-                self.experiment.log_metrics(dic)
+                self.experiment.log_metrics(dic, step=epoch)
 
-    def val_cycle(self, loader):
+    def val_cycle(self, epoch, loader):
         """
         ニューラルネットの評価用ループです。
 
         Args:
+            epoch
             loader:
 
         Returns:
@@ -289,7 +291,7 @@ class BaseRunner(ABC, RunnerIO):
 
                 if len(dic) != 0:
                     self._metrics.update(dic)
-                    self.experiment.log_metrics(dic)
+                    self.experiment.log_metrics(dic, step=epoch)
 
     def test_cycle(self, loader):
         """
@@ -448,13 +450,13 @@ class BaseRunner(ABC, RunnerIO):
                 # .on_epoch_start()
                 for epoch in self.pbar:
                     # on_train_start()
-                    self.train_cycle(self.loaders["train"])
+                    self.train_cycle(epoch, self.loaders["train"])
                     # on_train_end()
 
                     if phase in {"all", "train/val", "debug"}:
                         if "val" in self.loaders:
                             # on_validation_start()
-                            self.val_cycle(self.loaders["val"])
+                            self.val_cycle(epoch, self.loaders["val"])
                             # on_validation_end()
 
                     if self.scheduler:
