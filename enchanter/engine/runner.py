@@ -38,13 +38,15 @@ class BaseRunner(ABC, RunnerIO):
 
     Examples:
 
+        >>> from comet_ml import Experiment
+        >>> import torch
         >>> class Runner(BaseRunner):
         >>>     def __init__(self):
         >>>         super(Runner, self).__init__()
-        >>>         self.model = nn.Linear(10, 10)
+        >>>         self.model = torch.nn.Linear(10, 10)
         >>>         self.optimizer = torch.optim.Adam(self.model.parameters())
         >>>         self.experiment = Experiment()
-        >>>         self.criterion = nn.CrossEntropyLoss()
+        >>>         self.criterion = torch.nn.CrossEntropyLoss()
         >>>
         >>>     def train_step(self, batch):
         >>>         x, y = batch
@@ -122,9 +124,13 @@ class BaseRunner(ABC, RunnerIO):
     def train_step(self, batch):
         """
         ニューラルネットの訓練時、
+            >>> import torch.nn as nn
+            >>> train_loader: DataLoader = ...
+            >>> model: nn.Module = ...
+            >>> criterion = ...
             >>> for x, y in train_loader:
             >>>     out = model(x)
-            >>>     loss = criteion(out, y)
+            >>>     loss = criterion(out, y)
 
         にあたる箇所を担当するメソッドです。
 
