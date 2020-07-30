@@ -13,6 +13,7 @@ from abc import ABC
 from collections import OrderedDict
 
 from numpy import floor
+from tqdm.auto import tqdm
 from torch import device
 from torch.nn import Module
 from torch.optim.optimizer import Optimizer
@@ -22,12 +23,7 @@ from torch.autograd import no_grad
 from torch.utils.data import DataLoader, SubsetRandomSampler
 
 from enchanter.engine.saving import RunnerIO
-from enchanter.engine.modules import is_jupyter, send, get_dataset
-
-if is_jupyter():
-    from tqdm.notebook import tqdm
-else:
-    from tqdm import tqdm
+from enchanter.engine.modules import send, get_dataset
 
 
 __all__ = [
