@@ -26,10 +26,15 @@ def main():
         optimizer,
         nn.CrossEntropyLoss(),
         experiment,
-        scheduler=optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5),
+        scheduler=[optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)],
         early_stop=EarlyStopping("train_avg_loss", min_delta=0.1, patience=1)
     )
-    runner.add_loader("train", train_loader).add_loader("test", test_loader).train_config(epochs=5)
+    runner.add_loader("train", train_loader).add_loader("test", test_loader)\
+        .train_config(
+        epochs=5,
+        checkpoint_path="./checkpoints",
+        monitor="validate_avg_acc >= 0.75"
+    )
 
     runner.run(verbose=True)
 
