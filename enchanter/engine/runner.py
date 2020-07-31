@@ -408,6 +408,10 @@ class BaseRunner(ABC, RunnerIO):
         if self.experiment is NotImplemented:
             raise NotImplementedError("`self.experiment` is not defined.")
 
+        if not isinstance(self.scheduler, list):
+            raise ValueError("`scheduler` must be a list object.")
+
+
         self.model = self.model.to(self.device)
 
     def run(self, phase="all", verbose=True):
