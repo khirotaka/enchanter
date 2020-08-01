@@ -7,7 +7,9 @@
 #
 # ***************************************************
 
+from typing import List, Callable, Union, Optional
 from torch import relu
+from torch.tensor import Tensor
 from torch.nn import Module, ModuleList, Linear, Sequential, Conv1d, ReLU
 
 
@@ -39,23 +41,24 @@ class MLP(Module):
 
     """
 
-    def __init__(self, shapes, activation=relu):
-        super().__init__()
-        self.layers = []
-        self.activation = activation
+    def __init__(self, shapes: List[int], activation: Union[Callable[[Tensor], Tensor], Module] = relu):
+        super(MLP, self).__init__()
+        layers: List[Module] = []
+        self.activation: Callable[[Tensor], Tensor] = activation
 
         for i in range(len(shapes) - 1):
-            self.layers.append(Linear(shapes[i], shapes[i+1]))
+            layers.append(Linear(shapes[i], shapes[i+1]))
 
-        self.layers = ModuleList(self.layers)
+        self.layers: Module = ModuleList(layers)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         for layer in self.layers[:-1]:
             x = layer(x)
             x = self.activation(x)
 
         x = self.layers[-1](x)
         return x
+
 
 
 class PositionWiseFeedForward(Module):
@@ -75,15 +78,15 @@ class PositionWiseFeedForward(Module):
         >>> out = ff(x)
 
     """
-    def __init__(self, d_model, expansion=2):
-        super().__init__()
-        self.conv = Sequential(
+    def __init__(self, d_model: int, expansion: int = 2) -> None:
+        super(PositionWiseFeedForward, self).__init__()
+        self.conv: Module = Sequential(
             Conv1d(d_model, d_model*expansion, 1),
             ReLU(),
             Conv1d(d_model*expansion, d_model, 1)
         )
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         """
         入力に対して PositionWiseFeedForward を適用します。
 

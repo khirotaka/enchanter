@@ -13,6 +13,7 @@ from abc import ABC
 from collections import OrderedDict
 
 from numpy import floor
+from tqdm.auto import tqdm
 from torch import device
 from torch.nn import Module
 from torch.optim.optimizer import Optimizer
@@ -22,12 +23,7 @@ from torch.autograd import no_grad
 from torch.utils.data import DataLoader, SubsetRandomSampler
 
 from enchanter.engine.saving import RunnerIO
-from enchanter.engine.modules import is_jupyter, send, get_dataset
-
-if is_jupyter():
-    from tqdm.notebook import tqdm
-else:
-    from tqdm import tqdm
+from enchanter.engine.modules import send, get_dataset
 
 
 __all__ = [
@@ -42,13 +38,15 @@ class BaseRunner(ABC, RunnerIO):
 
     Examples:
 
+        >>> from comet_ml import Experiment
+        >>> import torch
         >>> class Runner(BaseRunner):
         >>>     def __init__(self):
         >>>         super(Runner, self).__init__()
-        >>>         self.model = nn.Linear(10, 10)
+        >>>         self.model = torch.nn.Linear(10, 10)
         >>>         self.optimizer = torch.optim.Adam(self.model.parameters())
         >>>         self.experiment = Experiment()
-        >>>         self.criterion = nn.CrossEntropyLoss()
+        >>>         self.criterion = torch.nn.CrossEntropyLoss()
         >>>
         >>>     def train_step(self, batch):
         >>>         x, y = batch
@@ -66,7 +64,6 @@ class BaseRunner(ABC, RunnerIO):
         self.scheduler = None
         self.experiment = NotImplemented
         self.early_stop = None
-        self._global_step = 0
         self.configures = {
             "epochs": 0
         }
@@ -95,12 +92,45 @@ class BaseRunner(ABC, RunnerIO):
     def update_optimizer(self):
         self.optimizer.step()
 
+    def update_scheduler(self, epoch):
+        """
+        スケジューラの値を更新するために呼ばれるメソッドです。
+        Optimizerを更新した後に呼ばれます。
+
+        Args:
+            epoch (int): 現在のエポック数
+
+        Returns:
+            None
+
+        Examples:
+            >>> from torch.optim import lr_scheduler
+            >>> from enchanter.wrappers import ClassificationRunner
+            >>> runner: BaseRunner = ClassificationRunner(
+            >>>     model=...,
+            >>>     optimizer=...,
+            >>>     criterion=...,
+            >>>     scheduler=[
+            >>>         lr_scheduler.CosineAnnealingLR(...), lr_scheduler.StepLR(...)
+            >>>     ]
+            >>> )
+
+        """
+        for scheduler in self.scheduler:
+            scheduler.step()
+
+        self.experiment.log_metric("scheduler_lr", self.scheduler[-1].get_last_lr(), epoch=epoch)
+
     def train_step(self, batch):
         """
         ニューラルネットの訓練時、
+            >>> import torch.nn as nn
+            >>> train_loader: DataLoader = ...
+            >>> model: nn.Module = ...
+            >>> criterion = ...
             >>> for x, y in train_loader:
             >>>     out = model(x)
-            >>>     loss = criteion(out, y)
+            >>>     loss = criterion(out, y)
 
         にあたる箇所を担当するメソッドです。
 
@@ -179,11 +209,12 @@ class BaseRunner(ABC, RunnerIO):
         """
         return {}
 
-    def train_cycle(self, loader):
+    def train_cycle(self, epoch, loader):
         """
         ニューラルネットの訓練ループです。
 
         Args:
+            epoch
             loader (torch.utils.data.DataLoader):
 
         """
@@ -213,19 +244,19 @@ class BaseRunner(ABC, RunnerIO):
                 self.experiment.log_metrics(outputs)
                 results.append(outputs)
                 # on_step_end()
-                self._global_step += 1
 
             dic = self.train_end(results)        # pylint: disable=E1111
 
             if len(dic) != 0:
                 self._metrics.update(dic)
-                self.experiment.log_metrics(dic)
+                self.experiment.log_metrics(dic, step=epoch)
 
-    def val_cycle(self, loader):
+    def val_cycle(self, epoch, loader):
         """
         ニューラルネットの評価用ループです。
 
         Args:
+            epoch
             loader:
 
         Returns:
@@ -260,7 +291,7 @@ class BaseRunner(ABC, RunnerIO):
 
                 if len(dic) != 0:
                     self._metrics.update(dic)
-                    self.experiment.log_metrics(dic)
+                    self.experiment.log_metrics(dic, step=epoch)
 
     def test_cycle(self, loader):
         """
@@ -318,9 +349,9 @@ class BaseRunner(ABC, RunnerIO):
             >>> )
 
         Args:
-            epochs (int):
-            checkpoint_path:
-            monitor:
+            epochs (int): 訓練epoch数を指定する。
+            checkpoint_path: checkpointを保存するディレクトリ名を指定。monitorを指定しなければ、全てのepochにおける重みを保存する。
+            monitor: 指定した式に当てはまるepochのみを保存する。checkpoint_pathと一緒に設定する必要があるます。
 
         Returns:
             None
@@ -349,6 +380,7 @@ class BaseRunner(ABC, RunnerIO):
 
         Returns:
             None
+
         """
         self.experiment.log_parameters(self.optimizer.__dict__["defaults"], prefix="optimizer")
         self.experiment.log_parameter("Optimizer", self.optimizer.__class__.__name__)
@@ -364,8 +396,8 @@ class BaseRunner(ABC, RunnerIO):
 
         Returns:
             None
+
         """
-        self._global_step = 0
 
         if not isinstance(self.model, Module):
             raise NotImplementedError("`self.model` is not defined.")
@@ -375,6 +407,9 @@ class BaseRunner(ABC, RunnerIO):
 
         if self.experiment is NotImplemented:
             raise NotImplementedError("`self.experiment` is not defined.")
+
+        if self.scheduler and not isinstance(self.scheduler, list):
+            raise ValueError("`scheduler` must be a list object.")
 
         self.model = self.model.to(self.device)
 
@@ -418,18 +453,17 @@ class BaseRunner(ABC, RunnerIO):
                 # .on_epoch_start()
                 for epoch in self.pbar:
                     # on_train_start()
-                    self.train_cycle(self.loaders["train"])
+                    self.train_cycle(epoch, self.loaders["train"])
                     # on_train_end()
 
                     if phase in {"all", "train/val", "debug"}:
                         if "val" in self.loaders:
                             # on_validation_start()
-                            self.val_cycle(self.loaders["val"])
+                            self.val_cycle(epoch, self.loaders["val"])
                             # on_validation_end()
 
                     if self.scheduler:
-                        self.scheduler.step(epoch=None)
-                        self.experiment.log_metric("scheduler_lr", self.scheduler.get_last_lr(), epoch=epoch)
+                        self.update_scheduler(epoch)
 
                     if self.early_stop:
                         if self.early_stop.on_epoch_end(self._metrics, epoch):
@@ -491,6 +525,11 @@ class BaseRunner(ABC, RunnerIO):
             mode (str): ['train', 'val', 'test'] のいずれをか指定します。
             loader (torch.utils.data.DataLoader):
 
+        Examples:
+            >>> loader = DataLoader(...)
+            >>> runner: BaseRunner = ...
+            >>> runner.add_loader("train", loader)
+
         """
         if mode not in ["train", "val", "test"]:
             raise KeyError("argument `mode` must be one of 'train', 'val', or 'test'.")
@@ -504,10 +543,6 @@ class BaseRunner(ABC, RunnerIO):
     @property
     def loaders(self):
         return self._loaders
-
-    @property
-    def global_step(self):
-        return self._global_step
 
     def fit(self, x, y, **kwargs):
         """

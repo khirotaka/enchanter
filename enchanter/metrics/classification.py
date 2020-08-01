@@ -15,7 +15,7 @@ __all__ = [
 ]
 
 
-def calculate_accuracy(inputs, targets):
+def calculate_accuracy(inputs: torch.Tensor, targets: torch.Tensor) -> float:
     """
     バッチ処理向けの精度計算関数。
     分類度を Python float で返します。

@@ -1,10 +1,11 @@
-from torch import narrow
+from torch import narrow, Tensor
 
 
-def slice_axis(data, axis, begin, end):
+def slice_axis(data: Tensor, axis: int, begin: int, end: int) -> Tensor:
     """
 
     Examples:
+        >>> import torch
         >>> x = torch.tensor([
         >>>     [  1.,   2.,   3.,   4.],
         >>>     [  5.,   6.,   7.,   8.],

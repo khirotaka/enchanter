@@ -7,7 +7,7 @@
 #
 # ***************************************************
 
-from typing import Dict
+from typing import Any, Dict
 from numpy import greater, less, Inf
 from .base import Callback
 
@@ -18,13 +18,19 @@ __all__ = [
 
 
 class EarlyStopping(Callback):
-    def __init__(self, monitor: str = "validate_avg_loss", min_delta=0.0, patience: int = 0, mode: str = "auto"):
+    def __init__(
+            self,
+            monitor: str = "validate_avg_loss",
+            min_delta=0.0,
+            patience: int = 0,
+            mode: str = "auto"
+    ) -> None:
         Callback.__init__(self)
-        self.monitor = monitor
-        self.patience = patience
-        self.min_delta = min_delta
-        self.wait = 0
-        self.stopped_epoch = 0
+        self.monitor: Any = monitor
+        self.patience: Any = patience
+        self.min_delta: Any = min_delta
+        self.wait: int = 0
+        self.stopped_epoch: int = 0
 
         mode_dict = {
             "min": less,
@@ -34,11 +40,11 @@ class EarlyStopping(Callback):
         if mode not in mode_dict:
             mode = "auto"
 
-        self.monitor_op = mode_dict[mode]
+        self.monitor_op:Any = mode_dict[mode]
         self.min_delta *= 1 if self.monitor_op == greater else -1
-        self.best = Inf if self.monitor_op == less else -Inf
+        self.best: Any = Inf if self.monitor_op == less else -Inf
 
-    def check_metrics(self, logs):
+    def check_metrics(self, logs: Any):
         monitor_val = logs.get(self.monitor)
 
         if monitor_val is None:

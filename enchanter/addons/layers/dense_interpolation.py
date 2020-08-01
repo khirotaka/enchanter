@@ -9,6 +9,7 @@
 
 import numpy as np
 from torch import tensor, bmm
+from torch.tensor import Tensor
 from torch.nn import Module
 
 
@@ -25,8 +26,8 @@ class DenseInterpolation(Module):
         factor:
 
     """
-    def __init__(self, seq_len, factor):
-        super().__init__()
+    def __init__(self, seq_len: int, factor: int) -> None:
+        super(DenseInterpolation, self).__init__()
         W = np.zeros((factor, seq_len), dtype=np.float32)
 
         for t in range(seq_len):
@@ -39,7 +40,7 @@ class DenseInterpolation(Module):
         W = tensor(W).float().unsqueeze(0)
         self.register_buffer("W", W)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         """
         Dense Interpolation を入力に適用する。
 
