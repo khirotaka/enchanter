@@ -43,22 +43,22 @@ class MLP(Module):
 
     def __init__(self, shapes: List[int], activation: Union[Callable[[Tensor], Tensor], Module] = relu):
         super(MLP, self).__init__()
-        self.layers: List[Module] = []
+        layers: List[Module] = []
         self.activation: Callable[[Tensor], Tensor] = activation
 
         for i in range(len(shapes) - 1):
-            self.layers.append(Linear(shapes[i], shapes[i+1]))
+            layers.append(Linear(shapes[i], shapes[i+1]))
 
-        self.layers: ModuleList = ModuleList(self.layers[:-1])
-        self.last_layer: Module = self.layers[-1]
+        self.layers: Module = ModuleList(layers)
 
     def forward(self, x: Tensor) -> Tensor:
-        for layer in self.layers:
+        for layer in self.layers[:-1]:
             x = layer(x)
             x = self.activation(x)
 
-        x = self.last_layer(x)
+        x = self.layers[-1](x)
         return x
+
 
 
 class PositionWiseFeedForward(Module):

@@ -26,7 +26,7 @@ class PositionalEncoding(nn.Module):
         <https://pytorch.org/tutorials/beginner/transformer_tutorial.html#define-the-model>`_
 
     """
-    def __init__(self, d_model: int, seq_len: int = ..., dropout: float = ...) -> None:
+    def __init__(self, d_model: int, seq_len: int, dropout: float = 0.1) -> None:
         """
 
 
