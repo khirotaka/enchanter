@@ -1,7 +1,9 @@
+from typing import Union, Optional, OrderedDict, Dict
 from time import ctime
 from pathlib import Path
 from copy import deepcopy
 
+from torch.tensor import Tensor
 from torch.nn import DataParallel
 from torch.serialization import save, load
 
@@ -22,7 +24,7 @@ class RunnerIO:
         self.experiment = NotImplemented
         self._checkpoint_path = NotImplemented
 
-    def save_checkpoint(self):
+    def save_checkpoint(self) -> Dict[str, Union[Dict[str, Tensor], dict]]:
         """
         ニューラルネットの重みと、 Optimizerの状態を辞書として出力するメソッドです。
 
@@ -43,7 +45,7 @@ class RunnerIO:
         }
         return checkpoint
 
-    def load_checkpoint(self, checkpoint):
+    def load_checkpoint(self, checkpoint: Dict[str, OrderedDict]):
         """
         'model_state_dict', 'optimizer_state_dict' を持つ辞書を受け取り、それらを元に モデル と Optimizer の状態を復元します。
 
@@ -57,7 +59,7 @@ class RunnerIO:
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         return self
 
-    def save(self, directory=None, epoch=None):
+    def save(self, directory: Optional[str] = None, epoch: Optional[int] = None):
 
         """
         指定したディレクトリにモデルとOptimizerの状態を記録したファイルを保存します。
@@ -88,7 +90,7 @@ class RunnerIO:
         if hasattr(self.experiment, "log_asset"):
             self.experiment.log_asset(path)
 
-    def load(self, filename, map_location="cpu"):
+    def load(self, filename: str, map_location: str = "cpu"):
         """
         指定したファイルを元にモデルとOptimizerの状態を復元します。
 

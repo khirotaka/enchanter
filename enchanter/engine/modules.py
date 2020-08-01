@@ -7,12 +7,16 @@
 #
 # ***************************************************
 
+from typing import Union, Tuple, Any
 from os import environ as os_environ
 from random import seed as std_seed
+from numpy import ndarray
 from numpy.random import seed as np_seed
 from torch.backends import cudnn
-from torch.cuda import is_available as cuda_is_available
+from torch.utils.data import Dataset
+from torch import device as torch_device
 from torch import manual_seed, Tensor, as_tensor
+from torch.cuda import is_available as cuda_is_available
 
 
 from torch.utils.data import TensorDataset
@@ -23,7 +27,7 @@ __all__ = [
 ]
 
 
-def is_jupyter():
+def is_jupyter() -> bool:
     """
     実行中の環境が Jupyter Notebookかどうかを判定します。
 
@@ -39,11 +43,12 @@ def is_jupyter():
     return True
 
 
-def get_dataset(x, y=None):
+def get_dataset(x: Union[ndarray, Tensor], y: Union[ndarray, Tensor] = None) -> Dataset:
     """
     入力された値をもとに `torch.utils.data.TensorDataset` を生成します。
 
     Examples:
+        >>> import torch
         >>> x = torch.randn(512, 6)
         >>> y = torch.randint(0, 9, size=[512])
         >>> ds = get_dataset(x, y)
@@ -66,7 +71,7 @@ def get_dataset(x, y=None):
     return ds
 
 
-def send(batch, device):
+def send(batch: Tuple[Any], device: torch_device) -> Tuple[Any]:
     """
     Send `variable` to `device`
 
@@ -82,11 +87,13 @@ def send(batch, device):
     return tuple(map(lambda x: x.to(device) if isinstance(x, Tensor) else x, batch))
 
 
-def fix_seed(seed, deterministic=False, benchmark=False):
+def fix_seed(seed: int, deterministic: bool = False, benchmark: bool = False) -> None:
     """
     PyTorch, NumPy, Pure Python Random のSEED値を一括固定します。
 
     Examples:
+        >>> import torch
+        >>> import numpy as np
         >>> fix_seed(0)
         >>> x = torch.randn(...)
         >>> y = np.random.randn(...)
