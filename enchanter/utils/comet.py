@@ -7,7 +7,7 @@
 #
 # ***************************************************
 
-
+from typing import Dict, Optional, List, Any, Union
 from pprint import pformat
 from pkg_resources import working_set
 
@@ -23,9 +23,19 @@ __all__ = [
 
 class TunerConfigGenerator:
     def __init__(
-            self, algorithm="bayes", metric="validate_avg_loss", objective="minimize", seed=None, max_combo=0,
-            grid_size=10, min_sample_size=100, retry_limit=20, retry_assign_limit=0, name=None, trials=1
-    ):
+            self,
+            algorithm: str = "bayes",
+            metric: str = "validate_avg_loss",
+            objective: str = "minimize",
+            seed: Optional[int] = None,
+            max_combo: int = 0,
+            grid_size: int = 10,
+            min_sample_size: int = 100,
+            retry_limit: int = 20,
+            retry_assign_limit: int = 0,
+            name: Optional[str] = None,
+            trials: int = 1
+    ) -> None:
         """
         各引数のより詳しい説明は https://www.comet.ml/docs/python-sdk/introduction-optimizer/ を参照してください。
         
@@ -46,8 +56,8 @@ class TunerConfigGenerator:
         if algorithm not in ["grid", "bayes", "random"]:
             raise ValueError("The algorithms you can select are `random`, `bayes` and `grid`.")
 
-        self.algorithm = algorithm
-        self.spec = {
+        self.algorithm: str = algorithm
+        self.spec: Dict[str, Any] = {
             "maxCombo": max_combo,
             "objective": objective,
             "metric": metric,
@@ -57,11 +67,11 @@ class TunerConfigGenerator:
             "retryLimit": retry_limit,
             "retryAssignLimit": retry_assign_limit
         }
-        self.name = name
-        self.trials = trials
-        self.__params = {}
+        self.name: str = name
+        self.trials: int = trials
+        self.__params:  Dict[str, Dict[str, Any]] = {}
 
-    def suggest_categorical(self, name, values):
+    def suggest_categorical(self, name: str, values: List[str]):
         """
         カテゴリカル変数を探索する為のメソッドです。
 
@@ -85,7 +95,14 @@ class TunerConfigGenerator:
         }
         return self
 
-    def __suggest(self, name, min_value, max_value, dtype, scaling, **kwargs):
+    def __suggest(
+            self,
+            name: str,
+            min_value: Union[float, int],
+            max_value: Union[float, int],
+            dtype: Optional[type],
+            scaling: str, **kwargs
+    ) -> None:
         if dtype is None:
             if type(min_value) is type(max_value):
                 dtype = type(min_value)
@@ -110,7 +127,13 @@ class TunerConfigGenerator:
             if key in kwargs:
                 self.__params["{}".format(name)][key] = kwargs[key]
 
-    def suggest_linear(self, name, min_value, max_value, dtype=None):
+    def suggest_linear(
+            self,
+            name: str,
+            min_value: Union[float, int],
+            max_value: Union[float, int],
+            dtype: Optional[type] = None
+    ):
         """
 
         Args:
@@ -125,7 +148,13 @@ class TunerConfigGenerator:
         self.__suggest(name, min_value, max_value, dtype, "linear")
         return self
 
-    def suggest_uniform(self, name, min_value, max_value, dtype=None):
+    def suggest_uniform(
+            self,
+            name: str,
+            min_value: Union[float, int],
+            max_value: Union[float, int],
+            dtype: Optional[type] = None
+    ):
         """
         変数を一様分布からサンプリングし探索する為のメソッドです。
 
@@ -147,7 +176,15 @@ class TunerConfigGenerator:
         self.__suggest(name, min_value, max_value, dtype, "uniform")
         return self
 
-    def suggest_normal(self, name, min_value, max_value, mu=0.0, sigma=1.0, dtype=None):
+    def suggest_normal(
+            self,
+            name: str,
+            min_value: Union[float, int],
+            max_value: Union[float, int],
+            mu: float = 0.0,
+            sigma: float = 1.0,
+            dtype: Optional[type] = None
+    ):
         """
         変数を正規分布からサンプリングし探索する為のメソッドです。
 
@@ -171,7 +208,15 @@ class TunerConfigGenerator:
         self.__suggest(name, min_value, max_value, dtype, "normal", mu=mu, sigma=sigma)
         return self
 
-    def suggest_lognormal(self, name, min_value, max_value, mu=0.0, sigma=1.0, dtype=None):
+    def suggest_lognormal(
+            self,
+            name: str,
+            min_value: Union[float, int],
+            max_value: Union[float, int],
+            mu: float = 0.0,
+            sigma: float = 1.0,
+            dtype: Optional[type] = None
+    ):
         """
         変数を対数正規分布からサンプリングし探索する為のメソッドです。
 
@@ -195,7 +240,13 @@ class TunerConfigGenerator:
         self.__suggest(name, min_value, max_value, dtype, "lognormal", mu=mu, sigma=sigma)
         return self
 
-    def suggest_loguniform(self, name, min_value, max_value, dtype=None):
+    def suggest_loguniform(
+            self,
+            name: str,
+            min_value: Union[float, int],
+            max_value: Union[float, int],
+            dtype: Optional[type] = None
+    ):
         """
         変数を対数一様分布からサンプリングし探索する為のメソッドです。
 
@@ -217,7 +268,7 @@ class TunerConfigGenerator:
         self.__suggest(name, min_value, max_value, dtype, "loguniform")
         return self
 
-    def suggest_discrete(self, name, values):
+    def suggest_discrete(self, name: str, values: List[Union[float, int]]):
         """
         指定した数値型の変数を探索する為のメソッドです。
 
@@ -240,14 +291,14 @@ class TunerConfigGenerator:
         }
         return self
 
-    def generate(self):
+    def generate(self) -> Dict[str, Any]:
         """
         `comet_ml.Optimizer` 用のConfigを生成する為のメソッドです。
 
         Examples:
-            >>> config = TunerConfigGenerator()
-            >>> config.suggest_discrete("discrete", [10, 20, 30])
-            >>> cfg = config.generate()
+            >>> cfg = TunerConfigGenerator()
+            >>> cfg.suggest_discrete("discrete", [10, 20, 30])
+            >>> cfg_dict = cfg.generate()
         """
 
         config = {
@@ -259,7 +310,7 @@ class TunerConfigGenerator:
         }
         return config
 
-    def export(self, filename):
+    def export(self, filename: str) -> None:
         """
         作成したConfigをファイルにして保存する為のメソッドです。
 

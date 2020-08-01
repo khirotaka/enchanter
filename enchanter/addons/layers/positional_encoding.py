@@ -26,7 +26,7 @@ class PositionalEncoding(nn.Module):
         <https://pytorch.org/tutorials/beginner/transformer_tutorial.html#define-the-model>`_
 
     """
-    def __init__(self, d_model, seq_len, dropout=0.1):
+    def __init__(self, d_model: int, seq_len: int = ..., dropout: float = ...) -> None:
         """
 
 
@@ -35,8 +35,8 @@ class PositionalEncoding(nn.Module):
             seq_len: length of input sequence.
             dropout: dropout rate.
         """
-        super().__init__()
-        self.dropout = nn.Dropout(p=dropout)
+        super(PositionalEncoding, self).__init__()
+        self.dropout: nn.Dropout = nn.Dropout(p=dropout)
 
         pe = torch.zeros(seq_len, d_model)
         position = torch.arange(0, seq_len, dtype=torch.float).unsqueeze(1)
@@ -46,7 +46,7 @@ class PositionalEncoding(nn.Module):
         pe = pe.unsqueeze(0).transpose(0, 1)
         self.register_buffer("pe", pe)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
 
         Args:

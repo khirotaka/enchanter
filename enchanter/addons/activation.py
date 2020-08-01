@@ -7,6 +7,7 @@
 #
 # ***************************************************
 
+from torch.tensor import Tensor
 from torch import sigmoid, tanh, tensor
 from torch.nn.functional import softplus
 from torch.nn import Module, Tanh, Softplus, Parameter
@@ -21,18 +22,19 @@ class Swish(Module):
     """
     Swish活性化関数を適用します。
     """
-    def __init__(self, beta=False):
-        Module.__init__(self)
+    def __init__(self, beta: bool = False):
+        super(Swish, self).__init__()
         if beta:
             self.weight = Parameter(tensor([1.]), requires_grad=True)
         else:
             self.weight = 1.0
 
-    def forward(self, inputs):
+    def forward(self, inputs: Tensor) -> Tensor:
         """
         入力値に対してSwishを適用します。
 
         Examples:
+            >>> import torch
             >>> act = Swish()
             >>> x = torch.randn(2)
             >>> y = act(x)
@@ -48,11 +50,12 @@ class Swish(Module):
         return out
 
 
-def mish(x):
+def mish(x: Tensor) -> Tensor:
     """
     mish活性化関数を適用します。
 
     Examples:
+        >>> import torch
         >>> x = torch.randn(2)
         >>> y = mish(y)
 
@@ -72,15 +75,16 @@ class Mish(Module):
 
     """
     def __init__(self):
-        Module.__init__(self)
-        self.tanh = Tanh()
-        self.softplus = Softplus()
+        super(Mish, self).__init__()
+        self.tanh: Module = Tanh()
+        self.softplus: Module = Softplus()
 
-    def forward(self, inputs):
+    def forward(self, inputs: Tensor) -> Tensor:
         """
         入力に対して Mish を適用します。
 
         Examples:
+            >>> import torch
             >>> act = Mish()
             >>> x = torch.randn(2)
             >>> y = act(y)
