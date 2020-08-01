@@ -349,9 +349,9 @@ class BaseRunner(ABC, RunnerIO):
             >>> )
 
         Args:
-            epochs (int):
-            checkpoint_path:
-            monitor:
+            epochs (int): 訓練epoch数を指定する。
+            checkpoint_path: checkpointを保存するディレクトリ名を指定。monitorを指定しなければ、全てのepochにおける重みを保存する。
+            monitor: 指定した式に当てはまるepochのみを保存する。checkpoint_pathと一緒に設定する必要があるます。
 
         Returns:
             None
