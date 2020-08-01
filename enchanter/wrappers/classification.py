@@ -8,7 +8,7 @@
 # ***************************************************
 
 
-from torch import no_grad, stack, tensor, max, as_tensor
+from torch import no_grad, stack, tensor, as_tensor, max as torch_max
 from sklearn.base import ClassifierMixin
 
 from enchanter.engine import BaseRunner
@@ -81,6 +81,6 @@ class ClassificationRunner(BaseRunner, ClassifierMixin):
         with no_grad():
             x = as_tensor(x, device=self.device)
             out = self.model(x)
-            _, predicted = max(out, 1)
+            _, predicted = torch_max(out, 1)
 
         return predicted.cpu().numpy()
