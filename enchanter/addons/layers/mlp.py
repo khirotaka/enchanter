@@ -43,7 +43,7 @@ class MLP(Module):
 
     def __init__(self, shapes: List[int], activation: Union[Callable[[Tensor], Tensor], Module] = relu):
         super(MLP, self).__init__()
-        self.layers: List = [int]
+        self.layers: List[Module] = []
         self.activation: Callable[[Tensor], Tensor] = activation
 
         for i in range(len(shapes) - 1):
