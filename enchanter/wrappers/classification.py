@@ -7,11 +7,20 @@
 #
 # ***************************************************
 
+from typing import Tuple, List, Union, Optional
 
-from torch import no_grad, stack, tensor, as_tensor, max as torch_max
 from sklearn.base import ClassifierMixin
+from numpy import ndarray
+from torch import Tensor
+from torch.nn.modules import Module
+from torch.nn.modules.loss import _Loss
+from torch.optim.optimizer import Optimizer
+from torch import no_grad, stack, tensor, as_tensor, max as torch_max
+from comet_ml.experiment import BaseExperiment as BaseExperiment
 
 from enchanter.engine import BaseRunner
+from enchanter.callbacks import BaseLogger
+from enchanter.callbacks import EarlyStopping
 from enchanter.metrics import calculate_accuracy as calculate_accuracy
 
 
@@ -43,40 +52,49 @@ class ClassificationRunner(BaseRunner, ClassifierMixin):
         >>> runner.run()
 
     """
-    def __init__(self, model, optimizer, criterion, experiment, scheduler=None, early_stop=None):
-        super().__init__()
-        self.model = model
-        self.optimizer = optimizer
-        self.experiment = experiment
-        self.criterion = criterion
+
+    def __init__(
+            self,
+            model: Module,
+            optimizer: Optimizer,
+            criterion: _Loss,
+            experiment: Union[BaseExperiment, BaseLogger],
+            scheduler: Optional = None,
+            early_stop: Optional[EarlyStopping] = None
+    ) -> None:
+        super(ClassificationRunner, self).__init__()
+        self.model: Module = model
+        self.optimizer: Optimizer = optimizer
+        self.experiment: Union[BaseExperiment, BaseLogger] = experiment
+        self.criterion: _Loss = criterion
         self.scheduler = scheduler
         self.early_stop = early_stop
 
-    def train_step(self, batch):
+    def train_step(self, batch: Tuple):
         x, y = batch
         out = self.model(x)
         loss = self.criterion(out, y)
         accuracy = calculate_accuracy(out, y)
         return {"loss": loss, "accuracy": accuracy}
 
-    def train_end(self, outputs):
+    def train_end(self, outputs: List):
         avg_loss = stack([x["loss"] for x in outputs]).mean()
         avg_acc = stack([tensor(x["accuracy"]) for x in outputs]).mean()
         return {"avg_loss": avg_loss, "avg_acc": avg_acc}
 
-    def val_step(self, batch):
+    def val_step(self, batch: Tuple):
         return self.train_step(batch)
 
-    def val_end(self, outputs):
+    def val_end(self, outputs: List):
         return self.train_end(outputs)
 
-    def test_step(self, batch):
+    def test_step(self, batch: Tuple):
         return self.train_step(batch)
 
-    def test_end(self, outputs):
+    def test_end(self, outputs: List):
         return self.train_end(outputs)
 
-    def predict(self, x):
+    def predict(self, x: Union[Tensor, ndarray]) -> ndarray:
         self.model.eval()
         with no_grad():
             x = as_tensor(x, device=self.device)

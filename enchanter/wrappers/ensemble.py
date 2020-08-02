@@ -7,12 +7,13 @@
 #
 # *******************************************************
 
-from typing import List
+from typing import List, Union
 
-from numpy import stack, ravel, int as np_int
+from numpy import stack, ravel, ndarray, int as np_int
 from sklearn.base import BaseEstimator
-from torch import as_tensor, device
+from torch import as_tensor, device, Tensor
 from torch.cuda import is_available
+from enchanter.engine.runner import BaseRunner
 
 __all__ = [
     "BaseEnsembleEstimator", "SoftEnsemble", "HardEnsemble"
@@ -20,12 +21,12 @@ __all__ = [
 
 
 class BaseEnsembleEstimator(BaseEstimator):
-    def __init__(self, runners, mode=None):
-        self.runners = runners
-        self.mode = mode
-        self.device = device("cuda" if is_available() else "cpu")
+    def __init__(self, runners: List[BaseRunner], mode: str = None) -> None:
+        self.runners: List[BaseRunner] = runners
+        self.mode: str = mode
+        self.device: device = device("cuda" if is_available() else "cpu")
 
-    def predict(self, x):
+    def predict(self, x: Union[ndarray, Tensor]) -> List[ndarray]:
         x = as_tensor(x, device=self.device)
 
         predicts = []
@@ -40,7 +41,7 @@ class SoftEnsemble(BaseEnsembleEstimator):
     確率の平均をとるアンサンブル
     """
 
-    def predict(self, x):
+    def predict(self, x: Union[ndarray, Tensor]) -> ndarray:
         """
 
         Args:
@@ -49,7 +50,7 @@ class SoftEnsemble(BaseEnsembleEstimator):
         Returns:
 
         """
-        predicts = super().predict(x)
+        predicts = super(SoftEnsemble, self).predict(x)
 
         predicts = sum(predicts)
         probs = predicts / len(self.runners)
@@ -64,10 +65,10 @@ class HardEnsemble(BaseEnsembleEstimator):
     """
     多数決をとるアンサンブル
     """
-    def __init__(self, runners: List):
-        super().__init__(runners, mode="classification")
+    def __init__(self, runners: List[BaseRunner]) -> None:
+        super(HardEnsemble, self).__init__(runners, mode="classification")
 
-    def predict(self, x):
+    def predict(self, x: Union[ndarray, Tensor]) -> ndarray:
         """
 
         Args:

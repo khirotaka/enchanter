@@ -8,21 +8,19 @@
 # ***************************************************
 
 from collections import Counter
+from typing import Union, List, Type, Optional, Callable
 
 from numpy import array, stack, ndarray, max as np_max, zeros, nan, float32, dstack
 from pandas import DataFrame
-from enchanter.engine.modules import is_jupyter
-
-if is_jupyter():
-    from tqdm.notebook import tqdm
-else:
-    from tqdm import tqdm
+from tqdm.auto import tqdm
 
 
 __all__ = [
     "FixedSlidingWindow", "adjust_sequences"
 ]
 
+
+_Numerical = Union[int, float]
 
 class FixedSlidingWindow:
     """Fixed sliding window.
@@ -47,8 +45,8 @@ class FixedSlidingWindow:
             argument overlap_rate under 0.0 or over 1.0.n error occurred.
 
     """
-    def __init__(self, window_size, overlap_rate, step_size=None):
-        self.window_size = window_size
+    def __init__(self, window_size: int, overlap_rate: Union[float, None], step_size: Optional[int]=None) -> None:
+        self.window_size: int = window_size
 
         if overlap_rate is None and step_size is not None:
             if step_size > 0:
@@ -59,7 +57,7 @@ class FixedSlidingWindow:
 
             self.overlap = int(window_size * overlap_rate)
 
-    def transform(self, inputs, verbose=False):
+    def transform(self, inputs: ndarray, verbose: bool = False) -> ndarray:
         """
 
         Args:
@@ -86,7 +84,7 @@ class FixedSlidingWindow:
         return data
 
     @staticmethod
-    def clean(labels):
+    def clean(labels: ndarray) -> ndarray:
         """
         Clean up
         Args:
@@ -115,7 +113,12 @@ class FixedSlidingWindow:
         return data, label
 
 
-def adjust_sequences(sequences, max_len=None, fill="ffill", dtype=float32):
+def adjust_sequences(
+        sequences: List[ndarray],
+        max_len: Optional[Union[int, Callable[[List[int]], int]]] = None,
+        fill: Union[str, _Numerical] = "ffill",
+        dtype: Type = float32
+) -> ndarray:
     """
     長さが一定でない系列データを一定の長さに整える関数。
     各サンプルに対して、 `max_len` よりもサンプルの系列が長い場合は、`max_len` まででそれ以降は無視され、
