@@ -11,8 +11,9 @@ import re
 import operator
 from abc import ABC
 from collections import OrderedDict
+from typing import Any, Dict, Tuple, Union, List, Optional
 
-from numpy import floor
+from numpy import floor, ndarray
 from tqdm.auto import tqdm
 from torch import device
 from torch.nn import Module
@@ -21,9 +22,12 @@ from torch.cuda import is_available
 from torch.tensor import Tensor
 from torch.autograd import no_grad
 from torch.utils.data import DataLoader, SubsetRandomSampler
+from comet_ml.experiment import BaseExperiment as BaseExperiment
 
 from enchanter.engine.saving import RunnerIO
 from enchanter.engine.modules import send, get_dataset
+from enchanter.callbacks import BaseLogger as BaseLogger
+from enchanter.callbacks import EarlyStopping as EarlyStopping
 
 
 __all__ = [
@@ -56,24 +60,23 @@ class BaseRunner(ABC, RunnerIO):
         >>>         return {"loss": loss}
 
     """
-    def __init__(self):
-        super().__init__()
-        self.device = device("cuda" if is_available() else "cpu")
-        self.model = NotImplemented
-        self.optimizer = NotImplemented
-        self.scheduler = None
-        self.experiment = NotImplemented
-        self.early_stop = None
-        self.configures = {
+    def __init__(self) -> None:
+        super(BaseRunner, self).__init__()
+        self.device: device = device("cuda" if is_available() else "cpu")
+        self.model: Module = NotImplemented
+        self.optimizer: Optimizer = NotImplemented
+        self.scheduler: Optional[List] = None
+        self.experiment: Union[BaseExperiment, BaseLogger] = NotImplemented
+        self.early_stop: Optional[EarlyStopping] = None
+        self.configures: Dict[str, Any] = {
             "epochs": 0
         }
 
         self.pbar = None
-        self._loaders = {}
-        self._metrics = {}
+        self._loaders: Dict[str, DataLoader] = {}
+        self._metrics: Dict = {}
 
-    @staticmethod
-    def backward(loss):
+    def backward(self, loss: Tensor) -> None:
         """
         calculate the gradient
 
@@ -89,10 +92,10 @@ class BaseRunner(ABC, RunnerIO):
         """
         loss.backward()
 
-    def update_optimizer(self):
+    def update_optimizer(self) -> None:
         self.optimizer.step()
 
-    def update_scheduler(self, epoch):
+    def update_scheduler(self, epoch: int) -> None:
         """
         スケジューラの値を更新するために呼ばれるメソッドです。
         Optimizerを更新した後に呼ばれます。
@@ -121,7 +124,7 @@ class BaseRunner(ABC, RunnerIO):
 
         self.experiment.log_metric("scheduler_lr", self.scheduler[-1].get_last_lr(), epoch=epoch)
 
-    def train_step(self, batch):
+    def train_step(self, batch: Tuple) -> Dict[str, Tensor]:
         """
         ニューラルネットの訓練時、
             >>> import torch.nn as nn
@@ -149,7 +152,7 @@ class BaseRunner(ABC, RunnerIO):
 
         """
 
-    def train_end(self, outputs):
+    def train_end(self, outputs: List) -> Dict[str, Tensor]:
         """
         ニューラルネットの訓練時、1step 終了ごとに実行されるメソッドです。
 
@@ -161,7 +164,7 @@ class BaseRunner(ABC, RunnerIO):
         """
         return {}
 
-    def val_step(self, batch):
+    def val_step(self, batch: Tuple) -> Dict[str, Tensor]:
         """
         ニューラルネットの検証時、1step ごとに実行されるメソッドです。
 
@@ -173,7 +176,7 @@ class BaseRunner(ABC, RunnerIO):
 
         """
 
-    def val_end(self, outputs):
+    def val_end(self, outputs: List) -> Dict[str, Tensor]:
         """
         ニューラルネットの検証時、1step 終了ごとに実行されるメソッドです。
 
@@ -185,7 +188,7 @@ class BaseRunner(ABC, RunnerIO):
         """
         return {}
 
-    def test_step(self, batch):
+    def test_step(self, batch: Tuple) -> Dict[str, Tensor]:
         """
         ニューラルネットの評価時、1step ごとに実行されるメソッドです。
 
@@ -197,7 +200,7 @@ class BaseRunner(ABC, RunnerIO):
 
         """
 
-    def test_end(self, outputs):
+    def test_end(self, outputs: List) -> Dict[str, Tensor]:
         """
         ニューラルネットの評価時、1step 終了ごとに実行されるメソッドです。
 
@@ -209,7 +212,7 @@ class BaseRunner(ABC, RunnerIO):
         """
         return {}
 
-    def train_cycle(self, epoch, loader):
+    def train_cycle(self, epoch: int, loader: DataLoader) -> None:
         """
         ニューラルネットの訓練ループです。
 
@@ -251,7 +254,7 @@ class BaseRunner(ABC, RunnerIO):
                 self._metrics.update(dic)
                 self.experiment.log_metrics(dic, step=epoch)
 
-    def val_cycle(self, epoch, loader):
+    def val_cycle(self, epoch: int, loader: DataLoader) -> None:
         """
         ニューラルネットの評価用ループです。
 
@@ -293,7 +296,7 @@ class BaseRunner(ABC, RunnerIO):
                     self._metrics.update(dic)
                     self.experiment.log_metrics(dic, step=epoch)
 
-    def test_cycle(self, loader):
+    def test_cycle(self, loader: DataLoader) -> None:
         """
         ニューラルネットの検証用ループです。
 
@@ -336,7 +339,7 @@ class BaseRunner(ABC, RunnerIO):
                     self._metrics.update(dic)
                     self.experiment.log_metrics(dic)
 
-    def train_config(self, epochs, checkpoint_path=None, monitor=None):
+    def train_config(self, epochs: int, checkpoint_path: Optional[str] = None, monitor: Optional[str] = None):
         """
         .run() メソッドを用いて訓練を行う際に、 epochs などを指定する為のメソッドです。
 
@@ -371,7 +374,7 @@ class BaseRunner(ABC, RunnerIO):
 
         return self
 
-    def log_hyperparams(self, dic=None, prefix=None):
+    def log_hyperparams(self, dic: Dict = None, prefix: Optional[str] = None) -> None:
         """
 
         Args:
@@ -388,7 +391,7 @@ class BaseRunner(ABC, RunnerIO):
         if dic is not None:
             self.experiment.log_parameters(dic, prefix)
 
-    def initialize(self):
+    def initialize(self) -> None:
         """
         Runner の準備を行うメソッドです。
         self.model, self.optimizer, self.experiment といった実行に必要な最低限の変数が未定義な場合はエラーメッセージを出し終了します。
@@ -413,7 +416,7 @@ class BaseRunner(ABC, RunnerIO):
 
         self.model = self.model.to(self.device)
 
-    def run(self, phase="all", verbose=True):
+    def run(self, phase: str = "all", verbose: bool = True):
         """
         Runnerを実行します。
         実行には、事前に self.add_loader("train", train_loader) で訓練用のデータローダを登録するしておく必要があります。
@@ -505,7 +508,7 @@ class BaseRunner(ABC, RunnerIO):
 
         return self
 
-    def predict(self, x):
+    def predict(self, x: Union[Tensor, ndarray]) -> ndarray:
         """
         与えられた入力をもとに予測を行うメソッドです。
 
@@ -517,7 +520,7 @@ class BaseRunner(ABC, RunnerIO):
         """
         raise NotImplementedError
 
-    def add_loader(self, mode, loader):
+    def add_loader(self, mode: str, loader: DataLoader):
         """
         訓練等に用いるデータローダをRunnerに登録する為のメソッドです。
 
@@ -544,10 +547,10 @@ class BaseRunner(ABC, RunnerIO):
         return self
 
     @property
-    def loaders(self):
+    def loaders(self) -> Dict[str, DataLoader]:
         return self._loaders
 
-    def fit(self, x, y, **kwargs):
+    def fit(self, x: ndarray, y: ndarray, **kwargs):
         """
         Scikit-Learn スタイルの訓練メソッドです。
 
@@ -597,7 +600,7 @@ class BaseRunner(ABC, RunnerIO):
 
         return self
 
-    def freeze(self):
+    def freeze(self) -> None:
         """
         モデルのパラメータが勾配を計算しないように固定する為のメソッドです。
 
@@ -607,7 +610,7 @@ class BaseRunner(ABC, RunnerIO):
 
         self.model.eval()
 
-    def unfreeze(self):
+    def unfreeze(self) -> None:
         """
         .freeze() で固定されたパラメータを再度学習できるようにする為のメソッドです。
 

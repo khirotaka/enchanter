@@ -9,9 +9,10 @@
 
 from pprint import pformat
 from random import choice, gauss, uniform
+from typing import List, Callable, Union, Optional
 
 from numpy import ndarray
-from torch import from_numpy
+from torch import from_numpy, Tensor
 from torch.nn.functional import pad
 
 
@@ -33,22 +34,22 @@ class Compose:
         >>> y = transform(x)
 
     """
-    def __init__(self, transforms):
-        self.transforms = transforms
+    def __init__(self, transforms: List[Callable]) -> None:
+        self.transforms: List[Callable] = transforms
 
-    def __call__(self, data):
+    def __call__(self, data: Union[Tensor, ndarray]) -> Union[Tensor, ndarray]:
         for t in self.transforms:
             data = t(data)
 
         return data
 
-    def insert(self, index, modules):
+    def insert(self, index: int, modules: Callable) -> None:
         self.transforms.insert(index, modules)
 
-    def append(self, module):
+    def append(self, module: Callable) -> None:
         self.transforms.append(module)
 
-    def extend(self, modules):
+    def extend(self, modules: List[Callable]) -> None:
         self.transforms.extend(modules)
 
     def __repr__(self):
@@ -71,21 +72,21 @@ class FixedWindow:
         >>> out.shape       # [128, 18]
 
     """
-    def __init__(self, window_size, start_position=None):
+    def __init__(self, window_size: int, start_position: Optional[int] = None) -> None:
         if isinstance(window_size, int):
-            self.window_size = window_size
+            self.window_size: int = window_size
         else:
             raise TypeError("`window_size` must be integer.")
 
         if start_position:
             if start_position >= 0:
-                self.start_position = start_position
+                self.start_position: Optional[int] = start_position
             else:
                 raise ValueError("`start_position` must be 0 and over.")
         else:
-            self.start_position = start_position
+            self.start_position: Optional[int] = start_position
 
-    def __call__(self, data):
+    def __call__(self, data: Union[Tensor, ndarray]) -> Union[Tensor, ndarray]:
         """
 
         Args:
@@ -126,10 +127,10 @@ class GaussianNoise:
         mu: 正規分布の :math:`\mu`
 
     """
-    def __init__(self, sigma=0.01, mu=0.0):
-        self.noise = gauss(mu=mu, sigma=sigma)
+    def __init__(self, sigma: float = 0.01, mu: float = 0.0) -> None:
+        self.noise: float = gauss(mu=mu, sigma=sigma)
 
-    def __call__(self, data):
+    def __call__(self, data: Union[Tensor, ndarray]) -> Union[Tensor, ndarray]:
         return data + self.noise
 
 
@@ -155,10 +156,10 @@ class RandomScaling:
         end(float):　スケーリング範囲の終了点
 
     """
-    def __init__(self, start=0.7, end=1.1):
-        self.scale = ((end - start) * uniform(0.0, 1.0)) + start     #nosec
+    def __init__(self, start: float = 0.7, end: float = 1.1) -> None:
+        self.scale: float = ((end - start) * uniform(0.0, 1.0)) + start     #nosec
 
-    def __call__(self, data):
+    def __call__(self, data: Union[Tensor, ndarray]) -> Union[Tensor, ndarray]:
         return data * self.scale
 
 
@@ -167,6 +168,7 @@ class Pad:
     Fills the end of the given series with the specified method.
 
     Examples:
+        >>> import torch
         >>> x = torch.randn(10, 3)  # [seq_len, features]
         >>> pad = Pad(20)
         >>> y = pad(x)              # [20, 3]
@@ -179,14 +181,14 @@ class Pad:
         value(Optional[float]): Value to fill.
 
     """
-    def __init__(self, length, value=None):
-        self.length = length
+    def __init__(self, length: int, value: Optional[Union[int, float]] = None) -> None:
+        self.length: int = length
         if value:
-            self.value = value
+            self.value: Union[int, float] = value
         else:
-            self.value = 0.0
+            self.value: Union[int, float] = 0.0
 
-    def __call__(self, data):
+    def __call__(self, data: Union[Tensor, ndarray]) -> Union[Tensor, ndarray]:
         from_np = False
 
         if isinstance(data, ndarray):
