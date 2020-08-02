@@ -7,6 +7,7 @@
 #
 # ***************************************************
 
+from typing import Any, Optional, Dict, Union
 from contextlib import contextmanager
 from torch import Tensor
 from numpy import ndarray
@@ -19,11 +20,11 @@ __all__ = [
 
 
 class BaseLogger:
-    def __init__(self):
-        self.context = None
+    def __init__(self) -> None:
+        self.context: Union[str, None] = None
 
     @contextmanager
-    def train(self):
+    def train(self) -> None:
         old_state = self.context
         self.context = "train"
 
@@ -32,7 +33,7 @@ class BaseLogger:
         self.context = old_state
 
     @contextmanager
-    def validate(self):
+    def validate(self) -> None:
         old_state = self.context
         self.context = "validate"
 
@@ -41,7 +42,7 @@ class BaseLogger:
         self.context = old_state
 
     @contextmanager
-    def test(self):
+    def test(self) -> None:
         old_state = self.context
         self.context = "test"
 
@@ -49,41 +50,67 @@ class BaseLogger:
 
         self.context = old_state
 
-    def log_metric(self, name, value, step=None, epoch=None, include_context=True):
+    def log_metric(
+            self,
+            name: str,
+            value: Any,
+            step: Optional[int] = None,
+            epoch: Optional[int] = None,
+            include_context: bool = True
+    ) -> None:
         pass
 
-    def log_metrics(self, dic, prefix=None, step=None, epoch=None):
+    def log_metrics(
+            self,
+            dic: Dict,
+            prefix: Optional[str] = None,
+            step: Optional[int] = None,
+            epoch: Optional[int] = None
+    ) -> None:
         pass
 
-    def log_parameter(self, name, value, step=None):
+    def log_parameter(self, name: str, value: Any, step: Optional[int] = None) -> None:
         pass
 
-    def log_parameters(self, dic, prefix=None, step=None):
+    def log_parameters(self, dic: Dict, prefix: Optional[str] = None, step: Optional[int] = None) -> None:
         pass
 
-    def set_model_graph(self, *args, **kwargs):
+    def set_model_graph(self, *args: Any, **kwargs: Any) -> None:
         pass
 
 
 class TensorBoardLogger(BaseLogger):
     def __init__(self, log_dir, *args, **kwargs):
-        super().__init__()
-        self.writer = SummaryWriter(log_dir, *args, **kwargs)
+        super(TensorBoardLogger, self).__init__()
+        self.writer: SummaryWriter = SummaryWriter(log_dir, *args, **kwargs)
 
-    def log_metric(self, name, value, step=None, epoch=None, include_context=True):
+    def log_metric(
+            self,
+            name: str,
+            value: Any,
+            step: Optional[int] = None,
+            epoch: Optional[int] = None,
+            include_context: bool = True
+    ) -> None:
         self.writer.add_scalar("{}/{}".format(self.context, name), value)
 
-    def log_metrics(self, dic, prefix=None, step=None, epoch=None):
+    def log_metrics(
+            self,
+            dic: Dict,
+            prefix: Optional[str] = None,
+            step: Optional[int] = None,
+            epoch: Optional[int] = None
+    ) -> None:
         for k, v in dic.items():
             self.writer.add_scalar(k, v)
 
-    def log_parameter(self, name, value, step=None):
+    def log_parameter(self, name: str, value: Any, step: Optional[int] = None) -> None:
         if isinstance(value, Tensor) or\
                 isinstance(value, ndarray) or\
                 isinstance(value, float) or\
                 isinstance(value, int):
             self.writer.add_scalar("{}/{}/{}".format(self.context, "params", name), value, step)
 
-    def log_parameters(self, dic: dict, prefix=None, step=None):
+    def log_parameters(self, dic: Dict, prefix: Optional[str] = None, step: Optional[int] = None) -> Any:
         for k, v in dic.items():
             self.log_parameter(k, v, step)

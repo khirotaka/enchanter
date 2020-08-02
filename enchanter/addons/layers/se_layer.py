@@ -1,4 +1,5 @@
-import torch.nn as nn
+from torch.tensor import Tensor
+from torch import nn
 
 
 __all__ = [
@@ -7,8 +8,8 @@ __all__ = [
 
 
 class SELayer1d(nn.Module):
-    def __init__(self, in_features, reduction=16):
-        super().__init__()
+    def __init__(self, in_features: int, reduction: int = 16) -> None:
+        super(SELayer1d, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool1d(1)
         self.fc = nn.Sequential(
             nn.Linear(in_features, in_features // reduction, bias=False),
@@ -17,7 +18,7 @@ class SELayer1d(nn.Module):
             nn.Sigmoid()
         )
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         b, c, _ = x.shape
         y = self.avg_pool(x).view(b, c)
         y = self.fc(y).view(b, c, 1)
@@ -27,8 +28,8 @@ class SELayer1d(nn.Module):
 
 
 class SELayer2d(nn.Module):
-    def __init__(self, in_features, reduction=16):
-        super().__init__()
+    def __init__(self, in_features: int, reduction: int = 16) -> None:
+        super(SELayer2d, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Sequential(
             nn.Linear(in_features, in_features // reduction, bias=False),
@@ -37,7 +38,7 @@ class SELayer2d(nn.Module):
             nn.Sigmoid()
         )
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         b, c, _, _ = x.shape
         y = self.avg_pool(x).view(b, c)
         y = self.fc(y).view(b, c, 1, 1)
