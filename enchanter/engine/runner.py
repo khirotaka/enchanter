@@ -75,6 +75,7 @@ class BaseRunner(ABC, RunnerIO):
         self.pbar = None
         self._loaders: Dict[str, DataLoader] = {}
         self._metrics: Dict = {}
+        self.global_step: int = 0
 
     def backward(self, loss: Tensor) -> None:
         """
@@ -230,6 +231,7 @@ class BaseRunner(ABC, RunnerIO):
                 self.optimizer.zero_grad()
                 batch = send(batch, self.device)
                 # on_step_start()
+                self.global_step += 1
                 outputs = self.train_step(batch)
                 self.backward(outputs["loss"])
                 self.update_optimizer()
@@ -244,7 +246,7 @@ class BaseRunner(ABC, RunnerIO):
                     key: outputs[key].detach().cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                     for key in outputs.keys()
                 }
-                self.experiment.log_metrics(outputs)
+                self.experiment.log_metrics(outputs, step=self.global_step, epoch=epoch)
                 results.append(outputs)
                 # on_step_end()
 
@@ -252,7 +254,7 @@ class BaseRunner(ABC, RunnerIO):
 
             if len(dic) != 0:
                 self._metrics.update(dic)
-                self.experiment.log_metrics(dic, step=epoch)
+                self.experiment.log_metrics(dic, step=epoch, epoch=epoch)
 
     def val_cycle(self, epoch: int, loader: DataLoader) -> None:
         """
@@ -273,6 +275,7 @@ class BaseRunner(ABC, RunnerIO):
             with no_grad():
                 for step, batch in enumerate(loader):
                     batch = send(batch, self.device)
+                    self.global_step += 1
                     # on_step_start()
                     outputs = self.val_step(batch)        # pylint: disable=E1111
 
@@ -286,7 +289,7 @@ class BaseRunner(ABC, RunnerIO):
                         key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                         for key in outputs.keys()
                     }
-                    self.experiment.log_metrics(outputs)
+                    self.experiment.log_metrics(outputs, step=self.global_step, epoch=epoch)
                     results.append(outputs)
                     # on_step_end()
 
@@ -294,7 +297,7 @@ class BaseRunner(ABC, RunnerIO):
 
                 if len(dic) != 0:
                     self._metrics.update(dic)
-                    self.experiment.log_metrics(dic, step=epoch)
+                    self.experiment.log_metrics(dic, step=epoch, epoch=epoch)
 
     def test_cycle(self, loader: DataLoader) -> None:
         """
@@ -413,6 +416,9 @@ class BaseRunner(ABC, RunnerIO):
 
         if self.scheduler and not isinstance(self.scheduler, list):
             raise ValueError("`scheduler` must be a list object.")
+
+        if self.global_step < 0:
+            self.global_step = 0
 
         self.model = self.model.to(self.device)
 
