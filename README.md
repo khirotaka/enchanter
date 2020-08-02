@@ -11,10 +11,14 @@
 Enchanter is a library for machine learning tasks for comet.ml users.
 
 ## Installation
+To install the stable release.
 ```shell script
 pip install enchanter
 ```
+
 or
+
+To install the latest(unstable) release. 
 ```shell script
 pip install git+https://github.com/khirotaka/enchanter.git
 ```

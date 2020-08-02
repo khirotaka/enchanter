@@ -7,7 +7,7 @@
 #
 # ***************************************************
 
-from typing import List, Callable, Union, Optional
+from typing import List, Callable, Union
 from torch import relu
 from torch.tensor import Tensor
 from torch.nn import Module, ModuleList, Linear, Sequential, Conv1d, ReLU
