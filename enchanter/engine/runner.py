@@ -22,7 +22,8 @@ from torch.cuda import is_available
 from torch.tensor import Tensor
 from torch.autograd import no_grad
 from torch.utils.data import DataLoader, SubsetRandomSampler
-from comet_ml.experiment import BaseExperiment as BaseExperiment
+from comet_ml.api import APIExperiment
+from comet_ml.experiment import BaseExperiment
 
 from enchanter.engine.saving import RunnerIO
 from enchanter.engine.modules import send, get_dataset
@@ -71,6 +72,7 @@ class BaseRunner(ABC, RunnerIO):
         self.configures: Dict[str, Any] = {
             "epochs": 0
         }
+        self.api_experiment = None
 
         self.pbar = None
         self._loaders: Dict[str, DataLoader] = {}
@@ -366,9 +368,12 @@ class BaseRunner(ABC, RunnerIO):
 
         self.configures["checkpoint_path"]: str = checkpoint_path
         if monitor:
-            mode = re.search("train|validate", monitor)
-            trigger = re.split("train\w|validate\w", monitor)[1]
-            self.configures["monitor"] = {"mode": mode, "trigger": trigger}
+            try:
+                _ = re.search("train|validate", monitor)[0]
+            except TypeError:
+                raise KeyError("The argument monitor is not an expected expression. {}".format(monitor))
+            else:
+                self.configures["monitor"] = monitor
 
         if epochs > 0:
             self.configures["epochs"] = epochs
@@ -416,6 +421,9 @@ class BaseRunner(ABC, RunnerIO):
 
         if self.scheduler and not isinstance(self.scheduler, list):
             raise ValueError("`scheduler` must be a list object.")
+
+        if isinstance(self.experiment, BaseExperiment):
+            self.api_experiment = APIExperiment(previous_experiment=self.experiment.id, cache=False)
 
         if self.global_step < 0:
             self.global_step = 0
@@ -485,25 +493,23 @@ class BaseRunner(ABC, RunnerIO):
                             "<=": operator.le, ">": operator.gt, ">=": operator.ge
                         }
 
-                        def _save(o, k, v, e):
-                            # o: Operation, k: Key, v: Value, e: Epoch
-                            if ops[o](self.experiment.get_metric(k), v):
-                                super().save(self.configures["checkpoint_path"], epoch=e)
-
                         if "monitor" in self.configures.keys():
-                            mode = self.configures["monitor"]["mode"]
-                            key, op, value = self.configures["monitor"]["trigger"].split(" ")
+                            key, op, value = self.configures["monitor"].split(" ")
+                            value = float(value)
 
-                            if mode == "train":
-                                with self.experiment.train():
-                                    _save(op, key, value, epoch)
-                            elif mode == "validate":
-                                with self.experiment.validate():
-                                    _save(op, key, value, epoch)
-                            else:
-                                pass
+                            try:
+                                current_value = float(self.api_experiment.get_metrics_summary(key)["valueCurrent"])
+                            except TypeError:
+                                raise KeyError(
+                                    "The specified key was not found. Check the settings of `.train_config()`."
+                                )
 
-                        super().save(self.configures["checkpoint_path"], epoch=epoch)
+                            if current_value:
+                                if ops[op](current_value, value):
+                                    self.save(self.configures["checkpoint_path"], epoch=epoch)
+
+                        else:
+                            self.save(self.configures["checkpoint_path"], epoch=epoch)
 
         if phase in {"all", "test", "debug"}:
             if "test" in self.loaders:
