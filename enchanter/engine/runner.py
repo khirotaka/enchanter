@@ -363,6 +363,8 @@ class BaseRunner(ABC, RunnerIO):
 
         Returns:
             None
+        Warnings:
+            引数 monitor を指定する場合、「キーワード」「記号」「値」の間には必ずスペースを入れてください。
 
         """
 
@@ -442,6 +444,7 @@ class BaseRunner(ABC, RunnerIO):
                 - `test`
                 - `all`
                 - `debug`
+
                 のいずれかを指定してする事で、実行フェーズを決定します。デフォルト: all
 
             verbose: True の場合、学習の進行を表示します。
