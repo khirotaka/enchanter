@@ -22,8 +22,8 @@ from torch.cuda import is_available
 from torch.tensor import Tensor
 from torch.autograd import no_grad
 from torch.utils.data import DataLoader, SubsetRandomSampler
-from comet_ml.api import APIExperiment
-from comet_ml.experiment import BaseExperiment
+from comet_ml import Experiment, BaseExperiment, APIExperiment
+
 
 from enchanter.engine.saving import RunnerIO
 from enchanter.engine.modules import send, get_dataset
@@ -422,7 +422,7 @@ class BaseRunner(ABC, RunnerIO):
         if self.scheduler and not isinstance(self.scheduler, list):
             raise ValueError("`scheduler` must be a list object.")
 
-        if isinstance(self.experiment, BaseExperiment):
+        if isinstance(self.experiment, Experiment):
             self.api_experiment = APIExperiment(previous_experiment=self.experiment.id, cache=False)
 
         if self.global_step < 0:
@@ -557,7 +557,10 @@ class BaseRunner(ABC, RunnerIO):
 
     @property
     def loaders(self) -> Dict[str, DataLoader]:
-        return self._loaders
+        if len(self._loaders) != 0:
+            return self._loaders
+        else:
+            raise ValueError
 
     def fit(self, x: ndarray, y: ndarray, **kwargs):
         """
