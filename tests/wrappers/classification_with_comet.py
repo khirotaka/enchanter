@@ -41,7 +41,8 @@ def test_classification_1():
     try:
         runner.run(verbose=True)
         is_pass = True
-    except Exception:
+    except Exception as e:
+        print(e)
         is_pass = False
 
     assert is_pass is True
@@ -52,7 +53,7 @@ def test_classification_2():
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        OfflineExperiment(offline_directory="/tmp")
+        OfflineExperiment(offline_directory="../tmp")
     )
     runner.train_config(epochs=1)
 
@@ -60,8 +61,12 @@ def test_classification_2():
         runner.run(verbose=False)
         is_pass = True
 
-    except Exception:
+    except ValueError:
         is_pass = False
+
+    except Exception as e:
+        print(e)
+        is_pass = True
 
     assert is_pass is False
 
@@ -71,13 +76,38 @@ def test_classification_3():
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        OfflineExperiment(offline_directory="/tmp")
+        OfflineExperiment(offline_directory="../tmp")
     )
     try:
         runner.fit(x.astype(np.float32), y.astype(np.int64))
         is_pass = True
 
-    except Exception:
+    except Exception as e:
+        print(e)
         is_pass = False
 
     assert is_pass is True
+
+
+def test_classification_4():
+    runner = wrappers.ClassificationRunner(
+        model,
+        optimizer,
+        nn.CrossEntropyLoss(),
+        OfflineExperiment(offline_directory="../tmp")
+    )
+    runner.add_loader("train", train_loader).add_loader("val", val_loader).add_loader("test", test_loader)
+
+    try:
+        runner.run(verbose=False)
+        runner.train_config(epochs=1, checkpoint_path="../tmp/checkpoints", monitor="train_avg_acc >= 0.6")
+        is_pass = True
+
+    except TypeError:
+        is_pass = False
+
+    except Exception as e:
+        print(e)
+        is_pass = True
+
+    assert is_pass is False

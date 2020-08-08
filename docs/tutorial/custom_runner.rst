@@ -14,7 +14,7 @@ Enchanterでは、 ``enchanter.engine.BaseRunner`` を継承することでカ�
 
     import enchanter
 
-実装に最低限必要なライブラリは以上の通りです。
+実装に最低限必要なライブラリは以上です。
 なお、実験的に ``TensorBoard`` をサポートしており、``comet_ml.Experiment`` の代わりに、
 ``enchanter.callbacks.TensorBoardLogger`` を使うことも可能です。
 

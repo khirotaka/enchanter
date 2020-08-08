@@ -17,6 +17,8 @@ Basic Usage
 
    mnist
    sklearn_style
+   scheduler_chaining
+
 
 
 Advanced Usage
