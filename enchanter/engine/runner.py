@@ -8,7 +8,6 @@
 # ***************************************************
 
 import re
-import warnings
 import operator
 from abc import ABC
 from collections import OrderedDict
