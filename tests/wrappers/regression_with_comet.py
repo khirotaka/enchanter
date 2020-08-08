@@ -67,7 +67,7 @@ def test_regression_2():
         runner.run(verbose=False)
         is_pass = True
 
-    except Exception:
+    except ValueError:
         is_pass = False
 
     assert is_pass is False

@@ -52,7 +52,7 @@ def test_classification_2():
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        OfflineExperiment(offline_directory="/tmp")
+        OfflineExperiment(offline_directory="../tmp")
     )
     runner.train_config(epochs=1)
 
@@ -60,8 +60,12 @@ def test_classification_2():
         runner.run(verbose=False)
         is_pass = True
 
-    except Exception:
+    except ValueError:
         is_pass = False
+
+    except Exception as e:
+        print(e)
+        is_pass = True
 
     assert is_pass is False
 
@@ -71,7 +75,7 @@ def test_classification_3():
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        OfflineExperiment(offline_directory="/tmp")
+        OfflineExperiment(offline_directory="../tmp")
     )
     try:
         runner.fit(x.astype(np.float32), y.astype(np.int64))
@@ -81,3 +85,6 @@ def test_classification_3():
         is_pass = False
 
     assert is_pass is True
+
+
+test_classification_3()
