@@ -8,6 +8,7 @@
 # ***************************************************
 
 import re
+import warnings
 import operator
 from abc import ABC
 from collections import OrderedDict
@@ -376,6 +377,14 @@ class BaseRunner(ABC, RunnerIO):
                 raise KeyError("The argument monitor is not an expected expression. {}".format(monitor))
             else:
                 self.configures["monitor"] = monitor
+
+            if not isinstance(self.experiment, Experiment):
+                raise TypeError(
+                    "To use `.train_config(, monitor='....')`, you need an `Experiment` object. `experiment` is {}.\
+                    ".format(
+                        type(self.experiment)
+                    )
+                )
 
         if epochs > 0:
             self.configures["epochs"] = epochs
