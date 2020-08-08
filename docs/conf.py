@@ -90,6 +90,8 @@ html_theme_options = {
         "index": "Enchanter is a library for machine learning tasks for comet.ml users."
     },
     "theme_color": "#2196f3",
+    'html_minify': True,
+    'css_minify': True,
 
     "version_dropdown": True,
     "version_json": "_static/versions.json",

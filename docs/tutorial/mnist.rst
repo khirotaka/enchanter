@@ -72,7 +72,7 @@ Training neural network using MNIST
         optimizer,
         nn.CrossEntropyLoss(),
         experiment,
-        scheduler=optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5),
+        scheduler=[optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)],
         early_stop=EarlyStopping("train_avg_loss", min_delta=0.1, patience=1)
     )
 
