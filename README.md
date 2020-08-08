@@ -73,7 +73,8 @@ config = comet.TunerConfigGenerator(
     metric="train_avg_loss",
     objective="minimize",
     seed=0,
-    trials=5
+    trials=1,
+    max_combo=10
 )
 
 config.suggest_categorical("activation", ["addons.mish", "torch.relu", "torch.sigmoid"])
