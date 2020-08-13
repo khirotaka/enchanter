@@ -7,7 +7,7 @@
 #
 # ***************************************************
 
-from typing import Tuple, List, Union, Optional
+from typing import Tuple, List, Union, Optional, Dict
 
 from sklearn.base import ClassifierMixin
 from numpy import ndarray
@@ -70,29 +70,36 @@ class ClassificationRunner(BaseRunner, ClassifierMixin):
         self.scheduler = scheduler
         self.early_stop = early_stop
 
-    def train_step(self, batch: Tuple):
+    def general_step(self, batch: Tuple) -> Dict:
         x, y = batch
         out = self.model(x)
         loss = self.criterion(out, y)
         accuracy = calculate_accuracy(out, y)
         return {"loss": loss, "accuracy": accuracy}
 
-    def train_end(self, outputs: List):
+    @staticmethod
+    def general_end(outputs: List) -> Dict:
         avg_loss = stack([x["loss"] for x in outputs]).mean()
         avg_acc = stack([tensor(x["accuracy"]) for x in outputs]).mean()
         return {"avg_loss": avg_loss, "avg_acc": avg_acc}
 
-    def val_step(self, batch: Tuple):
-        return self.train_step(batch)
+    def train_step(self, batch: Tuple) -> Dict:
+        return self.general_step(batch)
 
-    def val_end(self, outputs: List):
-        return self.train_end(outputs)
+    def train_end(self, outputs: List) -> Dict:
+        return self.general_end(outputs)
 
-    def test_step(self, batch: Tuple):
-        return self.train_step(batch)
+    def val_step(self, batch: Tuple) -> Dict:
+        return self.general_step(batch)
 
-    def test_end(self, outputs: List):
-        return self.train_end(outputs)
+    def val_end(self, outputs: List) -> Dict:
+        return self.general_end(outputs)
+
+    def test_step(self, batch: Tuple) -> Dict:
+        return self.general_step(batch)
+
+    def test_end(self, outputs: List) -> Dict:
+        return self.general_end(outputs)
 
     def predict(self, x: Union[Tensor, ndarray]) -> ndarray:
         self.model.eval()
