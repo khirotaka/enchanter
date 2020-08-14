@@ -10,6 +10,7 @@
 import re
 import operator
 from abc import ABC
+from time import sleep
 from collections import OrderedDict
 from typing import Any, Dict, Tuple, Union, List, Optional
 
@@ -440,13 +441,13 @@ class BaseRunner(ABC, RunnerIO):
 
         self.model = self.model.to(self.device)
 
-    def run(self, phase: str = "all", verbose: bool = True):
+    def run(self, phase: str = "all", verbose: bool = True, sleep_time: int = 1):
         """
         Runnerを実行します。
         実行には、事前に self.add_loader("train", train_loader) で訓練用のデータローダを登録するしておく必要があります。
 
         Args:
-            phase:
+            phase (str):
                 - `train`
                 - `val`
                 - `test`
@@ -455,7 +456,8 @@ class BaseRunner(ABC, RunnerIO):
 
                 のいずれかを指定してする事で、実行フェーズを決定します。デフォルト: all
 
-            verbose: True の場合、学習の進行を表示します。
+            verbose (bool): True の場合、学習の進行を表示します。
+            sleep_time (int): comet.mlサーバへデータ転送するため待機する時間(sec)。デフォルト: 1 (sec)
 
         Returns:
             None
@@ -507,6 +509,7 @@ class BaseRunner(ABC, RunnerIO):
                         if "monitor" in self.configures.keys():
                             key, op, value = self.configures["monitor"].split(" ")
                             value = float(value)
+                            sleep(sleep_time)
 
                             try:
                                 current_value = float(self.api_experiment.get_metrics_summary(key)["valueCurrent"])

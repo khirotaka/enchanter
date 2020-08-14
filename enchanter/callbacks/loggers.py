@@ -9,8 +9,8 @@
 
 from typing import Any, Optional, Dict, Union
 from contextlib import contextmanager
-from torch import Tensor
 from numpy import ndarray
+from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
 
 

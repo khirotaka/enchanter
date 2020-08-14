@@ -69,7 +69,7 @@ class TunerConfigGenerator:
         }
         self.name: str = name
         self.trials: int = trials
-        self.__params:  Dict[str, Dict[str, Any]] = {}
+        self.__params: Dict[str, Dict[str, Any]] = {}
 
     def suggest_categorical(self, name: str, values: List[str]):
         """

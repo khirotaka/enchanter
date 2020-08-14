@@ -24,7 +24,7 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='enchanter',
-    version='0.6.0rc7',
+    version='0.6.0rc8',
     packages=find_packages(exclude=["docker", "docs", "examples", "tests", "tests.*"]),
     url='https://github.com/khirotaka/enchanter',
     keywords="pytorch comet_ml",

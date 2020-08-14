@@ -7,8 +7,8 @@
 #
 # ***************************************************
 
-import numpy as np
 from typing import Dict, Any
+import numpy as np
 from torch.optim.optimizer import Optimizer
 
 

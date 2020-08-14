@@ -40,7 +40,7 @@ class EarlyStopping(Callback):
         if mode not in mode_dict:
             mode = "auto"
 
-        self.monitor_op:Any = mode_dict[mode]
+        self.monitor_op: Any = mode_dict[mode]
         self.min_delta *= 1 if self.monitor_op == greater else -1
         self.best: Any = Inf if self.monitor_op == less else -Inf
 
