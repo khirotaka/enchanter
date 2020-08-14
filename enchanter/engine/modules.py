@@ -23,7 +23,7 @@ from torch.utils.data import TensorDataset
 
 
 __all__ = [
-    "is_jupyter", "get_dataset", "fix_seed"
+    "is_jupyter", "get_dataset", "fix_seed", "send"
 ]
 
 
