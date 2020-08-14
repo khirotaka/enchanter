@@ -22,6 +22,7 @@ __all__ = [
 
 _Numerical = Union[int, float]
 
+
 class FixedSlidingWindow:
     """Fixed sliding window.
 
