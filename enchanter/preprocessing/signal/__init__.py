@@ -1,5 +1,5 @@
 from .functions import *
-from . import transforms as transforms
+from . import transforms
 
 
 __all__ = [

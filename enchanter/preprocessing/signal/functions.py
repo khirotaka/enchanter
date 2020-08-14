@@ -46,7 +46,7 @@ class FixedSlidingWindow:
             argument overlap_rate under 0.0 or over 1.0.n error occurred.
 
     """
-    def __init__(self, window_size: int, overlap_rate: Union[float, None], step_size: Optional[int]=None) -> None:
+    def __init__(self, window_size: int, overlap_rate: Union[float, None], step_size: Optional[int] = None) -> None:
         self.window_size: int = window_size
 
         if overlap_rate is None and step_size is not None:

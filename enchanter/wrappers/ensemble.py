@@ -56,9 +56,9 @@ class SoftEnsemble(BaseEnsembleEstimator):
         probs = predicts / len(self.runners)
 
         if self.mode == "classification":
-            return probs.astype(np_int)
-        else:
-            return probs
+            probs = probs.astype(np_int)
+
+        return probs
 
 
 class HardEnsemble(BaseEnsembleEstimator):
