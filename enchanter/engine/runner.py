@@ -19,7 +19,7 @@ from tqdm.auto import tqdm
 from torch import device
 from torch.nn import Module
 from torch.optim.optimizer import Optimizer
-from torch.cuda import is_available, amp
+from torch.cuda import is_available
 from torch.tensor import Tensor
 from torch.autograd import no_grad
 from torch.utils.data import DataLoader, SubsetRandomSampler
@@ -74,7 +74,6 @@ class BaseRunner(ABC, RunnerIO):
             "epochs": 0
         }
         self.api_experiment = None
-        self.scaler: Optional[amp.GradScaler] = None
 
         self.pbar = None
         self._loaders: Dict[str, DataLoader] = {}
@@ -95,18 +94,10 @@ class BaseRunner(ABC, RunnerIO):
             None
 
         """
-        if self.scaler:
-            self.scaler.scale(loss).backward()
-        else:
-            loss.backward()
+        loss.backward()
 
     def update_optimizer(self) -> None:
-        if self.scaler:
-            self.scaler.step(self.optimizer)
-            self.scaler.update()
-
-        else:
-            self.optimizer.step()
+        self.optimizer.step()
 
     def update_scheduler(self, epoch: int) -> None:
         """
