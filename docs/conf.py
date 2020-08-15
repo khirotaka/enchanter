@@ -35,9 +35,12 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
     "sphinx_copybutton",
     "sphinx_material"
 ]
+html_show_sourcelink = False
+
 
 autoapi_dirs = ['../enchanter']
 autoapi_generate_api_docs = False
