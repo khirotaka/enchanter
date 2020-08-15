@@ -1,6 +1,8 @@
 name: CI
 
-on: [push]
+on:
+  push:
+  pull_request:
 
 jobs:
   build:
@@ -12,27 +14,32 @@ jobs:
         os: [ubuntu-latest, macOS-latest]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements-extra.txt
-    - name: Lint with flake8
-      run: |
-        pip install flake8
-        # Pythonの構文エラーもしくは未定義の名前があればビルドを停止
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zeroはすべてのエラーを警告として扱う。 GitHubのエディタの幅は127文字
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
-      env:
-         COMET_API_KEY: ${{ secrets.COMET_API_KEY }}
-      run: |
-        pip install pytest
-        pytest
-        pytest tests/wrappers/classification_with_comet.py
-        pytest tests/wrappers/regression_with_comet.py
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+      - name: Add path for Poetry
+        run: echo "::add-path::$HOME/.poetry/bin"
+      - name: Install Dependencies
+        run: poetry install --no-interaction
+
+      - name: Lint with flake8
+        run: |
+          # Pythonの構文エラーもしくは未定義の名前があればビルドを停止
+          poetry run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zeroはすべてのエラーを警告として扱う。 GitHubのエディタの幅は127文字
+          poetry run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Test with PyTest
+        env:
+           COMET_API_KEY: ${{ secrets.COMET_API_KEY }}
+        run: |
+          poetry run pytest tests/
+          poetry run pytest tests/wrappers/classification_with_comet.py
+          poetry run pytest tests/wrappers/regression_with_comet.py
