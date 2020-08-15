@@ -51,11 +51,13 @@ class PositionalEncoding(nn.Module):
 
         Args:
             x: (N, E, L)
-            N ... batch size
-            E ... features
-            L ... seq len
+
+                - N ... batch size
+                - E ... features
+                - L ... seq len
 
         Returns:
+
             (N, E, L)
 
         """
