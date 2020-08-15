@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  build:
+  pytest:
 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -36,7 +36,7 @@ jobs:
           poetry run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zeroはすべてのエラーを警告として扱う。 GitHubのエディタの幅は127文字
           poetry run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      - name: Test with PyTest
+      - name: Test with pytest
         env:
            COMET_API_KEY: ${{ secrets.COMET_API_KEY }}
         run: |
