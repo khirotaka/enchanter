@@ -16,29 +16,32 @@ Once we agree that the plan looks good, go ahead and implement it.
     *   If you need more context on a particular issue, please ask and we shall provide.
 
 ## Developing Enchanter
-To develop Enchanter on your machine
+To develop Enchanter on your machine.
+
+1.  Install Poetry
+
+    Enchanter uses [Poetry](https://python-poetry.org) and `pyproject.toml` to manage dependencies.  
+    Please refer to [the official documentation](https://python-poetry.org/docs/#installation) and install the appropriate one for your platform.
 
 1.  Clone a copy of Enchanter from source:
-```shell script
-git clone https://github.com/khirotaka/enchanter.git
-cd enchanter
-```
+    ```shell script
+    git clone https://github.com/khirotaka/enchanter.git
+    cd enchanter
+    ```
 
-1.1  If you already have Enchanter from source, update it:
-```shell script
-git pull --rebase
-git submodule sync --recursive
-git submodule update --init --recursive
-```
+    1.  If you already have Enchanter from source, update it:
+    ```shell script
+    git pull --rebase
+    git submodule sync --recursive
+    git submodule update --init --recursive
+    ```
 
-and install Enchanter on develop mode.
+    and install Enchanter on develop mode.
 
-```shell script
-python setup.py develop
-```
-
-If you want to reinstall, make sure that you uninstall Enchanter first by running `pip uninstall enchanter` and 
-`python setup.py clearn`. Then you can install in develop mode again.
+    ```shell script
+    poetry develop    # install enchanter
+    poetry shell      # activate virtual environment
+    ```
 
 ## Writing documentation
 Enchanter uses Google style for formatting docstrings. 
@@ -48,12 +51,12 @@ To build the documentation
 
 1.  Build and install Enchanter
 2.  Install the requirements
-```shell script
-cd docs/
-pip install -r requirements.txt
-```
+    ```shell script
+    cd docs/
+    pip install -r requirements.txt
+    ```
 3.  Generate the documentation HTML files.
 
-```shell script
-make html
-```
+    ```shell script
+    make html
+    ```
