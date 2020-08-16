@@ -24,7 +24,7 @@ jobs:
       - name: Add path for Poetry
         run: echo "::add-path::$HOME/.poetry/bin"
       - name: Install Dependencies
-        run: poetry install --no-interaction
+        run: poetry install --no-dev --no-interaction
 
       - name: Build and publish
         env:
