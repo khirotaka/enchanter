@@ -95,13 +95,13 @@ class BaseRunner(ABC, RunnerIO):
             None
 
         """
-        if self.scaler:
+        if isinstance(self.scaler, amp.GradScaler):
             self.scaler.scale(loss).backward()
         else:
             loss.backward()
 
     def update_optimizer(self) -> None:
-        if self.scaler:
+        if isinstance(self.scaler, amp.GradScaler):
             self.scaler.step(self.optimizer)
             self.scaler.update()
 
