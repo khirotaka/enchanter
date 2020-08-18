@@ -15,6 +15,7 @@ from torch import Tensor
 from torch.nn.modules import Module
 from torch.nn.modules.loss import _Loss
 from torch.optim.optimizer import Optimizer
+from torch.cuda.amp import GradScaler, autocast
 from torch import no_grad, stack, tensor, as_tensor, max as torch_max
 from comet_ml.experiment import BaseExperiment as BaseExperiment
 
@@ -72,8 +73,15 @@ class ClassificationRunner(BaseRunner, ClassifierMixin):
 
     def general_step(self, batch: Tuple) -> Dict:
         x, y = batch
-        out = self.model(x)
-        loss = self.criterion(out, y)
+
+        if isinstance(self.scaler, GradScaler):
+            with autocast():
+                out = self.model(x)
+                loss = self.criterion(out, y)
+        else:
+            out = self.model(x)
+            loss = self.criterion(out, y)
+
         accuracy = calculate_accuracy(out, y)
         return {"loss": loss, "accuracy": accuracy}
 

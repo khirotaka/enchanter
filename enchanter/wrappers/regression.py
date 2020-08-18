@@ -15,6 +15,7 @@ from torch import Tensor
 from torch.nn.modules import Module
 from torch.nn.modules.loss import _Loss
 from torch.optim.optimizer import Optimizer
+from torch.cuda.amp import GradScaler, autocast
 from torch import stack, tensor, no_grad, as_tensor
 from comet_ml.experiment import BaseExperiment as BaseExperiment
 
@@ -53,8 +54,15 @@ class RegressionRunner(BaseRunner, RegressorMixin):
 
     def general_step(self, batch: Tuple) -> Dict:
         x, y = batch
-        out = self.model(x)
-        loss = self.criterion(out, y)
+
+        if isinstance(self.scaler, GradScaler):
+            with autocast():
+                out = self.model(x)
+                loss = self.criterion(out, y)
+        else:
+            out = self.model(x)
+            loss = self.criterion(out, y)
+
         r2 = r2_score(y.cpu().numpy(), out.cpu().detach().numpy())
         return {"loss": loss, "r2": r2}
 
