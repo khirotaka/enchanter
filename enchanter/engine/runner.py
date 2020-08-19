@@ -39,7 +39,7 @@ __all__ = [
 
 class BaseRunner(ABC, RunnerIO):
     """
-    PyTorchモデルの訓練に用いる Runner を作成する為のクラスです。
+    A class for creating runners to train PyTorch models.
 
 
     Examples:
@@ -110,11 +110,11 @@ class BaseRunner(ABC, RunnerIO):
 
     def update_scheduler(self, epoch: int) -> None:
         """
-        スケジューラの値を更新するために呼ばれるメソッドです。
-        Optimizerを更新した後に呼ばれます。
+        Method called to update the value of the scheduler.
+        It is called after updating the Optimizer.
 
         Args:
-            epoch (int): 現在のエポック数
+            epoch (int): Current Epoch
 
         Returns:
             None
@@ -139,7 +139,7 @@ class BaseRunner(ABC, RunnerIO):
 
     def train_step(self, batch: Tuple) -> Dict[str, Tensor]:
         """
-        ニューラルネットの訓練時、
+        When training the neural network,
             >>> import torch.nn as nn
             >>> train_loader: DataLoader = ...
             >>> model: nn.Module = ...
@@ -148,13 +148,13 @@ class BaseRunner(ABC, RunnerIO):
             >>>     out = model(x)
             >>>     loss = criterion(out, y)
 
-        にあたる箇所を担当するメソッドです。
+        this method is responsible for the above areas.
 
         Args:
-            batch: PyTorch DataLoader から得られる訓練用のデータトラベルを含むタプル
+            batch: A tuple containing data & labels get from the PyTorch DataLoader.
 
         Returns:
-            キーに 'loss' を含む辞書を返す必要があります。
+            You need to return a dictionary with the key 'loss'.
 
         Examples:
             >>> def train_step(self, batch):
@@ -167,7 +167,7 @@ class BaseRunner(ABC, RunnerIO):
 
     def train_end(self, outputs: List) -> Dict[str, Tensor]:
         """
-        ニューラルネットの訓練時、1step 終了ごとに実行されるメソッドです。
+        This method is executed at the end of each step of neural network training.
 
         Args:
             outputs:
@@ -179,55 +179,60 @@ class BaseRunner(ABC, RunnerIO):
 
     def val_step(self, batch: Tuple) -> Dict[str, Tensor]:
         """
-        ニューラルネットの検証時、1step ごとに実行されるメソッドです。
+        This method is executed at every 1 step when validating the neural net.
+        See `train_step()` for help.
+
 
         Args:
-            batch: PyTorch DataLoader から得られる訓練用のデータトラベルを含むタプル
+            batch: A tuple containing data & labels get from the PyTorch DataLoader.
 
         Returns:
-            辞書を返す必要があります。
+            You need to return a dictionary.
 
         """
 
     def val_end(self, outputs: List) -> Dict[str, Tensor]:
         """
-        ニューラルネットの検証時、1step 終了ごとに実行されるメソッドです。
+        This method is executed at the end of each step of neural network validating.
 
         Args:
             outputs:
 
         Returns:
+            You need to return a dictionary.
 
         """
         return {}
 
     def test_step(self, batch: Tuple) -> Dict[str, Tensor]:
         """
-        ニューラルネットの評価時、1step ごとに実行されるメソッドです。
+        This method is executed at every 1 step when testing the neural net.
+        See `train_step()` for help.
 
         Args:
-            batch: PyTorch DataLoader から得られる訓練用のデータトラベルを含むタプル
+            batch: A tuple containing data & labels get from the PyTorch DataLoader.
 
         Returns:
-            辞書を返す必要があります。
+            You need to return a dictionary.
 
         """
 
     def test_end(self, outputs: List) -> Dict[str, Tensor]:
         """
-        ニューラルネットの評価時、1step 終了ごとに実行されるメソッドです。
+        This method is executed at the end of each step of neural network testing.
 
         Args:
             outputs:
 
         Returns:
+            You need to return a dictionary.
 
         """
         return {}
 
     def train_cycle(self, epoch: int, loader: DataLoader) -> None:
         """
-        ニューラルネットの訓練ループです。
+        This is a training loop for neural net.
 
         Args:
             epoch
@@ -270,7 +275,7 @@ class BaseRunner(ABC, RunnerIO):
 
     def val_cycle(self, epoch: int, loader: DataLoader) -> None:
         """
-        ニューラルネットの評価用ループです。
+        This is a validating loop for neural net.
 
         Args:
             epoch
@@ -313,7 +318,7 @@ class BaseRunner(ABC, RunnerIO):
 
     def test_cycle(self, loader: DataLoader) -> None:
         """
-        ニューラルネットの検証用ループです。
+        This is a testing loop for neural net.
 
         Args:
             loader:
@@ -356,7 +361,7 @@ class BaseRunner(ABC, RunnerIO):
 
     def train_config(self, epochs: int, checkpoint_path: Optional[str] = None, monitor: Optional[str] = None):
         """
-        .run() メソッドを用いて訓練を行う際に、 epochs などを指定する為のメソッドです。
+        This method is used to specify epochs and so on when you execute using the .run() method.
 
         Examples:
             >>> runner: BaseRunner = ...
@@ -367,14 +372,16 @@ class BaseRunner(ABC, RunnerIO):
             >>> )
 
         Args:
-            epochs (int): 訓練epoch数を指定する。
-            checkpoint_path: checkpointを保存するディレクトリ名を指定。monitorを指定しなければ、全てのepochにおける重みを保存する。
-            monitor: 指定した式に当てはまるepochのみを保存する。checkpoint_pathと一緒に設定する必要があるます。
+            epochs (int): Specify the number of training epochs.
+            checkpoint_path: Specify the name of the directory where the checkpoint is stored,
+                             and if monitor is not specified, store weights for all epochs.
+            monitor: Save only the epoch that corresponds to the specified expression.
+                     The `checkpoint_path` must be set together with it.
 
         Returns:
             None
-        Warnings:
-            引数 monitor を指定する場合、「キーワード」「記号」「値」の間には必ずスペースを入れてください。
+        Notes:
+            When you specify the monitor argument, be sure to put a space between 'keyword', 'symbol', and 'value'.
 
         """
 
@@ -421,9 +428,10 @@ class BaseRunner(ABC, RunnerIO):
 
     def initialize(self) -> None:
         """
-        Runner の準備を行うメソッドです。
-        self.model, self.optimizer, self.experiment といった実行に必要な最低限の変数が未定義な場合はエラーメッセージを出し終了します。
-        問題がなければ CPU or GPU にモデルを渡します。
+        The method that prepares the Runner.
+        If the variables required for execution, such as self.model, self.optimizer, self.experiment, etc.,
+        are not defined, the program will exit with an error message.
+        If there are no problems, pass the model to the CPU or GPU.
 
         Returns:
             None
@@ -452,8 +460,8 @@ class BaseRunner(ABC, RunnerIO):
 
     def run(self, phase: str = "all", verbose: bool = True, sleep_time: int = 1):
         """
-        Runnerを実行します。
-        実行には、事前に self.add_loader("train", train_loader) で訓練用のデータローダを登録するしておく必要があります。
+        Runners are executed.
+        To run it, you must register a data loader using self.add_loader() before.
 
         Args:
             phase (str):
@@ -463,10 +471,15 @@ class BaseRunner(ABC, RunnerIO):
                 - `all`
                 - `debug`
 
-                のいずれかを指定してする事で、実行フェーズを決定します。デフォルト: all
+                by specifying one of the above, you can determine the execution phase. Default: all
 
-            verbose (bool): True の場合、学習の進行を表示します。
-            sleep_time (int): comet.mlサーバへデータ転送するため待機する時間(sec)。デフォルト: 1 (sec)
+            verbose (bool): If true, progress is displayed.
+            sleep_time (int): The time to wait for data transfer to the comet.ml server (in seconds). Default: 1 (sec).
+
+        Notes:
+            If "TypeError" occurs even though there is no mistake in the formula of the monitor specified by
+            `.train_config()`, the reason may be that it takes a long time to transfer the data to the comet.ml server.
+            Try to set the `sleep_time` to about 5 seconds.
 
         Returns:
             None
@@ -545,7 +558,7 @@ class BaseRunner(ABC, RunnerIO):
 
     def predict(self, x: Union[Tensor, ndarray]) -> ndarray:
         """
-        与えられた入力をもとに予測を行うメソッドです。
+        A method that makes predictions based on the given input.
 
         Args:
             x (Union[torch.Tensor, np.ndarray]):
@@ -557,10 +570,10 @@ class BaseRunner(ABC, RunnerIO):
 
     def add_loader(self, mode: str, loader: DataLoader):
         """
-        訓練等に用いるデータローダをRunnerに登録する為のメソッドです。
+        A method to register a DataLoader to be used for training etc. in a runner.
 
         Args:
-            mode (str): ['train', 'val', 'test'] のいずれをか指定します。
+            mode (str): Specify one of ['train','val', or'test'].
             loader (torch.utils.data.DataLoader):
 
         Examples:
@@ -587,11 +600,11 @@ class BaseRunner(ABC, RunnerIO):
 
     def fit(self, x: ndarray, y: ndarray, **kwargs):
         """
-        Scikit-Learn スタイルの訓練メソッドです。
+        Scikit-Learn style training method.
 
         Args:
-            x: 訓練用データ
-            y: 教師ラベル
+            x: Training data
+            y: Label
             **kwargs:
 
         """
@@ -637,7 +650,7 @@ class BaseRunner(ABC, RunnerIO):
 
     def freeze(self) -> None:
         """
-        モデルのパラメータが勾配を計算しないように固定する為のメソッドです。
+        A method to freeze the model's parameters so that they do not calculate the slope.
 
         """
         for param in self.model.parameters():
@@ -647,7 +660,7 @@ class BaseRunner(ABC, RunnerIO):
 
     def unfreeze(self) -> None:
         """
-        .freeze() で固定されたパラメータを再度学習できるようにする為のメソッドです。
+        The method to make it possible to re-learn the parameters fixed by `.freeze()`.
 
         """
         for param in self.model.parameters():
