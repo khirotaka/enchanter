@@ -83,10 +83,8 @@ class BaseRunner(ABC, RunnerIO):
 
     def backward(self, loss: Tensor) -> None:
         """
-        calculate the gradient
-
-        Warnings:
-            This method may be changed from staticmethod in the future to support FP16 and others.
+        calculate the gradient.
+        If self.scaler is a `torch.cuda.amp.GradScaler` object, it is automatically processed by amp.
 
         Args:
             loss (torch.Tensor):
