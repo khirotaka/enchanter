@@ -23,6 +23,12 @@ To install the latest(unstable) release.
 pip install git+https://github.com/khirotaka/enchanter.git
 ```
 
+If you want to install with a specific branch, you can use the following.
+```shell script
+# e.g.) Install enchanter from feature branch.
+pip install git+https://github.com/khirotaka/enchanter.git@feature
+```
+
 ## Documentation
 *   [API Reference](https://enchanter.readthedocs.io/ja/latest/)
 *   [Tutorial](https://enchanter.readthedocs.io/ja/latest/tutorial/modules.html)
