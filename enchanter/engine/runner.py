@@ -119,7 +119,7 @@ class BaseRunner(ABC, RunnerIO):
 
         Examples:
             >>> from torch.optim import lr_scheduler
-            >>> from enchanter.wrappers import ClassificationRunner
+            >>> from enchanter.tasks import ClassificationRunner
             >>> runner: BaseRunner = ClassificationRunner(
             >>>     model=...,
             >>>     optimizer=...,
