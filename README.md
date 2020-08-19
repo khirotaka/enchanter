@@ -46,7 +46,7 @@ import enchanter
 model = torch.nn.Linear(6, 10)
 optimizer = torch.optim.Adam(model.parameters())
 
-runner = enchanter.wrappers.ClassificationRunner(
+runner = enchanter.tasks.ClassificationRunner(
     model, 
     optimizer,
     criterion=torch.nn.CrossEntropyLoss(),
@@ -68,7 +68,7 @@ import torch.nn as nn
 import torch.optim as optim
 from sklearn.datasets import load_iris
 
-import enchanter.wrappers as wrappers
+import enchanter.tasks as tasks
 import enchanter.addons as addons
 import enchanter.addons.layers as layers
 from enchanter.utils import comet
@@ -94,7 +94,7 @@ y = y.astype("int64")
 for experiment in opt.get_experiments():
     model = layers.MLP([4, 512, 128, 3], eval(experiment.get_parameter("activation")))
     optimizer = optim.Adam(model.parameters())
-    runner = wrappers.ClassificationRunner(
+    runner = tasks.ClassificationRunner(
         model, optimizer=optimizer, criterion=nn.CrossEntropyLoss(), experiment=experiment
     )
 
@@ -103,13 +103,13 @@ for experiment in opt.get_experiments():
 
 
 ### Training with Mixed Precision
-Runners with defined in `enchanter.wrappers` are now support Auto Mixed Precision.  
+Runners with defined in `enchanter.tasks` are now support Auto Mixed Precision.  
 Write the following.
 
 
 ```python
 from torch.cuda import amp
-from enchanter.wrappers import ClassificationRunner
+from enchanter.tasks import ClassificationRunner
 
 
 runner = ClassificationRunner(...)
