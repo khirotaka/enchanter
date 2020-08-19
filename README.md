@@ -101,5 +101,45 @@ for experiment in opt.get_experiments():
     runner.fit(x, y, epochs=1, batch_size=32)
 ```
 
+
+### Training with Mixed Precision
+Runners with defined in `enchanter.wrappers` are now support Auto Mixed Precision.  
+Write the following.
+
+
+```python
+from torch.cuda import amp
+from enchanter.wrappers import ClassificationRunner
+
+
+runner = ClassificationRunner(...)
+runner.scaler = amp.GradScaler()
+```
+
+
+If you want to define a custom runner that supports mixed precision, do the following.
+```python
+from torch.cuda import amp
+import torch.nn.functional as F
+from enchanter.engine import BaseRunner
+
+
+class CustomRunner(BaseRunner):
+    # ...
+    def train_step(self, batch):
+        x, y = batch
+        with amp.autocast():        # REQUIRED
+            out = self.model(x)
+            loss = F.nll_loss(out, y)
+        
+        return {"loss": loss}
+
+
+runner = CustomRunner(...)
+runner.scaler = amp.GradScaler()
+```
+
+That is, you can enable AMP by using `torch.cuda.amp.autocast()` in `.train_step()`, `.val_step()` and `.test_step()`.
+
 ## License
 [Apache License 2.0](LICENSE)
