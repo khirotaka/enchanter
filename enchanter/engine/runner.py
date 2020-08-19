@@ -483,7 +483,7 @@ class BaseRunner(ABC, RunnerIO):
         self.log_hyperparams()
 
         if not self.loaders:
-            raise Exception("At least one DataLoader must be provided.")
+            raise ValueError("At least one DataLoader must be provided.")
 
         if phase in {"all", "train", "train/val", "debug"}:
             if "train" in self.loaders:
