@@ -12,6 +12,7 @@ API
     enchanter.engine
     enchanter.metrics
     enchanter.preprocessing
+    enchanter.tasks
     enchanter.utils
     enchanter.wrappers
 
