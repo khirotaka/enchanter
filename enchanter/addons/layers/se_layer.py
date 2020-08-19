@@ -10,11 +10,13 @@ __all__ = [
 class SELayer1d(nn.Module):
     def __init__(self, in_features: int, reduction: int = 16) -> None:
         super(SELayer1d, self).__init__()
+        reduction_size = max(1, in_features // reduction)
+
         self.avg_pool = nn.AdaptiveAvgPool1d(1)
         self.fc = nn.Sequential(
-            nn.Linear(in_features, in_features // reduction, bias=False),
+            nn.Linear(in_features, reduction_size, bias=False),
             nn.ReLU(inplace=True),
-            nn.Linear(in_features // reduction, in_features, bias=False),
+            nn.Linear(reduction_size, in_features, bias=False),
             nn.Sigmoid()
         )
 
@@ -30,11 +32,13 @@ class SELayer1d(nn.Module):
 class SELayer2d(nn.Module):
     def __init__(self, in_features: int, reduction: int = 16) -> None:
         super(SELayer2d, self).__init__()
+        reduction_size = max(1, in_features // reduction)
+
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Sequential(
-            nn.Linear(in_features, in_features // reduction, bias=False),
+            nn.Linear(in_features, reduction_size, bias=False),
             nn.ReLU(inplace=True),
-            nn.Linear(in_features // reduction, in_features, bias=False),
+            nn.Linear(reduction_size, in_features, bias=False),
             nn.Sigmoid()
         )
 
