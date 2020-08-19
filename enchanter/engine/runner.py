@@ -573,7 +573,7 @@ class BaseRunner(ABC, RunnerIO):
         A method to register a DataLoader to be used for training etc. in a runner.
 
         Args:
-            mode (str): Specify one of ['train','val', or'test'].
+            mode (str): Specify one of ['train', 'val', 'test'].
             loader (torch.utils.data.DataLoader):
 
         Examples:
