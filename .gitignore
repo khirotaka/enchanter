@@ -135,3 +135,6 @@ tests/data/
 
 .DS_Store
 /.update.txt
+!/poetry.lock
+docs/savefig/
+poetry.lock
