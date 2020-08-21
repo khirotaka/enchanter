@@ -7,29 +7,27 @@
 #
 # ***************************************************
 
-from torch.tensor import Tensor
-from torch import sigmoid, tanh, tensor
-from torch.nn.functional import softplus
-from torch.nn import Module, Tanh, Softplus, Parameter
+import torch
+import torch.nn as nn
 
 
 __all__ = [
-    "Swish", "mish", "Mish"
+    "Swish", "mish", "Mish", "FReLU1d", "FReLU2d"
 ]
 
 
-class Swish(Module):
+class Swish(nn.Module):
     """
     Swish活性化関数を適用します。
     """
     def __init__(self, beta: bool = False):
         super(Swish, self).__init__()
         if beta:
-            self.weight = Parameter(tensor([1.]), requires_grad=True)
+            self.weight = nn.Parameter(torch.tensor([1.]), requires_grad=True)
         else:
             self.weight = 1.0
 
-    def forward(self, inputs: Tensor) -> Tensor:
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """
         入力値に対してSwishを適用します。
 
@@ -46,18 +44,18 @@ class Swish(Module):
             Swishを適用した結果
 
         """
-        out = inputs * sigmoid(self.weight * inputs)
+        out = inputs * torch.sigmoid(self.weight * inputs)
         return out
 
 
-def mish(x: Tensor) -> Tensor:
+def mish(x: torch.Tensor) -> torch.Tensor:
     """
     mish活性化関数を適用します。
 
     Examples:
         >>> import torch
-        >>> x = torch.randn(2)
-        >>> y = mish(y)
+        >>> inputs = torch.randn(2)
+        >>> outouts = mish(inputs)
 
     Args:
         x (torch.Tensor):
@@ -66,20 +64,20 @@ def mish(x: Tensor) -> Tensor:
         mishを適用した結果 (torch.Tensor)
 
     """
-    return x * tanh(softplus(x))
+    return x * torch.tanh(nn.functional.softplus(x))
 
 
-class Mish(Module):
+class Mish(nn.Module):
     """
     Mish活性化関数を適用します。
 
     """
     def __init__(self):
         super(Mish, self).__init__()
-        self.tanh: Module = Tanh()
-        self.softplus: Module = Softplus()
+        self.tanh: nn.Module = nn.Tanh()
+        self.softplus: nn.Module = nn.Softplus()
 
-    def forward(self, inputs: Tensor) -> Tensor:
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """
         入力に対して Mish を適用します。
 
@@ -97,3 +95,46 @@ class Mish(Module):
 
         """
         return inputs * self.tanh(self.softplus(inputs))
+
+
+class _FReLUNd(nn.Module):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        out = self.norm(self.conv(x))
+        out = torch.max(x, out)
+        return out
+
+
+class FReLU1d(_FReLUNd):
+    """
+    Applies the Funnel Activation (FReLU) for 1d inputs such as sensor signals.
+
+    Examples:
+        >>> inputs = torch.randn(1, 3, 128)     # [N, features, seq_len]
+        >>> frelu = FReLU1d(3)
+        >>> outputs = frelu(inputs)
+
+    """
+    def __init__(self, in_features: int, kernel_size: int = 3, stride: int = 1, padding: int = 1):
+        super(FReLU1d, self).__init__()
+        self.conv = nn.Conv1d(
+            in_features, in_features, kernel_size=kernel_size, stride=stride, padding=padding, groups=in_features
+        )
+        self.norm = nn.BatchNorm1d(in_features)
+
+
+class FReLU2d(_FReLUNd):
+    """
+    Applies the Funnel Activation (FReLU) for 2d inputs such as images.
+
+    Examples:
+        >>> inputs = torch.randn(1, 3, 128, 128)     # [N, channels, heights, widths]
+        >>> frelu = FReLU2d(3)
+        >>> outputs = frelu(inputs)
+
+    """
+    def __init__(self, in_features: int, kernel_size: int = 3, stride: int = 1, padding: int = 1):
+        super(FReLU2d, self).__init__()
+        self.conv = nn.Conv2d(
+            in_features, in_features, kernel_size=kernel_size, stride=stride, padding=padding, groups=in_features
+        )
+        self.norm = nn.BatchNorm2d(in_features)
