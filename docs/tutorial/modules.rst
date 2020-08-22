@@ -30,6 +30,7 @@ Advanced Usage
 
    custom_runner
    with_hydra
+   amp
 
 
 Model Optimization
