@@ -50,7 +50,9 @@ Enchanter uses Google style for formatting docstrings.
 To build the documentation
 
 1.  Build and install Enchanter
+
 2.  Install the requirements
+
     ```shell script
     cd docs/
     pip install -r requirements.txt

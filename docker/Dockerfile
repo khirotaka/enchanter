@@ -18,7 +18,7 @@ RUN source ${HOME}/.poetry/env \
     && poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
 
-ENV PATH ${HOME}/.poetry/bin:${PATH}
+ENV PATH "$HOME"/.poetry/bin:"$PATH"
 
 WORKDIR /workspace
 RUN chmod -R a+w .
