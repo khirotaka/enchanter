@@ -64,11 +64,7 @@ class RegressionRunner(BaseRunner, RegressorMixin):
     def general_step(self, batch: Tuple) -> Dict:
         x, y = batch
 
-        if isinstance(self.scaler, GradScaler):
-            with autocast():
-                out = self.model(x)
-                loss = self.criterion(out, y)
-        else:
+        with autocast(enabled=isinstance(self.scaler, GradScaler)):
             out = self.model(x)
             loss = self.criterion(out, y)
 
