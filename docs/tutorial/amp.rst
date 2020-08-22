@@ -54,8 +54,8 @@ Training VGG16 using STL10 dataset
 
     runner.scaler = GradScaler()                            # Override
 
-    runner.add_loader("train", trainloader)
-    runner.add_loader("test", testloader)
+    runner.add_loader("train", train_loader)
+    runner.add_loader("test", test_loader)
     runner.train_config(epochs=20)
 
     runner.run()
