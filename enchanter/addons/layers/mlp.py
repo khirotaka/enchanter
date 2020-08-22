@@ -14,7 +14,7 @@ from torch.nn import Module, ModuleList, Linear, Sequential, Conv1d, ReLU
 
 
 __all__ = [
-    "MLP", "PositionWiseFeedForward"
+    "MLP", "PositionWiseFeedForward", "ResidualSequential"
 ]
 
 
@@ -101,7 +101,7 @@ class PositionWiseFeedForward(Module):
         return x
 
 
-class ResidualSequential(Module):
+class ResidualSequential(Sequential):
     """
 
     Examples:
