@@ -99,3 +99,18 @@ class PositionWiseFeedForward(Module):
         x = self.conv(x)
         x = x.transpose(1, 2)
         return x
+
+
+class ResidualSequential(Module):
+    """
+
+    Examples:
+        >>> model = ResidualSequential(
+        >>>     Linear(10, 10),
+        >>>     ReLU(),
+        >>>     Linear(10, 10)
+        >>> )
+
+    """
+    def forward(self, x: Tensor) -> Tensor:
+        return x + super(ResidualSequential, self).forward(x)
