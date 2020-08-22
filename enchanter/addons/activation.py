@@ -98,14 +98,7 @@ class Mish(nn.Module):
         return inputs * self.tanh(self.softplus(inputs))
 
 
-class _FReLUNd(nn.Module):
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        out = self.norm(self.conv(x))       # type: ignore
-        out = torch.max(x, out)
-        return out
-
-
-class FReLU1d(_FReLUNd):
+class FReLU1d(nn.Module):
     """
     Applies the Funnel Activation (FReLU) for 1d inputs such as sensor signals.
 
@@ -122,8 +115,14 @@ class FReLU1d(_FReLUNd):
         )
         self.norm = nn.BatchNorm1d(in_features)
 
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        out = self.conv(x)
+        out = self.norm(out)
+        out = torch.max(x, out)
+        return out
 
-class FReLU2d(_FReLUNd):
+
+class FReLU2d(nn.Module):
     """
     Applies the Funnel Activation (FReLU) for 2d inputs such as images.
 
@@ -139,3 +138,9 @@ class FReLU2d(_FReLUNd):
             in_features, in_features, kernel_size=kernel_size, stride=stride, padding=padding, groups=in_features
         )
         self.norm = nn.BatchNorm2d(in_features)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        out = self.conv(x)
+        out = self.norm(out)
+        out = torch.max(x, out)
+        return out

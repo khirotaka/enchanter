@@ -16,15 +16,15 @@ from typing import Any, Dict, Tuple, Union, List, Optional
 
 from numpy import floor, ndarray
 from tqdm.auto import tqdm
-from torch import device
+import torch
 from torch.nn import Module
+from torch.tensor import Tensor
 from torch.optim.optimizer import Optimizer
 from torch.cuda import is_available, amp
-from torch.tensor import Tensor
-from torch.autograd import no_grad
 from torch.utils.data import DataLoader, SubsetRandomSampler
-from comet_ml import Experiment, BaseExperiment, APIExperiment
-
+from comet_ml import Experiment
+from comet_ml.experiment import BaseExperiment
+from comet_ml.api import APIExperiment
 
 from enchanter.engine.saving import RunnerIO
 from enchanter.engine.modules import send, get_dataset
@@ -64,7 +64,7 @@ class BaseRunner(ABC, RunnerIO):
     """
     def __init__(self) -> None:
         super(BaseRunner, self).__init__()
-        self.device: device = device("cuda" if is_available() else "cpu")
+        self.device: torch.device = torch.device("cuda" if is_available() else "cpu")
         self.model: Module = NotImplemented
         self.optimizer: Optimizer = NotImplemented
         self.scheduler: List = list()
@@ -287,7 +287,7 @@ class BaseRunner(ABC, RunnerIO):
 
         self.model.eval()
         with self.experiment.validate():
-            with no_grad():
+            with torch.no_grad():
                 for step, batch in enumerate(loader):
                     batch = send(batch, self.device)
                     self.global_step += 1
@@ -329,7 +329,7 @@ class BaseRunner(ABC, RunnerIO):
 
         self.model.eval()
         with self.experiment.test():
-            with no_grad():
+            with torch.no_grad():
                 for step, batch in enumerate(loader):
                     batch = send(batch, self.device)
                     # on_step_start()
