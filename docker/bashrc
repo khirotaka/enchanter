@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+export PATH=$HOME/.poetry/bin:$PATH
 cat<<LOGO
      _____            _                 _
     | ____|_ __   ___| |__   __ _ _ __ | |_ ___ _ __

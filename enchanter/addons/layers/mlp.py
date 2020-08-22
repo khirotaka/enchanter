@@ -52,13 +52,12 @@ class MLP(Module):
         self.layers: Module = ModuleList(layers)
 
     def forward(self, x: Tensor) -> Tensor:
-        for layer in self.layers[:-1]:
+        for layer in self.layers[:-1]:      # type: ignore
             x = layer(x)
             x = self.activation(x)
 
-        x = self.layers[-1](x)
+        x = self.layers[-1](x)              # type: ignore
         return x
-
 
 
 class PositionWiseFeedForward(Module):

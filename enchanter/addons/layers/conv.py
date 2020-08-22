@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable
 
 from torch import relu
 from torch.tensor import Tensor
@@ -19,7 +19,7 @@ class CausalConv1d(Module):
             out_channels: int,
             kernel_size: int,
             dilation: int = 1,
-            activation: Optional[Callable[[Tensor], Tensor]] = relu,
+            activation: Callable[[Tensor], Tensor] = relu,
             **kwargs
     ) -> None:
         """

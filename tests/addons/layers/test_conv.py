@@ -11,4 +11,4 @@ def test_causalconv():
     out = model(x)
     out = out.sum()
     out.backward()
-    assert x.grad != None
+    assert x.grad is not None

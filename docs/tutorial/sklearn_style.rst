@@ -10,7 +10,7 @@ scikit-learn style training
     from sklearn.datasets import load_iris
     from sklearn.metrics import accuracy_score
 
-    import enchanter.wrappers as wrappers
+    import enchanter.tasks as tasks
     import enchanter.addons as addons
     import enchanter.addons.layers as layers
 
@@ -18,7 +18,7 @@ scikit-learn style training
     experiment = Experiment()
     model = layers.MLP([4, 512, 128, 3], addons.mish)
     optimizer = optim.Adam(model.parameters())
-    runner = wrappers.ClassificationRunner(
+    runner = tasks.ClassificationRunner(
         model, optimizer=optimizer, criterion=nn.CrossEntropyLoss(), experiment=experiment
     )
     x, y = load_iris(return_X_y=True)

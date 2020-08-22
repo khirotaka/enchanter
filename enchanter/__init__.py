@@ -1,5 +1,5 @@
 import enchanter.addons
 import enchanter.engine
-import enchanter.wrappers
+import enchanter.tasks
 
 from .__version__ import __version__

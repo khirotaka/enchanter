@@ -7,7 +7,7 @@
 #
 # ***************************************************
 
-from typing import Any, Optional, Dict, Union
+from typing import Any, Optional, Dict, Union, Iterator
 from contextlib import contextmanager
 from numpy import ndarray
 from torch import Tensor
@@ -24,7 +24,7 @@ class BaseLogger:
         self.context: Union[str, None] = None
 
     @contextmanager
-    def train(self) -> None:
+    def train(self) -> Iterator:
         old_state = self.context
         self.context = "train"
 
@@ -33,7 +33,7 @@ class BaseLogger:
         self.context = old_state
 
     @contextmanager
-    def validate(self) -> None:
+    def validate(self) -> Iterator:
         old_state = self.context
         self.context = "validate"
 
@@ -42,7 +42,7 @@ class BaseLogger:
         self.context = old_state
 
     @contextmanager
-    def test(self) -> None:
+    def test(self) -> Iterator:
         old_state = self.context
         self.context = "test"
 

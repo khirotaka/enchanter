@@ -28,6 +28,24 @@ Activation functions
     :show-inheritance:
 
 
+`FReLU1d`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: FReLU1d
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+`FReLU2d`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: FReLU2d
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 Optimizers
 ----------
 

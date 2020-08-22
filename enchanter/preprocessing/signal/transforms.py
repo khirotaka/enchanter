@@ -89,7 +89,7 @@ class FixedWindow:
             else:
                 raise ValueError("`start_position` must be 0 and over.")
         else:
-            self.start_position: Optional[int] = start_position
+            self.start_position: Optional[int] = start_position         # type: ignore
 
     def __call__(self, data: Union[Tensor, ndarray]) -> Union[Tensor, ndarray]:
         """
@@ -107,7 +107,7 @@ class FixedWindow:
             raise IndexError("`window size` must be smaller then input sequence length.")
 
         if not self.start_position:
-            start = choice([i for i in range(seq_len - self.window_size)])       #nosec
+            start = choice([i for i in range(seq_len - self.window_size)])       # nosec
         else:
             if (seq_len - self.window_size) >= self.start_position:
                 start = self.start_position
@@ -191,7 +191,7 @@ class Pad:
         if value:
             self.value: Union[int, float] = value
         else:
-            self.value: Union[int, float] = 0.0
+            self.value = 0.0
 
     def __call__(self, data: Union[Tensor, ndarray]) -> Union[Tensor, ndarray]:
         from_np = False

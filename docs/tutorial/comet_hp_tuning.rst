@@ -18,7 +18,7 @@ Optunaスタイルのconfigジェネレータ ``enchanter.utils.comet.TunerConfi
     import torch.optim as optim
     from sklearn.datasets import load_iris
 
-    import enchanter.wrappers as wrappers
+    import enchanter.tasks as tasks
     import enchanter.addons as addons
     import enchanter.addons.layers as layers
     from enchanter.utils import comet
@@ -52,7 +52,7 @@ comet.mlの仕様上、カテゴリカル変数の場合、探索対象は要素
     for experiment in opt.get_experiments():
         model = layers.MLP([4, 512, 128, 3], eval(experiment.get_parameter("activation")))
         optimizer = optim.Adam(model.parameters())
-        runner = wrappers.ClassificationRunner(
+        runner = tasks.ClassificationRunner(
             model, optimizer=optimizer, criterion=nn.CrossEntropyLoss(), experiment=experiment
         )
         x, y = load_iris(return_X_y=True)

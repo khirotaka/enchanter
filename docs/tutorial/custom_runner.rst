@@ -75,5 +75,5 @@ Enchanterを用いた訓練方法は、scikit-learnスタイルの ``.fit()`` �
     runner.run()
 
 これで、ニューラルネットの訓練を行う事が出来ます。
-なお、分類タスク用のRunnerは ``enchanter.wrappers.ClassificationRunner`` を利用する事も出来ます。
-詳細は :doc:`該当のドキュメント <../source/enchanter.wrappers>` を参照してください。
+なお、分類タスク用のRunnerは ``enchanter.tasks.ClassificationRunner`` を利用する事も出来ます。
+詳細は :doc:`該当のドキュメント <../source/enchanter.tasks>` を参照してください。

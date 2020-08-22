@@ -11,7 +11,7 @@ from sklearn.model_selection import train_test_split
 
 
 from enchanter import addons
-from enchanter import wrappers
+from enchanter import tasks
 from enchanter.addons import layers
 from enchanter.engine.modules import fix_seed, get_dataset
 
@@ -22,7 +22,7 @@ fix_seed(0)
 experiment = Experiment()
 model = layers.MLP([4, 512, 128, 3], addons.mish)
 optimizer = optim.Adam(model.parameters())
-runner = wrappers.ClassificationRunner(
+runner = tasks.ClassificationRunner(
     model,
     optimizer=optimizer,
     criterion=nn.CrossEntropyLoss(),

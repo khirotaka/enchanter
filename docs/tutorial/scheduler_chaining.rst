@@ -25,7 +25,7 @@ Enchanter v0.6.0から Optimizer SchedulerのChaining に対応しました。
     from sklearn.model_selection import train_test_split
 
     from enchanter import addons
-    from enchanter import wrappers
+    from enchanter import tasks
     from enchanter.addons import layers
     from enchanter.engine.modules import fix_seed, get_dataset
 
@@ -40,7 +40,7 @@ Enchanter v0.6.0から Optimizer SchedulerのChaining に対応しました。
 
 .. code-block:: python
 
-    runner = wrappers.ClassificationRunner(
+    runner = tasks.ClassificationRunner(
         model,
         optimizer=optimizer,
         criterion=nn.CrossEntropyLoss(),

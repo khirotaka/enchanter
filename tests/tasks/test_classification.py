@@ -1,16 +1,14 @@
-from comet_ml import OfflineExperiment
-
 import numpy as np
 import torch.nn as nn
 import torch.optim as optim
+from torch.utils.data import DataLoader
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
-from torch.utils.data import DataLoader
 
-import enchanter.wrappers as wrappers
+import enchanter.tasks as tasks
 import enchanter.addons as addons
+from enchanter.callbacks import TensorBoardLogger
 from enchanter.engine.modules import get_dataset
-
 
 x, y = load_iris(return_X_y=True)
 x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=0)
@@ -29,11 +27,11 @@ optimizer = optim.Adam(model.parameters())
 
 
 def test_classification_1():
-    runner = wrappers.ClassificationRunner(
+    runner = tasks.ClassificationRunner(
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        OfflineExperiment(offline_directory="../tmp")
+        TensorBoardLogger("./logs")
     )
     runner.add_loader("train", train_loader).add_loader("val", val_loader).add_loader("test", test_loader)
     runner.train_config(epochs=1)
@@ -41,19 +39,18 @@ def test_classification_1():
     try:
         runner.run(verbose=True)
         is_pass = True
-    except Exception as e:
-        print(e)
+    except Exception:
         is_pass = False
 
     assert is_pass is True
 
 
 def test_classification_2():
-    runner = wrappers.ClassificationRunner(
+    runner = tasks.ClassificationRunner(
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        OfflineExperiment(offline_directory="../tmp")
+        TensorBoardLogger("./logs")
     )
     runner.train_config(epochs=1)
 
@@ -61,53 +58,24 @@ def test_classification_2():
         runner.run(verbose=False)
         is_pass = True
 
-    except ValueError:
+    except Exception:
         is_pass = False
-
-    except Exception as e:
-        print(e)
-        is_pass = True
 
     assert is_pass is False
 
 
 def test_classification_3():
-    runner = wrappers.ClassificationRunner(
+    runner = tasks.ClassificationRunner(
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        OfflineExperiment(offline_directory="../tmp")
+        TensorBoardLogger("./logs")
     )
     try:
         runner.fit(x.astype(np.float32), y.astype(np.int64))
         is_pass = True
 
-    except Exception as e:
-        print(e)
+    except Exception:
         is_pass = False
 
     assert is_pass is True
-
-
-def test_classification_4():
-    runner = wrappers.ClassificationRunner(
-        model,
-        optimizer,
-        nn.CrossEntropyLoss(),
-        OfflineExperiment(offline_directory="../tmp")
-    )
-    runner.add_loader("train", train_loader).add_loader("val", val_loader).add_loader("test", test_loader)
-
-    try:
-        runner.run(verbose=False)
-        runner.train_config(epochs=1, checkpoint_path="../tmp/checkpoints", monitor="train_avg_acc >= 0.6")
-        is_pass = True
-
-    except TypeError:
-        is_pass = False
-
-    except Exception as e:
-        print(e)
-        is_pass = True
-
-    assert is_pass is False
