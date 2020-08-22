@@ -35,9 +35,12 @@ def is_jupyter() -> bool:
         True if run on jupyrer notebook else False
 
     """
-    if "get_ipython" not in globals():
+    try:
+        from IPython import get_ipython
+    except ImportError:
         return False
-    env = get_ipython().__class__.__name__      # NOQA
+
+    env = get_ipython().__class__.__name__      # noqa
     if env == "TerminalInteractiveShell":
         return False
     return True
@@ -71,7 +74,7 @@ def get_dataset(x: Union[ndarray, Tensor], y: Union[ndarray, Tensor] = None) -> 
     return ds
 
 
-def send(batch: Tuple[Any], device: torch_device) -> Tuple[Any]:
+def send(batch: Tuple[Any, ...], device: torch_device) -> Tuple[Any, ...]:
     """
     Send `variable` to `device`
 

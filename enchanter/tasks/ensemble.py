@@ -7,7 +7,7 @@
 #
 # *******************************************************
 
-from typing import List, Union
+from typing import List, Union, Optional
 
 from numpy import stack, ravel, ndarray, int as np_int
 from sklearn.base import BaseEstimator
@@ -21,9 +21,9 @@ __all__ = [
 
 
 class BaseEnsembleEstimator(BaseEstimator):
-    def __init__(self, runners: List[BaseRunner], mode: str = None) -> None:
+    def __init__(self, runners: List[BaseRunner], mode: Optional[str] = None) -> None:
         self.runners: List[BaseRunner] = runners
-        self.mode: str = mode
+        self.mode: Optional[str] = mode
         self.device: device = device("cuda" if is_available() else "cpu")
 
     def predict(self, x: Union[ndarray, Tensor]) -> List[ndarray]:

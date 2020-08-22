@@ -67,16 +67,16 @@ class BaseRunner(ABC, RunnerIO):
         self.device: device = device("cuda" if is_available() else "cpu")
         self.model: Module = NotImplemented
         self.optimizer: Optimizer = NotImplemented
-        self.scheduler: Optional[List] = None
+        self.scheduler: List = list()
         self.experiment: Union[BaseExperiment, BaseLogger] = NotImplemented
         self.early_stop: Optional[EarlyStopping] = None
         self.configures: Dict[str, Any] = {
             "epochs": 0
         }
-        self.api_experiment = None
+        self.api_experiment: Optional[APIExperiment] = None
         self.scaler: Optional[amp.GradScaler] = None
 
-        self.pbar = None
+        self.pbar: Union[tqdm, range] = range(self.configures["epochs"])
         self._loaders: Dict[str, DataLoader] = {}
         self._metrics: Dict = {}
         self.global_step: int = 0
@@ -253,7 +253,7 @@ class BaseRunner(ABC, RunnerIO):
 
                 if hasattr(self.pbar, "set_postfix"):
                     per = "{:1.0%}".format(step / loader_size)
-                    self.pbar.set_postfix(
+                    self.pbar.set_postfix(                                  # type: ignore
                         OrderedDict(train_batch=per), refresh=True
                     )
 
@@ -296,7 +296,7 @@ class BaseRunner(ABC, RunnerIO):
 
                     if hasattr(self.pbar, "set_postfix"):
                         per = "{:1.0%}".format(step / loader_size)
-                        self.pbar.set_postfix(
+                        self.pbar.set_postfix(                             # type: ignore
                             OrderedDict(val_batch=per), refresh=True
                         )
 
@@ -337,10 +337,10 @@ class BaseRunner(ABC, RunnerIO):
 
                     per = "{:1.0%}".format(step / loader_size)
                     if hasattr(self.pbar, "set_postfix"):
-                        self.pbar.set_postfix(
+                        self.pbar.set_postfix(                                  # type: ignore
                             OrderedDict(test_batch=per), refresh=True
                         )
-                        self.pbar.update(1)
+                        self.pbar.update(1)                                     # type: ignore
 
                     outputs = {
                         key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
@@ -383,10 +383,10 @@ class BaseRunner(ABC, RunnerIO):
 
         """
 
-        self.configures["checkpoint_path"]: str = checkpoint_path
+        self.configures["checkpoint_path"] = checkpoint_path
         if monitor:
             try:
-                _ = re.search("train|validate", monitor)[0]
+                _ = re.search("train|validate", monitor)[0]         # type: ignore
             except TypeError:
                 raise KeyError("The argument monitor is not an expected expression. {}".format(monitor))
             else:
@@ -488,7 +488,8 @@ class BaseRunner(ABC, RunnerIO):
             raise KeyError("The argument 'phase' must be one of the following. {}".format(phases))
 
         if phase == "debug":
-            self.experiment.add_tag("debug")
+            if hasattr(self.experiment, "add_tag"):
+                self.experiment.add_tag("debug")        # type: ignore
 
         self.initialize()
         self.log_hyperparams()
@@ -516,7 +517,7 @@ class BaseRunner(ABC, RunnerIO):
                         self.update_scheduler(epoch)
 
                     if self.early_stop:
-                        if self.early_stop.on_epoch_end(self._metrics, epoch):
+                        if self.early_stop.on_epoch_end(epoch, self._metrics):
                             break
                         # .on_epoch_end()
 
@@ -532,7 +533,9 @@ class BaseRunner(ABC, RunnerIO):
                             sleep(sleep_time)
 
                             try:
-                                current_value = float(self.api_experiment.get_metrics_summary(key)["valueCurrent"])
+                                current_value = float(
+                                    self.api_experiment.get_metrics_summary(key)["valueCurrent"]        # type: ignore
+                                )
                             except TypeError:
                                 raise KeyError(
                                     "The specified key was not found. Check the settings of `.train_config()`."
@@ -575,9 +578,9 @@ class BaseRunner(ABC, RunnerIO):
             loader (torch.utils.data.DataLoader):
 
         Examples:
-            >>> loader = DataLoader(...)
+            >>> train_loader = DataLoader(...)
             >>> runner: BaseRunner = ...
-            >>> runner.add_loader("train", loader)
+            >>> runner.add_loader("train", train_loader)
 
         """
         if mode not in ["train", "val", "test"]:

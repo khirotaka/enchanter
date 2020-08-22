@@ -55,7 +55,10 @@ class RegressionRunner(BaseRunner, RegressorMixin):
         self.optimizer: Optimizer = optimizer
         self.criterion: _Loss = criterion
         self.experiment: Union[BaseExperiment, BaseLogger] = experiment
-        self.scheduler: Optional[List] = scheduler
+        if scheduler is None:
+            self.scheduler: List = list()
+        else:
+            self.scheduler = scheduler
         self.early_stop = early_stop
 
     def general_step(self, batch: Tuple) -> Dict:

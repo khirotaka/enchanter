@@ -19,7 +19,7 @@ class CausalConv1d(Module):
             out_channels: int,
             kernel_size: int,
             dilation: int = 1,
-            activation: Optional[Callable[[Tensor], Tensor]] = relu,
+            activation: Callable[[Tensor], Tensor] = relu,
             **kwargs
     ) -> None:
         """

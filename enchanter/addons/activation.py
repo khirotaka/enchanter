@@ -6,6 +6,7 @@
 # |_____|_| |_|\___|_| |_|\__,_|_| |_|\__\___|_|
 #
 # ***************************************************
+from typing import Union
 
 import torch
 import torch.nn as nn
@@ -23,7 +24,7 @@ class Swish(nn.Module):
     def __init__(self, beta: bool = False):
         super(Swish, self).__init__()
         if beta:
-            self.weight = nn.Parameter(torch.tensor([1.]), requires_grad=True)
+            self.weight: Union[nn.Parameter, float] = nn.Parameter(torch.tensor([1.]), requires_grad=True)
         else:
             self.weight = 1.0
 
@@ -99,7 +100,7 @@ class Mish(nn.Module):
 
 class _FReLUNd(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        out = self.norm(self.conv(x))
+        out = self.norm(self.conv(x))       # type: ignore
         out = torch.max(x, out)
         return out
 

@@ -52,11 +52,13 @@ class FixedSlidingWindow:
         if overlap_rate is None and step_size is not None:
             if step_size > 0:
                 self.overlap = int(step_size)
-        else:
+        elif isinstance(overlap_rate, float):
             if not 0.0 < overlap_rate <= 1.0:
                 raise AssertionError("overlap_rate ranges from 0.0 to 1.0")
 
             self.overlap = int(window_size * overlap_rate)
+        else:
+            raise ValueError
 
     def transform(self, inputs: ndarray, verbose: bool = False) -> ndarray:
         """
@@ -95,7 +97,7 @@ class FixedSlidingWindow:
         tmp = []
         for lbl in labels:
             window_size = len(lbl)
-            counter = Counter(lbl)
+            counter: Counter = Counter(lbl)
             common = counter.most_common()
             values = list(counter.values())
             if common[0][0] == 0 and values[0] == window_size // 2:
@@ -178,20 +180,22 @@ def adjust_sequences(
             lengths.append(item.shape[0])
 
     if max_len is None:
-        max_len = np_max(lengths)
-    elif hasattr(max_len, "__call__"):
-        max_len = int(max_len(lengths))
+        maximum_len = np_max(lengths)
+    elif callable(max_len):
+        maximum_len = int(max_len(lengths))
+    else:
+        maximum_len = max_len
 
     new_seqs = []
     for seq in sequences:
-        new_seq = zeros((max_len, features), dtype=dtype)
+        new_seq = zeros((maximum_len, features), dtype=dtype)
         new_seq[:, :] = nan
         new_seq = DataFrame(new_seq)
 
         if seq.dtype != dtype:
             seq = seq.astype(dtype)
 
-        if max_len > seq.shape[0]:
+        if maximum_len > seq.shape[0]:
             new_seq[:seq.shape[0]] = seq
             if fill == "ffill":
                 new_seq = new_seq.ffill()
@@ -200,7 +204,7 @@ def adjust_sequences(
             else:
                 raise TypeError
         else:
-            new_seq[:max_len] = seq[:max_len]
+            new_seq[:maximum_len] = seq[:maximum_len]
 
         new_seqs.append(new_seq.values)
 

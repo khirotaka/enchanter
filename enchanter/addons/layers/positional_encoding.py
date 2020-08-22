@@ -62,5 +62,5 @@ class PositionalEncoding(nn.Module):
 
         """
         x = x.permute(2, 0, 1)      # [L, N, E]
-        x = x + self.pe[:x.size(0), :]
+        x = x + self.pe[:x.size(0), :]                  # type: ignore
         return self.dropout(x).permute(1, 2, 0)

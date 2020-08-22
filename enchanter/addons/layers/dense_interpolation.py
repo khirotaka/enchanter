@@ -50,6 +50,6 @@ class DenseInterpolation(Module):
         Returns:
             適用した結果 (torch.Tensor)
         """
-        w = self.W.repeat(x.shape[0], 1, 1).requires_grad_(False)
+        w = self.W.repeat(x.shape[0], 1, 1).requires_grad_(False)       # type: ignore
         u = bmm(w, x)
         return u.transpose_(1, 2)
