@@ -7,7 +7,7 @@
 #
 # ***************************************************
 
-from typing import Any, Dict
+from typing import Any
 from numpy import greater, less, Inf
 from .base import Callback
 

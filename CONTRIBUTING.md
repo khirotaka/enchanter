@@ -23,7 +23,7 @@ To develop Enchanter on your machine.
     Enchanter uses [Poetry](https://python-poetry.org) and `pyproject.toml` to manage dependencies.  
     Please refer to [the official documentation](https://python-poetry.org/docs/#installation) and install the appropriate one for your platform.
 
-1.  Clone a copy of Enchanter from source:
+2.  Clone a copy of Enchanter from source:
     ```shell script
     git clone https://github.com/khirotaka/enchanter.git
     cd enchanter
@@ -55,6 +55,7 @@ To build the documentation
     cd docs/
     pip install -r requirements.txt
     ```
+    
 3.  Generate the documentation HTML files.
 
     ```shell script

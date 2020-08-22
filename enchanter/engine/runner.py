@@ -14,17 +14,19 @@ from time import sleep
 from collections import OrderedDict
 from typing import Any, Dict, Tuple, Union, List, Optional
 
-from numpy import floor, ndarray
 from tqdm.auto import tqdm
+from numpy import floor, ndarray
+
 import torch
 from torch.nn import Module
 from torch.tensor import Tensor
-from torch.optim.optimizer import Optimizer
 from torch.cuda import is_available, amp
+from torch.optim.optimizer import Optimizer
 from torch.utils.data import DataLoader, SubsetRandomSampler
+
 from comet_ml import Experiment
-from comet_ml.experiment import BaseExperiment
 from comet_ml.api import APIExperiment
+from comet_ml.experiment import BaseExperiment
 
 from enchanter.engine.saving import RunnerIO
 from enchanter.engine.modules import send, get_dataset

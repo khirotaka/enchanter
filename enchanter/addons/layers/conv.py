@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable
 
 from torch import relu
 from torch.tensor import Tensor
