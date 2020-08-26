@@ -55,3 +55,12 @@ def test_res_seq_2():
     jit = torch.jit.trace(model, (x, ))
     out = jit(x)
     assert isinstance(out, torch.Tensor)
+
+
+def test_ae_1():
+    x = torch.randn(1, 64)
+    model = addons.layers.AutoEncoder([64, 32, 16, 8])
+    jit = torch.jit.trace(model, (x, ))
+    out = jit(x)
+    assert isinstance(out, torch.Tensor)
+
