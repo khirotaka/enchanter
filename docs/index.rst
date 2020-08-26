@@ -53,6 +53,7 @@ Documentation
 
    source/modules
    tutorial/modules
+   community/modules
 
 
 Index

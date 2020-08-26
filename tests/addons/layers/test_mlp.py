@@ -1,5 +1,6 @@
 import torch
 import torch.jit
+import torch.nn as nn
 import enchanter.addons as addons
 
 
@@ -31,3 +32,35 @@ def test_ff_2():
     jit = torch.jit.trace(model, (x, ))
     out = jit(x)
     assert isinstance(out, torch.Tensor)
+
+
+def test_res_seq_1():
+    x = torch.randn(1, 64)
+    model = addons.layers.ResidualSequential(
+        nn.Linear(64, 64),
+        nn.ReLU(),
+        nn.Linear(64, 64)
+    )
+    out = model(x)
+    assert isinstance(out, torch.Tensor)
+
+
+def test_res_seq_2():
+    x = torch.randn(1, 64)
+    model = addons.layers.ResidualSequential(
+        nn.Linear(64, 64),
+        nn.ReLU(),
+        nn.Linear(64, 64)
+    )
+    jit = torch.jit.trace(model, (x, ))
+    out = jit(x)
+    assert isinstance(out, torch.Tensor)
+
+
+def test_ae_1():
+    x = torch.randn(1, 64)
+    model = addons.layers.AutoEncoder([64, 32, 16, 8])
+    jit = torch.jit.trace(model, (x, ))
+    out = jit(x)
+    assert isinstance(out, torch.Tensor)
+

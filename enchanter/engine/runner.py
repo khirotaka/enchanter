@@ -670,6 +670,3 @@ class BaseRunner(ABC, RunnerIO):
             param.requires_grad = True
 
         self.model.train()
-
-    def save(self, directory: Optional[str] = None, epoch: Optional[int] = None) -> None:
-        super(BaseRunner, self).save(directory, epoch)

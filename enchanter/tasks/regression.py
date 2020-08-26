@@ -64,11 +64,7 @@ class RegressionRunner(BaseRunner, RegressorMixin):
     def general_step(self, batch: Tuple) -> Dict:
         x, y = batch
 
-        if isinstance(self.scaler, GradScaler):
-            with autocast():
-                out = self.model(x)
-                loss = self.criterion(out, y)
-        else:
+        with autocast(enabled=isinstance(self.scaler, GradScaler)):
             out = self.model(x)
             loss = self.criterion(out, y)
 
@@ -106,3 +102,18 @@ class RegressionRunner(BaseRunner, RegressorMixin):
             out = self.model(x)
 
         return out.cpu().numpy()
+
+
+class AutoEncoderRunner(RegressionRunner):
+    def general_step(self, batch: Tuple) -> Dict:
+        x, _ = batch
+        with autocast(enabled=isinstance(self.scaler, GradScaler)):
+            out = self.model(x)
+            loss = self.criterion(out, x)
+
+        return {"loss": loss}
+
+    @staticmethod
+    def general_end(outputs: List) -> Dict:
+        avg_loss = stack([x["loss"] for x in outputs]).mean()
+        return {"avg_loss": avg_loss}
