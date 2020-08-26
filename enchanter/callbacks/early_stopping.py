@@ -7,7 +7,7 @@
 #
 # ***************************************************
 
-from typing import Any, Dict
+from typing import Any
 from numpy import greater, less, Inf
 from .base import Callback
 
@@ -52,19 +52,21 @@ class EarlyStopping(Callback):
 
         return True
 
-    def on_epoch_end(self, metrics: Dict, epoch: int) -> bool:
+    def on_epoch_end(self, epoch, logs=None) -> bool:
         stop = False
-        if not self.check_metrics(metrics):
-            return stop
 
-        current = metrics.get(self.monitor)
-        if self.monitor_op(current - self.min_delta, self.best):
-            self.best = current
-            self.wait = 0
-        else:
-            self.wait += 1
-            if self.wait >= self.patience:
-                self.stopped_epoch = epoch
-                stop = True
+        if logs:
+            if not self.check_metrics(logs):
+                return stop
+
+            current = logs.get(self.monitor)
+            if self.monitor_op(current - self.min_delta, self.best):
+                self.best = current
+                self.wait = 0
+            else:
+                self.wait += 1
+                if self.wait >= self.patience:
+                    self.stopped_epoch = epoch
+                    stop = True
 
         return stop

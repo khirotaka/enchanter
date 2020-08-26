@@ -33,3 +33,31 @@ def test_mish2():
     out = addons.mish(x)
     out = np.round(out.detach().numpy(), 4)
     assert out == np.array([0.8651]).astype(np.float32)
+
+
+def test_frelu1d():
+    frelu = torch.jit.script(addons.FReLU1d(3))
+    x = torch.randn(1, 3, 128)
+
+    try:
+        out = frelu(x)
+        is_pass = True
+    except Exception as e:
+        print(e)
+        is_pass = False
+
+    assert is_pass
+
+
+def test_frelu2d():
+    frelu = torch.jit.script(addons.FReLU2d(3))
+    x = torch.randn(1, 3, 128, 128)
+    try:
+        out =  frelu(x)
+        is_pass = True
+
+    except Exception as e:
+        print(e)
+        is_pass = False
+
+    assert is_pass

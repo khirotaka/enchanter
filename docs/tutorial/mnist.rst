@@ -16,7 +16,7 @@ Training neural network using MNIST
     from torchvision import transforms
     from torch.utils.data import DataLoader
 
-    import enchanter.wrappers as wrappers
+    import enchanter.tasks as tasks
     import enchanter.addons as addons
     from enchanter.callbacks import EarlyStopping
 
@@ -67,7 +67,7 @@ Training neural network using MNIST
 
     model = CNN()
     optimizer = optim.Adam(model.parameters())
-    runner = wrappers.ClassificationRunner(
+    runner = tasks.ClassificationRunner(
         model,
         optimizer,
         nn.CrossEntropyLoss(),

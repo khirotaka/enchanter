@@ -67,7 +67,7 @@ class TunerConfigGenerator:
             "retryLimit": retry_limit,
             "retryAssignLimit": retry_assign_limit
         }
-        self.name: str = name
+        self.name: Optional[str] = name
         self.trials: int = trials
         self.__params: Dict[str, Dict[str, Any]] = {}
 
@@ -110,14 +110,14 @@ class TunerConfigGenerator:
                 raise Exception("`min_value` and `max_value` must be same data type.")
 
         if dtype is float:
-            dtype = "float"
+            dtype_str = "float"
         elif dtype is int:
-            dtype = "integer"
+            dtype_str = "integer"
         else:
             raise Exception("`dtype` must be specified as `int` or `float` .")
 
         self.__params["{}".format(name)] = {
-            "type": dtype,
+            "type": dtype_str,
             "min": min_value,
             "max": max_value,
             "scalingType": scaling

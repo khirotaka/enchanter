@@ -1,8 +1,8 @@
-from typing import Callable, Optional
+from typing import Callable
 
-from torch import relu
+import torch
+import torch.nn as nn
 from torch.tensor import Tensor
-from torch.nn import Module, Conv1d
 
 from enchanter.utils.backend import slice_axis
 
@@ -12,14 +12,14 @@ __all__ = [
 ]
 
 
-class CausalConv1d(Module):
+class CausalConv1d(nn.Module):
     def __init__(
             self,
             in_channels: int,
             out_channels: int,
             kernel_size: int,
             dilation: int = 1,
-            activation: Optional[Callable[[Tensor], Tensor]] = relu,
+            activation: Callable[[Tensor], Tensor] = torch.relu,
             **kwargs
     ) -> None:
         """
@@ -43,7 +43,7 @@ class CausalConv1d(Module):
         self.padding: int = dilation * (kernel_size - 1)
         self.activation: Callable[[Tensor], Tensor] = activation
 
-        self.conv1d = Conv1d(
+        self.conv1d = nn.Conv1d(
             in_channels,
             out_channels,
             kernel_size,

@@ -1,8 +1,11 @@
-from .classification import ClassificationRunner
-from .regression import RegressionRunner
-from .ensemble import HardEnsemble, SoftEnsemble, BaseEnsembleEstimator
+"""
+.. warning:: `wrappers` package has been renamed to `tasks` since v0.7.0 and will be remove in v0.8.0
+"""
 
-__all__ = [
-    "ClassificationRunner", "RegressionRunner",
-    "HardEnsemble", "SoftEnsemble", "BaseEnsembleEstimator"
-]
+import warnings
+
+
+warnings.warn("`wrappers` package has been renamed to `tasks` since v0.7.0"
+              "The deprecated package name will be remove in v0.8.0", DeprecationWarning)
+
+from enchanter.tasks import *       # noqa: F403

@@ -6,7 +6,7 @@ from torchvision.datasets import MNIST
 from torchvision import transforms
 from torch.utils.data import DataLoader
 
-import enchanter.wrappers as wrappers
+import enchanter.tasks as tasks
 from enchanter.callbacks import EarlyStopping
 import models
 
@@ -21,7 +21,7 @@ def main():
 
     model = models.MNIST()
     optimizer = optim.Adam(model.parameters())
-    runner = wrappers.ClassificationRunner(
+    runner = tasks.ClassificationRunner(
         model,
         optimizer,
         nn.CrossEntropyLoss(),

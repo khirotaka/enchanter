@@ -1,5 +1,7 @@
 :orphan:
 
+:tocdepth: 2
+
 Tutorials
 ==================
 
@@ -30,6 +32,8 @@ Advanced Usage
 
    custom_runner
    with_hydra
+   amp
+   swalr
 
 
 Model Optimization

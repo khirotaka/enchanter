@@ -75,7 +75,7 @@ Enchanter with Hydra
     import torch.optim as optim
     from sklearn.datasets import load_iris
 
-    import enchanter.wrappers as wrappers
+    import enchanter.tasks as tasks
     import enchanter.addons.layers as layers
 
 
@@ -97,7 +97,7 @@ Enchanter with Hydra
         experiment.add_tag("with_hydra")
         model = layers.MLP(shapes)
         optimizer = optim.Adam(model.parameters(), **opt_params)
-        runner = wrappers.ClassificationRunner(
+        runner = tasks.ClassificationRunner(
             model,
             optimizer=optimizer,
             criterion=nn.CrossEntropyLoss(),

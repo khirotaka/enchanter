@@ -23,6 +23,12 @@ To install the latest(unstable) release.
 pip install git+https://github.com/khirotaka/enchanter.git
 ```
 
+If you want to install with a specific branch, you can use the following.
+```shell script
+# e.g.) Install enchanter from feature branch.
+pip install git+https://github.com/khirotaka/enchanter.git@feature
+```
+
 ## Documentation
 *   [API Reference](https://enchanter.readthedocs.io/ja/latest/)
 *   [Tutorial](https://enchanter.readthedocs.io/ja/latest/tutorial/modules.html)
@@ -40,7 +46,7 @@ import enchanter
 model = torch.nn.Linear(6, 10)
 optimizer = torch.optim.Adam(model.parameters())
 
-runner = enchanter.wrappers.ClassificationRunner(
+runner = enchanter.tasks.ClassificationRunner(
     model, 
     optimizer,
     criterion=torch.nn.CrossEntropyLoss(),
@@ -62,7 +68,7 @@ import torch.nn as nn
 import torch.optim as optim
 from sklearn.datasets import load_iris
 
-import enchanter.wrappers as wrappers
+import enchanter.tasks as tasks
 import enchanter.addons as addons
 import enchanter.addons.layers as layers
 from enchanter.utils import comet
@@ -88,12 +94,52 @@ y = y.astype("int64")
 for experiment in opt.get_experiments():
     model = layers.MLP([4, 512, 128, 3], eval(experiment.get_parameter("activation")))
     optimizer = optim.Adam(model.parameters())
-    runner = wrappers.ClassificationRunner(
+    runner = tasks.ClassificationRunner(
         model, optimizer=optimizer, criterion=nn.CrossEntropyLoss(), experiment=experiment
     )
 
     runner.fit(x, y, epochs=1, batch_size=32)
 ```
+
+
+### Training with Mixed Precision
+Runners with defined in `enchanter.tasks` are now support Auto Mixed Precision.  
+Write the following.
+
+
+```python
+from torch.cuda import amp
+from enchanter.tasks import ClassificationRunner
+
+
+runner = ClassificationRunner(...)
+runner.scaler = amp.GradScaler()
+```
+
+
+If you want to define a custom runner that supports mixed precision, do the following.
+```python
+from torch.cuda import amp
+import torch.nn.functional as F
+from enchanter.engine import BaseRunner
+
+
+class CustomRunner(BaseRunner):
+    # ...
+    def train_step(self, batch):
+        x, y = batch
+        with amp.autocast():        # REQUIRED
+            out = self.model(x)
+            loss = F.nll_loss(out, y)
+        
+        return {"loss": loss}
+
+
+runner = CustomRunner(...)
+runner.scaler = amp.GradScaler()
+```
+
+That is, you can enable AMP by using `torch.cuda.amp.autocast()` in `.train_step()`, `.val_step()` and `.test_step()`.
 
 ## License
 [Apache License 2.0](LICENSE)

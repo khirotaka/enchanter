@@ -71,21 +71,26 @@ class RunnerIO:
 
         """
         if directory is None and self._checkpoint_path is not None:
-            directory = self._checkpoint_path
+            directory_name: str = self._checkpoint_path
 
         elif directory is None and self._checkpoint_path is None:
             raise ValueError("The argument `directory` must be specified.")
 
-        directory = Path(directory)
-        if not directory.exists():
-            directory.mkdir(parents=True)
+        else:
+            raise ValueError
+
+        directory_path = Path(directory_name)
+        if not directory_path.exists():
+            directory_path.mkdir(parents=True)
         checkpoint = self.save_checkpoint()
 
         if epoch is None:
-            epoch = ctime().replace(" ", "_")
+            epoch_str = ctime().replace(" ", "_")
+        else:
+            epoch_str = str(epoch)
 
-        filename = "checkpoint_epoch_{}.pth".format(epoch)
-        path = directory / filename
+        filename = "checkpoint_epoch_{}.pth".format(epoch_str)
+        path = directory_path / filename
         save(checkpoint, path)
 
         if hasattr(self.experiment, "log_asset"):

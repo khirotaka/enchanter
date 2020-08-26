@@ -35,9 +35,12 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
     "sphinx_copybutton",
     "sphinx_material"
 ]
+html_show_sourcelink = False
+
 
 autoapi_dirs = ['../enchanter']
 autoapi_generate_api_docs = False
@@ -103,6 +106,7 @@ html_theme_options = {
         "v0.5.2": "https://enchanter.readthedocs.io/ja/v0.5.2/",
         "v0.5.3": "https://enchanter.readthedocs.io/ja/v0.5.3/",
         "v0.6.0": "https://enchanter.readthedocs.io/ja/v0.6.0/",
+        "v0.7.0": "https://enchanter.readthedocs.io/v0.7.0/",
     },
 }
 
