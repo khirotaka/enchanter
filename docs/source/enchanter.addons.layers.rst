@@ -7,56 +7,56 @@ enchanter.addons.layers
 .. currentmodule:: enchanter.addons.layers
 
 
-`PositionalEncoding`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+PositionalEncoding
+--------------------
 .. autoclass:: PositionalEncoding
     :members:
     :undoc-members:
     :show-inheritance:
 
 
-`MLP`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+MLP
+-------
 .. autoclass:: MLP
     :members:
     :undoc-members:
     :show-inheritance:
 
 
-`PositionWiseFeedForward`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+PositionWiseFeedForward
+----------------------------
 .. autoclass:: PositionWiseFeedForward
     :members:
     :undoc-members:
     :show-inheritance:
 
 
-`SELayer1d`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SELayer1d
+--------------------
 .. autoclass:: SELayer1d
     :members:
     :undoc-members:
     :show-inheritance:
 
 
-`SELayer2d`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SELayer2d
+--------------------
 .. autoclass:: SELayer2d
     :members:
     :undoc-members:
     :show-inheritance:
 
 
-`DenseInterpolation`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DenseInterpolation
+--------------------
 .. autoclass:: DenseInterpolation
     :members:
     :undoc-members:
     :show-inheritance:
 
 
-`CausalConv1d`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CausalConv1d
+--------------------
 .. autoclass:: CausalConv1d
     :members:
     :undoc-members:
