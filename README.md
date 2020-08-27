@@ -25,8 +25,8 @@ pip install git+https://github.com/khirotaka/enchanter.git
 
 If you want to install with a specific branch, you can use the following.
 ```shell script
-# e.g.) Install enchanter from feature branch.
-pip install git+https://github.com/khirotaka/enchanter.git@feature
+# e.g.) Install enchanter from develop branch.
+pip install git+https://github.com/khirotaka/enchanter.git@develop
 ```
 
 ## Documentation
