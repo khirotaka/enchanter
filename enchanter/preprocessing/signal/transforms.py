@@ -115,9 +115,7 @@ class FixedWindow:
             if (seq_len - self.window_size) >= self.start_position:
                 start = self.start_position
             else:
-                raise IndexError(
-                    "The start position must be in the range 0 ~ (seq_len - window_size)."
-                )
+                raise IndexError("The start position must be in the range 0 ~ (seq_len - window_size).")
 
         return data[start : start + self.window_size]
 
@@ -199,7 +197,7 @@ class Pad:
         if value:
             self.value: Union[int, float] = value
         else:
-            self.value = 0.0
+            self.value: Union[int, float] = 0.0  # type: ignore
 
     def __call__(self, data: Union[Tensor, ndarray]) -> Union[Tensor, ndarray]:
         from_np = False

@@ -13,9 +13,7 @@ from pkg_resources import working_set
 
 
 if "comet-ml" not in [d.project_name for d in working_set]:
-    raise ImportError(
-        "You have to install `comet_ml` if you want to use `enchanter.utils.comet` module."
-    )
+    raise ImportError("You have to install `comet_ml` if you want to use `enchanter.utils.comet` module.")
 
 
 __all__ = ["TunerConfigGenerator"]

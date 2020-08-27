@@ -39,9 +39,7 @@ class MLP(Module):
 
     """
 
-    def __init__(
-        self, shapes: List[int], activation: Union[Callable[[Tensor], Tensor], Module] = relu
-    ):
+    def __init__(self, shapes: List[int], activation: Union[Callable[[Tensor], Tensor], Module] = relu):
         super(MLP, self).__init__()
         layers: List[Module] = []
         self.activation: Callable[[Tensor], Tensor] = activation
@@ -119,9 +117,7 @@ class ResidualSequential(Sequential):
 
 
 class AutoEncoder(Module):
-    def __init__(
-        self, shapes: List[int], activation: Union[Callable[[Tensor], Tensor], Module] = relu
-    ):
+    def __init__(self, shapes: List[int], activation: Union[Callable[[Tensor], Tensor], Module] = relu):
         super(AutoEncoder, self).__init__()
         self.encoder = MLP(shapes, activation)
         self.decoder = MLP(list(reversed(shapes)), activation)

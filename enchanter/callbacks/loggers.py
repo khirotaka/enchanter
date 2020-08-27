@@ -70,9 +70,7 @@ class BaseLogger:
     def log_parameter(self, name: str, value: Any, step: Optional[int] = None) -> None:
         pass
 
-    def log_parameters(
-        self, dic: Dict, prefix: Optional[str] = None, step: Optional[int] = None
-    ) -> None:
+    def log_parameters(self, dic: Dict, prefix: Optional[str] = None, step: Optional[int] = None) -> None:
         pass
 
     def set_model_graph(self, *args: Any, **kwargs: Any) -> None:
@@ -113,8 +111,6 @@ class TensorBoardLogger(BaseLogger):
         ):
             self.writer.add_scalar("{}/{}/{}".format(self.context, "params", name), value, step)
 
-    def log_parameters(
-        self, dic: Dict, prefix: Optional[str] = None, step: Optional[int] = None
-    ) -> Any:
+    def log_parameters(self, dic: Dict, prefix: Optional[str] = None, step: Optional[int] = None) -> Any:
         for k, v in dic.items():
             self.log_parameter(k, v, step)

@@ -23,9 +23,7 @@ class Swish(nn.Module):
     def __init__(self, beta: bool = False):
         super(Swish, self).__init__()
         if beta:
-            self.weight: Union[nn.Parameter, float] = nn.Parameter(
-                torch.tensor([1.0]), requires_grad=True
-            )
+            self.weight: Union[nn.Parameter, float] = nn.Parameter(torch.tensor([1.0]), requires_grad=True)
         else:
             self.weight = 1.0
 

@@ -45,9 +45,7 @@ class FixedSlidingWindow:
 
     """
 
-    def __init__(
-        self, window_size: int, overlap_rate: Union[float, None], step_size: Optional[int] = None
-    ) -> None:
+    def __init__(self, window_size: int, overlap_rate: Union[float, None], step_size: Optional[int] = None) -> None:
         self.window_size: int = window_size
 
         if overlap_rate is None and step_size is not None:
@@ -74,9 +72,7 @@ class FixedSlidingWindow:
         seq_len = inputs.shape[0]
         if not seq_len > self.window_size:
             raise IndexError(
-                "window size ({}) must be smaller then input sequence length ({}).".format(
-                    self.window_size, seq_len
-                )
+                "window size ({}) must be smaller then input sequence length ({}).".format(self.window_size, seq_len)
             )
 
         if verbose:
@@ -84,10 +80,7 @@ class FixedSlidingWindow:
             for i in tqdm(range(0, seq_len - self.window_size, self.overlap)):
                 data.append(inputs[i : i + self.window_size])
         else:
-            data = [
-                inputs[i : i + self.window_size]
-                for i in range(0, seq_len - self.window_size, self.overlap)
-            ]
+            data = [inputs[i : i + self.window_size] for i in range(0, seq_len - self.window_size, self.overlap)]
 
         data = stack(data, 0)
         return data

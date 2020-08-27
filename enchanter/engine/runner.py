@@ -255,9 +255,7 @@ class BaseRunner(ABC, RunnerIO):
                     self.pbar.set_postfix(OrderedDict(train_batch=per), refresh=True)  # type: ignore
 
                 outputs = {
-                    key: outputs[key].detach().cpu()
-                    if isinstance(outputs[key], Tensor)
-                    else outputs[key]
+                    key: outputs[key].detach().cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                     for key in outputs.keys()
                 }
                 self.experiment.log_metrics(outputs, step=self.global_step, epoch=epoch)
@@ -298,9 +296,7 @@ class BaseRunner(ABC, RunnerIO):
                         self.pbar.set_postfix(OrderedDict(val_batch=per), refresh=True)  # type: ignore
 
                     outputs = {
-                        key: outputs[key].cpu()
-                        if isinstance(outputs[key], Tensor)
-                        else outputs[key]
+                        key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                         for key in outputs.keys()
                     }
                     self.experiment.log_metrics(outputs, step=self.global_step, epoch=epoch)
@@ -340,9 +336,7 @@ class BaseRunner(ABC, RunnerIO):
                         self.pbar.update(1)  # type: ignore
 
                     outputs = {
-                        key: outputs[key].cpu()
-                        if isinstance(outputs[key], Tensor)
-                        else outputs[key]
+                        key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                         for key in outputs.keys()
                     }
 
@@ -356,9 +350,7 @@ class BaseRunner(ABC, RunnerIO):
                     self._metrics.update(dic)
                     self.experiment.log_metrics(dic)
 
-    def train_config(
-        self, epochs: int, checkpoint_path: Optional[str] = None, monitor: Optional[str] = None
-    ):
+    def train_config(self, epochs: int, checkpoint_path: Optional[str] = None, monitor: Optional[str] = None):
         """
         This method is used to specify epochs and so on when you execute using the .run() method.
 
@@ -389,9 +381,7 @@ class BaseRunner(ABC, RunnerIO):
             try:
                 _ = re.search("train|validate", monitor)[0]  # type: ignore
             except TypeError:
-                raise KeyError(
-                    "The argument monitor is not an expected expression. {}".format(monitor)
-                )
+                raise KeyError("The argument monitor is not an expected expression. {}".format(monitor))
             else:
                 self.configures["monitor"] = monitor
 
@@ -452,9 +442,7 @@ class BaseRunner(ABC, RunnerIO):
             raise ValueError("`scheduler` must be a list object.")
 
         if isinstance(self.experiment, Experiment):
-            self.api_experiment = APIExperiment(
-                previous_experiment=self.experiment.id, cache=False
-            )
+            self.api_experiment = APIExperiment(previous_experiment=self.experiment.id, cache=False)
 
         if self.global_step < 0:
             self.global_step = 0
@@ -563,9 +551,7 @@ class BaseRunner(ABC, RunnerIO):
         if phase in {"all", "test", "debug"}:
             if "test" in self.loaders:
                 # on_test_start()
-                self.pbar = (
-                    tqdm(total=len(self.loaders["test"]), desc="Evaluating") if verbose else None
-                )
+                self.pbar = tqdm(total=len(self.loaders["test"]), desc="Evaluating") if verbose else None
                 self.test_cycle(self.loaders["test"])
                 # on_test_end()
 
@@ -601,9 +587,7 @@ class BaseRunner(ABC, RunnerIO):
             raise KeyError("argument `mode` must be one of 'train', 'val', or 'test'.")
 
         if not isinstance(loader, DataLoader):
-            raise TypeError(
-                "The argument `loader` must be an instance of `torch.utils.data.DataLoader`."
-            )
+            raise TypeError("The argument `loader` must be an instance of `torch.utils.data.DataLoader`.")
 
         self._loaders[mode] = loader
         return self
