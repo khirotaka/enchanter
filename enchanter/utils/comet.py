@@ -13,32 +13,32 @@ from pkg_resources import working_set
 
 
 if "comet-ml" not in [d.project_name for d in working_set]:
-    raise ImportError("You have to install `comet_ml` if you want to use `enchanter.utils.comet` module.")
+    raise ImportError(
+        "You have to install `comet_ml` if you want to use `enchanter.utils.comet` module."
+    )
 
 
-__all__ = [
-    "TunerConfigGenerator"
-]
+__all__ = ["TunerConfigGenerator"]
 
 
 class TunerConfigGenerator:
     def __init__(
-            self,
-            algorithm: str = "bayes",
-            metric: str = "validate_avg_loss",
-            objective: str = "minimize",
-            seed: Optional[int] = None,
-            max_combo: int = 0,
-            grid_size: int = 10,
-            min_sample_size: int = 100,
-            retry_limit: int = 20,
-            retry_assign_limit: int = 0,
-            name: Optional[str] = None,
-            trials: int = 1
+        self,
+        algorithm: str = "bayes",
+        metric: str = "validate_avg_loss",
+        objective: str = "minimize",
+        seed: Optional[int] = None,
+        max_combo: int = 0,
+        grid_size: int = 10,
+        min_sample_size: int = 100,
+        retry_limit: int = 20,
+        retry_assign_limit: int = 0,
+        name: Optional[str] = None,
+        trials: int = 1,
     ) -> None:
         """
         各引数のより詳しい説明は https://www.comet.ml/docs/python-sdk/introduction-optimizer/ を参照してください。
-        
+
         Args:
             algorithm: パラメータチューニングに用いるアルゴリズムを指定します。対応しているアルゴリズムは ['grid', 'random', 'bayes'] です。
             metric: 最小化/最大化する値を指定します。デフォルトでは、'validate_avg_loss' が指定されています。
@@ -65,7 +65,7 @@ class TunerConfigGenerator:
             "gridSize": grid_size,
             "minSampleSize": min_sample_size,
             "retryLimit": retry_limit,
-            "retryAssignLimit": retry_assign_limit
+            "retryAssignLimit": retry_assign_limit,
         }
         self.name: Optional[str] = name
         self.trials: int = trials
@@ -91,17 +91,18 @@ class TunerConfigGenerator:
         """
         self.__params["{}".format(name)] = {
             "type": "categorical",
-            "values": [str(value) for value in values]
+            "values": [str(value) for value in values],
         }
         return self
 
     def __suggest(
-            self,
-            name: str,
-            min_value: Union[float, int],
-            max_value: Union[float, int],
-            dtype: Optional[type],
-            scaling: str, **kwargs
+        self,
+        name: str,
+        min_value: Union[float, int],
+        max_value: Union[float, int],
+        dtype: Optional[type],
+        scaling: str,
+        **kwargs,
     ) -> None:
         if dtype is None:
             if type(min_value) is type(max_value):
@@ -120,7 +121,7 @@ class TunerConfigGenerator:
             "type": dtype_str,
             "min": min_value,
             "max": max_value,
-            "scalingType": scaling
+            "scalingType": scaling,
         }
 
         for key in ["mu", "sigma"]:
@@ -128,11 +129,11 @@ class TunerConfigGenerator:
                 self.__params["{}".format(name)][key] = kwargs[key]
 
     def suggest_linear(
-            self,
-            name: str,
-            min_value: Union[float, int],
-            max_value: Union[float, int],
-            dtype: Optional[type] = None
+        self,
+        name: str,
+        min_value: Union[float, int],
+        max_value: Union[float, int],
+        dtype: Optional[type] = None,
     ):
         """
 
@@ -149,11 +150,11 @@ class TunerConfigGenerator:
         return self
 
     def suggest_uniform(
-            self,
-            name: str,
-            min_value: Union[float, int],
-            max_value: Union[float, int],
-            dtype: Optional[type] = None
+        self,
+        name: str,
+        min_value: Union[float, int],
+        max_value: Union[float, int],
+        dtype: Optional[type] = None,
     ):
         """
         変数を一様分布からサンプリングし探索する為のメソッドです。
@@ -177,13 +178,13 @@ class TunerConfigGenerator:
         return self
 
     def suggest_normal(
-            self,
-            name: str,
-            min_value: Union[float, int],
-            max_value: Union[float, int],
-            mu: float = 0.0,
-            sigma: float = 1.0,
-            dtype: Optional[type] = None
+        self,
+        name: str,
+        min_value: Union[float, int],
+        max_value: Union[float, int],
+        mu: float = 0.0,
+        sigma: float = 1.0,
+        dtype: Optional[type] = None,
     ):
         """
         変数を正規分布からサンプリングし探索する為のメソッドです。
@@ -209,13 +210,13 @@ class TunerConfigGenerator:
         return self
 
     def suggest_lognormal(
-            self,
-            name: str,
-            min_value: Union[float, int],
-            max_value: Union[float, int],
-            mu: float = 0.0,
-            sigma: float = 1.0,
-            dtype: Optional[type] = None
+        self,
+        name: str,
+        min_value: Union[float, int],
+        max_value: Union[float, int],
+        mu: float = 0.0,
+        sigma: float = 1.0,
+        dtype: Optional[type] = None,
     ):
         """
         変数を対数正規分布からサンプリングし探索する為のメソッドです。
@@ -241,11 +242,11 @@ class TunerConfigGenerator:
         return self
 
     def suggest_loguniform(
-            self,
-            name: str,
-            min_value: Union[float, int],
-            max_value: Union[float, int],
-            dtype: Optional[type] = None
+        self,
+        name: str,
+        min_value: Union[float, int],
+        max_value: Union[float, int],
+        dtype: Optional[type] = None,
     ):
         """
         変数を対数一様分布からサンプリングし探索する為のメソッドです。
@@ -285,10 +286,7 @@ class TunerConfigGenerator:
             >>>     discrete = experiment.get_parameter("discrete")
 
         """
-        self.__params["{}".format(name)] = {
-            "type": "discrete",
-            "values": values
-        }
+        self.__params["{}".format(name)] = {"type": "discrete", "values": values}
         return self
 
     def generate(self) -> Dict[str, Any]:
@@ -306,7 +304,7 @@ class TunerConfigGenerator:
             "parameters": self.__params,
             "spec": self.spec,
             "trials": self.trials,
-            "name": self.name
+            "name": self.name,
         }
         return config
 

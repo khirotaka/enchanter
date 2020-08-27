@@ -16,9 +16,7 @@ from torch import from_numpy, Tensor
 from torch.nn.functional import pad
 
 
-__all__ = [
-    "Compose", "FixedWindow", "GaussianNoise", "RandomScaling", "Pad"
-]
+__all__ = ["Compose", "FixedWindow", "GaussianNoise", "RandomScaling", "Pad"]
 
 
 class Compose:
@@ -39,6 +37,7 @@ class Compose:
         >>> y = transform(x)
 
     """
+
     def __init__(self, transforms: List[Callable]) -> None:
         self.transforms: List[Callable] = transforms
 
@@ -58,7 +57,10 @@ class Compose:
         self.transforms.extend(modules)
 
     def __repr__(self):
-        return pformat(["({}): {}".format(i, j.__class__.__name__) for i, j in enumerate(self.transforms)], width=40)
+        return pformat(
+            ["({}): {}".format(i, j.__class__.__name__) for i, j in enumerate(self.transforms)],
+            width=40,
+        )
 
 
 class FixedWindow:
@@ -77,6 +79,7 @@ class FixedWindow:
         >>> out.shape       # [128, 18]
 
     """
+
     def __init__(self, window_size: int, start_position: Optional[int] = None) -> None:
         if isinstance(window_size, int):
             self.window_size: int = window_size
@@ -89,7 +92,7 @@ class FixedWindow:
             else:
                 raise ValueError("`start_position` must be 0 and over.")
         else:
-            self.start_position: Optional[int] = start_position         # type: ignore
+            self.start_position: Optional[int] = start_position  # type: ignore
 
     def __call__(self, data: Union[Tensor, ndarray]) -> Union[Tensor, ndarray]:
         """
@@ -107,14 +110,16 @@ class FixedWindow:
             raise IndexError("`window size` must be smaller then input sequence length.")
 
         if not self.start_position:
-            start = choice([i for i in range(seq_len - self.window_size)])       # nosec
+            start = choice([i for i in range(seq_len - self.window_size)])  # nosec
         else:
             if (seq_len - self.window_size) >= self.start_position:
                 start = self.start_position
             else:
-                raise IndexError("The start position must be in the range 0 ~ (seq_len - window_size).")
+                raise IndexError(
+                    "The start position must be in the range 0 ~ (seq_len - window_size)."
+                )
 
-        return data[start:start+self.window_size]
+        return data[start : start + self.window_size]
 
 
 class GaussianNoise:
@@ -132,6 +137,7 @@ class GaussianNoise:
         mu: 正規分布の :math:`\mu`
 
     """
+
     def __init__(self, sigma: float = 0.01, mu: float = 0.0) -> None:
         self.noise: float = gauss(mu=mu, sigma=sigma)
 
@@ -161,8 +167,9 @@ class RandomScaling:
         end(float):　スケーリング範囲の終了点
 
     """
+
     def __init__(self, start: float = 0.7, end: float = 1.1) -> None:
-        self.scale: float = ((end - start) * uniform(0.0, 1.0)) + start     #nosec
+        self.scale: float = ((end - start) * uniform(0.0, 1.0)) + start  # nosec
 
     def __call__(self, data: Union[Tensor, ndarray]) -> Union[Tensor, ndarray]:
         return data * self.scale
@@ -186,6 +193,7 @@ class Pad:
         value(Optional[float]): Value to fill.
 
     """
+
     def __init__(self, length: int, value: Optional[Union[int, float]] = None) -> None:
         self.length: int = length
         if value:

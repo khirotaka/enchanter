@@ -12,9 +12,7 @@ import torch
 import torch.nn as nn
 
 
-__all__ = [
-    "PositionalEncoding"
-]
+__all__ = ["PositionalEncoding"]
 
 
 class PositionalEncoding(nn.Module):
@@ -26,6 +24,7 @@ class PositionalEncoding(nn.Module):
         <https://pytorch.org/tutorials/beginner/transformer_tutorial.html#define-the-model>`_
 
     """
+
     def __init__(self, d_model: int, seq_len: int, dropout: float = 0.1) -> None:
         """
 
@@ -61,6 +60,6 @@ class PositionalEncoding(nn.Module):
             (N, E, L)
 
         """
-        x = x.permute(2, 0, 1)      # [L, N, E]
-        x = x + self.pe[:x.size(0), :]                  # type: ignore
+        x = x.permute(2, 0, 1)  # [L, N, E]
+        x = x + self.pe[: x.size(0), :]  # type: ignore
         return self.dropout(x).permute(1, 2, 0)

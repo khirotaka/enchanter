@@ -22,9 +22,7 @@ from torch.cuda import is_available as cuda_is_available
 from torch.utils.data import TensorDataset
 
 
-__all__ = [
-    "is_jupyter", "get_dataset", "fix_seed", "send"
-]
+__all__ = ["is_jupyter", "get_dataset", "fix_seed", "send"]
 
 
 def is_jupyter() -> bool:
@@ -40,7 +38,7 @@ def is_jupyter() -> bool:
     except ImportError:
         return False
 
-    env = get_ipython().__class__.__name__      # noqa
+    env = get_ipython().__class__.__name__  # noqa
     if env == "TerminalInteractiveShell":
         return False
     return True
@@ -119,5 +117,3 @@ def fix_seed(seed: int, deterministic: bool = False, benchmark: bool = False) ->
             cudnn.deterministic = True
         if benchmark:
             cudnn.benchmark = False
-
-

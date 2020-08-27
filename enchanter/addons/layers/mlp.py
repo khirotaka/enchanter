@@ -13,9 +13,7 @@ from torch.tensor import Tensor
 from torch.nn import Module, ModuleList, Linear, Sequential, Conv1d, ReLU
 
 
-__all__ = [
-    "MLP", "PositionWiseFeedForward", "ResidualSequential", "AutoEncoder"
-]
+__all__ = ["MLP", "PositionWiseFeedForward", "ResidualSequential", "AutoEncoder"]
 
 
 class MLP(Module):
@@ -41,22 +39,24 @@ class MLP(Module):
 
     """
 
-    def __init__(self, shapes: List[int], activation: Union[Callable[[Tensor], Tensor], Module] = relu):
+    def __init__(
+        self, shapes: List[int], activation: Union[Callable[[Tensor], Tensor], Module] = relu
+    ):
         super(MLP, self).__init__()
         layers: List[Module] = []
         self.activation: Callable[[Tensor], Tensor] = activation
 
         for i in range(len(shapes) - 1):
-            layers.append(Linear(shapes[i], shapes[i+1]))
+            layers.append(Linear(shapes[i], shapes[i + 1]))
 
         self.layers: Module = ModuleList(layers)
 
     def forward(self, x: Tensor) -> Tensor:
-        for layer in self.layers[:-1]:      # type: ignore
+        for layer in self.layers[:-1]:  # type: ignore
             x = layer(x)
             x = self.activation(x)
 
-        x = self.layers[-1](x)              # type: ignore
+        x = self.layers[-1](x)  # type: ignore
         return x
 
 
@@ -77,12 +77,13 @@ class PositionWiseFeedForward(Module):
         >>> out = ff(x)
 
     """
+
     def __init__(self, d_model: int, expansion: int = 2) -> None:
         super(PositionWiseFeedForward, self).__init__()
         self.conv: Module = Sequential(
-            Conv1d(d_model, d_model*expansion, 1),
+            Conv1d(d_model, d_model * expansion, 1),
             ReLU(),
-            Conv1d(d_model*expansion, d_model, 1)
+            Conv1d(d_model * expansion, d_model, 1),
         )
 
     def forward(self, x: Tensor) -> Tensor:
@@ -112,12 +113,15 @@ class ResidualSequential(Sequential):
         >>> )
 
     """
+
     def forward(self, x: Tensor) -> Tensor:
         return x + super(ResidualSequential, self).forward(x)
 
 
 class AutoEncoder(Module):
-    def __init__(self, shapes: List[int], activation: Union[Callable[[Tensor], Tensor], Module] = relu):
+    def __init__(
+        self, shapes: List[int], activation: Union[Callable[[Tensor], Tensor], Module] = relu
+    ):
         super(AutoEncoder, self).__init__()
         self.encoder = MLP(shapes, activation)
         self.decoder = MLP(list(reversed(shapes)), activation)

@@ -13,9 +13,7 @@ from torch.tensor import Tensor
 from torch.nn import Module
 
 
-__all__ = [
-    "DenseInterpolation"
-]
+__all__ = ["DenseInterpolation"]
 
 
 class DenseInterpolation(Module):
@@ -26,6 +24,7 @@ class DenseInterpolation(Module):
         factor:
 
     """
+
     def __init__(self, seq_len: int, factor: int) -> None:
         super(DenseInterpolation, self).__init__()
         W = np.zeros((factor, seq_len), dtype=np.float32)
@@ -50,6 +49,6 @@ class DenseInterpolation(Module):
         Returns:
             適用した結果 (torch.Tensor)
         """
-        w = self.W.repeat(x.shape[0], 1, 1).requires_grad_(False)       # type: ignore
+        w = self.W.repeat(x.shape[0], 1, 1).requires_grad_(False)  # type: ignore
         u = bmm(w, x)
         return u.transpose_(1, 2)

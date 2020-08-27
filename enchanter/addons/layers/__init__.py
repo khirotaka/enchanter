@@ -12,5 +12,5 @@ __all__ = [
     "PositionalEncoding",
     "PositionWiseFeedForward",
     "SELayer1d",
-    "SELayer2d"
+    "SELayer2d",
 ]

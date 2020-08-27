@@ -10,9 +10,7 @@
 import torch
 
 
-__all__ = [
-    "calculate_accuracy"
-]
+__all__ = ["calculate_accuracy"]
 
 
 def calculate_accuracy(inputs: torch.Tensor, targets: torch.Tensor) -> float:

@@ -22,9 +22,7 @@ from comet_ml.experiment import BaseExperiment as BaseExperiment
 from enchanter.engine import BaseRunner
 from enchanter.callbacks import EarlyStopping, BaseLogger
 
-__all__ = [
-    "RegressionRunner"
-]
+__all__ = ["RegressionRunner"]
 
 
 class RegressionRunner(BaseRunner, RegressorMixin):
@@ -42,13 +40,13 @@ class RegressionRunner(BaseRunner, RegressorMixin):
     """
 
     def __init__(
-            self,
-            model: Module,
-            optimizer: Optimizer,
-            criterion: _Loss,
-            experiment: Union[BaseExperiment, BaseLogger],
-            scheduler: Optional[List] = None,
-            early_stop: Optional[EarlyStopping] = None
+        self,
+        model: Module,
+        optimizer: Optimizer,
+        criterion: _Loss,
+        experiment: Union[BaseExperiment, BaseLogger],
+        scheduler: Optional[List] = None,
+        early_stop: Optional[EarlyStopping] = None,
     ) -> None:
         super(RegressionRunner, self).__init__()
         self.model: Module = model

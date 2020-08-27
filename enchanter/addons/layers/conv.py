@@ -7,20 +7,18 @@ from torch.tensor import Tensor
 from enchanter.utils.backend import slice_axis
 
 
-__all__ = [
-    "CausalConv1d"
-]
+__all__ = ["CausalConv1d"]
 
 
 class CausalConv1d(nn.Module):
     def __init__(
-            self,
-            in_channels: int,
-            out_channels: int,
-            kernel_size: int,
-            dilation: int = 1,
-            activation: Callable[[Tensor], Tensor] = torch.relu,
-            **kwargs
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        dilation: int = 1,
+        activation: Callable[[Tensor], Tensor] = torch.relu,
+        **kwargs,
     ) -> None:
         """
         Causal Conv 1d
@@ -49,7 +47,7 @@ class CausalConv1d(nn.Module):
             kernel_size,
             dilation=dilation,
             padding=self.padding,
-            **kwargs
+            **kwargs,
         )
 
     def forward(self, x: Tensor) -> Tensor:

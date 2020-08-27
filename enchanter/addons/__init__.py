@@ -3,8 +3,4 @@ from .optim_wrapper import *
 from . import layers
 
 
-__all__ = [
-    "Mish", "Swish", "mish",
-    "TransformerOptimizer",
-    "layers"
-]
+__all__ = ["Mish", "Swish", "mish", "TransformerOptimizer", "layers"]
