@@ -9,5 +9,5 @@ __all__ = [
     "HardEnsemble",
     "SoftEnsemble",
     "BaseEnsembleEstimator",
-    "TimeSeriesUnsupervisedRunner"
+    "TimeSeriesUnsupervisedRunner",
 ]
