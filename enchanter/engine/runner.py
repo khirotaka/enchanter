@@ -604,6 +604,9 @@ class BaseRunner(ABC, RunnerIO):
         if isinstance(loader, tf.data.Dataset):
             warnings.warn("TensorFlow Dataset detection. Experimental support at this stage.", UserWarning)
 
+        elif isinstance(loader, DataLoader):
+            pass
+
         else:
             raise TypeError("The argument `loader` must be an instance of `torch.utils.data.DataLoader`.")
 
