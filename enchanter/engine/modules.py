@@ -12,10 +12,9 @@ from os import environ as os_environ
 from random import seed as std_seed
 from numpy import ndarray
 from numpy.random import seed as np_seed
+import torch
 from torch.backends import cudnn
 from torch.utils.data import Dataset
-from torch import device as torch_device
-from torch import manual_seed, Tensor, as_tensor
 from torch.cuda import is_available as cuda_is_available
 
 
@@ -46,7 +45,7 @@ def is_jupyter() -> bool:
     return True
 
 
-def get_dataset(x: Union[ndarray, Tensor], y: Union[ndarray, Tensor] = None) -> Dataset:
+def get_dataset(x: Union[ndarray, torch.Tensor], y: Union[ndarray, torch.Tensor] = None) -> Dataset:
     """
     入力された値をもとに `torch.utils.data.TensorDataset` を生成します。
 
@@ -63,10 +62,10 @@ def get_dataset(x: Union[ndarray, Tensor], y: Union[ndarray, Tensor] = None) -> 
     Returns:
         `torch.utils.data.TensorDataset`
     """
-    x = as_tensor(x)
+    x = torch.as_tensor(x)
 
     if y is not None:
-        y = as_tensor(y)
+        y = torch.as_tensor(y)
         ds = TensorDataset(x, y)
     else:
         ds = TensorDataset(x)
@@ -74,7 +73,7 @@ def get_dataset(x: Union[ndarray, Tensor], y: Union[ndarray, Tensor] = None) -> 
     return ds
 
 
-def send(batch: Tuple[Any, ...], device: torch_device) -> Tuple[Any, ...]:
+def send(batch: Tuple[Any, ...], device: torch.device) -> Tuple[Any, ...]:
     """
     Send `variable` to `device`
 
@@ -87,7 +86,15 @@ def send(batch: Tuple[Any, ...], device: torch_device) -> Tuple[Any, ...]:
 
     """
 
-    return tuple(map(lambda x: x.to(device) if isinstance(x, Tensor) else x, batch))
+    def transfer(x):
+        if isinstance(x, torch.Tensor):
+            return x.to(device)
+        elif isinstance(x, ndarray):
+            return torch.tensor(x, device=device)
+        else:
+            return x
+        
+    return tuple(map(transfer, batch))
 
 
 def fix_seed(seed: int, deterministic: bool = False, benchmark: bool = False) -> None:
@@ -112,7 +119,7 @@ def fix_seed(seed: int, deterministic: bool = False, benchmark: bool = False) ->
     std_seed(seed)
     os_environ["PYTHONHASHSEED"] = str(seed)
     np_seed(seed)
-    manual_seed(seed)
+    torch.manual_seed(seed)
 
     if cuda_is_available():
         if deterministic:
