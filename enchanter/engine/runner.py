@@ -7,6 +7,7 @@
 #
 # ***************************************************
 
+import io
 import re
 import operator
 from abc import ABC
@@ -670,3 +671,15 @@ class BaseRunner(ABC, RunnerIO):
             param.requires_grad = True
 
         self.model.train()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        buffer = io.BytesIO()
+        torch.save(self.save_checkpoint(), buffer)
+        self.experiment.log_asset_data(
+            buffer.getvalue(),
+            step=self.global_step,
+            file_name="context_api/enchanter_checkpoints_latest.pth"
+        )
