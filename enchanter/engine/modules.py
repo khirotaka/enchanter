@@ -93,7 +93,6 @@ def send(batch: Tuple[Any, ...], device: torch.device) -> Tuple[Any, ...]:
             return torch.tensor(x, device=device)
         else:
             return x
-        
     return tuple(map(transfer, batch))
 
 
@@ -126,5 +125,3 @@ def fix_seed(seed: int, deterministic: bool = False, benchmark: bool = False) ->
             cudnn.deterministic = True
         if benchmark:
             cudnn.benchmark = False
-
-
