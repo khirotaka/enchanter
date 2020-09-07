@@ -670,9 +670,3 @@ class BaseRunner(ABC, RunnerIO):
             param.requires_grad = True
 
         self.model.train()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        super(BaseRunner, self).save("checkpoints/")
