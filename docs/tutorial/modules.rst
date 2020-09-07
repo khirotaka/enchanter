@@ -13,34 +13,35 @@ Enchanterの使い方を学ぶ為に、以下のチュートリアルに挑戦�
 Basic Usage
 ----------------
 
-.. toctree::
-   :glob:
-   :maxdepth: 1
+..  toctree::
+    :glob:
+    :maxdepth: 1
 
-   mnist
-   sklearn_style
-   scheduler_chaining
+    mnist
+    sklearn_style
+    scheduler_chaining
 
 
 
 Advanced Usage
 ----------------
 
-.. toctree::
-   :glob:
-   :maxdepth: 1
+..  toctree::
+    :glob:
+    :maxdepth: 1
 
-   custom_runner
-   with_hydra
-   amp
-   swalr
+    custom_runner
+    with_hydra
+    amp
+    swalr
+    tfds
 
 
 Model Optimization
 ------------------
 
-.. toctree::
-   :glob:
-   :maxdepth: 1
+..  toctree::
+    :glob:
+    :maxdepth: 1
 
-   comet_hp_tuning
+    comet_hp_tuning
