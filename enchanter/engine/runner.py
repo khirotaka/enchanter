@@ -9,6 +9,7 @@
 
 import io
 import re
+import warnings
 import operator
 from abc import ABC
 from time import sleep
@@ -24,6 +25,9 @@ from torch.tensor import Tensor
 from torch.cuda import is_available, amp
 from torch.optim.optimizer import Optimizer
 from torch.utils.data import DataLoader, SubsetRandomSampler
+
+import tensorflow as tf
+import tensorflow_datasets as tfds
 
 from comet_ml import Experiment
 from comet_ml.api import APIExperiment
@@ -80,7 +84,7 @@ class BaseRunner(ABC, RunnerIO):
         self.scaler: Optional[amp.GradScaler] = None
 
         self.pbar: Union[tqdm, range] = range(self.configures["epochs"])
-        self._loaders: Dict[str, DataLoader] = {}
+        self._loaders: Dict[str, Union[DataLoader, tf.data.Dataset]] = {}
         self._metrics: Dict = {}
         self.global_step: int = 0
 
@@ -243,6 +247,9 @@ class BaseRunner(ABC, RunnerIO):
         results = list()
         loader_size = len(loader)
 
+        if isinstance(loader, tf.data.Dataset):
+            loader = tfds.as_numpy(loader)
+
         self.model.train()
         with self.experiment.train():
             for step, batch in enumerate(loader):
@@ -288,6 +295,9 @@ class BaseRunner(ABC, RunnerIO):
         results = list()
         loader_size = len(loader)
 
+        if isinstance(loader, tf.data.Dataset):
+            loader = tfds.as_numpy(loader)
+
         self.model.eval()
         with self.experiment.validate():
             with torch.no_grad():
@@ -329,6 +339,9 @@ class BaseRunner(ABC, RunnerIO):
         """
         results = list()
         loader_size = len(loader)
+
+        if isinstance(loader, tf.data.Dataset):
+            loader = tfds.as_numpy(loader)
 
         self.model.eval()
         with self.experiment.test():
@@ -572,7 +585,7 @@ class BaseRunner(ABC, RunnerIO):
         """
         raise NotImplementedError
 
-    def add_loader(self, mode: str, loader: DataLoader):
+    def add_loader(self, mode: str, loader: Union[DataLoader, tf.data.Dataset]):
         """
         A method to register a DataLoader to be used for training etc. in a runner.
 
@@ -589,7 +602,13 @@ class BaseRunner(ABC, RunnerIO):
         if mode not in ["train", "val", "test"]:
             raise KeyError("argument `mode` must be one of 'train', 'val', or 'test'.")
 
-        if not isinstance(loader, DataLoader):
+        if isinstance(loader, tf.data.Dataset):
+            warnings.warn("TensorFlow Dataset detection. Experimental support at this stage.", UserWarning)
+
+        elif isinstance(loader, DataLoader):
+            pass
+
+        else:
             raise TypeError("The argument `loader` must be an instance of `torch.utils.data.DataLoader`.")
 
         self._loaders[mode] = loader
