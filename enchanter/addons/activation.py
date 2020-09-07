@@ -12,19 +12,18 @@ import torch
 import torch.nn as nn
 
 
-__all__ = [
-    "Swish", "mish", "Mish", "FReLU1d", "FReLU2d"
-]
+__all__ = ["Swish", "mish", "Mish", "FReLU1d", "FReLU2d"]
 
 
 class Swish(nn.Module):
     """
     Swish活性化関数を適用します。
     """
+
     def __init__(self, beta: bool = False):
         super(Swish, self).__init__()
         if beta:
-            self.weight: Union[nn.Parameter, float] = nn.Parameter(torch.tensor([1.]), requires_grad=True)
+            self.weight: Union[nn.Parameter, float] = nn.Parameter(torch.tensor([1.0]), requires_grad=True)
         else:
             self.weight = 1.0
 
@@ -73,6 +72,7 @@ class Mish(nn.Module):
     Mish活性化関数を適用します。
 
     """
+
     def __init__(self):
         super(Mish, self).__init__()
         self.tanh: nn.Module = nn.Tanh()
@@ -108,10 +108,16 @@ class FReLU1d(nn.Module):
         >>> outputs = frelu(inputs)
 
     """
+
     def __init__(self, in_features: int, kernel_size: int = 3, stride: int = 1, padding: int = 1):
         super(FReLU1d, self).__init__()
         self.conv = nn.Conv1d(
-            in_features, in_features, kernel_size=kernel_size, stride=stride, padding=padding, groups=in_features
+            in_features,
+            in_features,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            groups=in_features,
         )
         self.norm = nn.BatchNorm1d(in_features)
 
@@ -132,10 +138,16 @@ class FReLU2d(nn.Module):
         >>> outputs = frelu(inputs)
 
     """
+
     def __init__(self, in_features: int, kernel_size: int = 3, stride: int = 1, padding: int = 1):
         super(FReLU2d, self).__init__()
         self.conv = nn.Conv2d(
-            in_features, in_features, kernel_size=kernel_size, stride=stride, padding=padding, groups=in_features
+            in_features,
+            in_features,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            groups=in_features,
         )
         self.norm = nn.BatchNorm2d(in_features)
 

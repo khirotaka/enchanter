@@ -9,9 +9,7 @@ from torch.nn import DataParallel
 from torch.serialization import save, load
 
 
-__all__ = [
-    "RunnerIO"
-]
+__all__ = ["RunnerIO"]
 
 
 class RunnerIO:
@@ -19,6 +17,7 @@ class RunnerIO:
     PyTorch モデルの重み、Optimizerの状態といったパラメータの読み込み・保存を担当するクラス。
 
     """
+
     def __init__(self):
         self.model = NotImplemented
         self.optimizer = NotImplemented
@@ -42,7 +41,7 @@ class RunnerIO:
 
         checkpoint = {
             "model_state_dict": deepcopy(model),
-            "optimizer_state_dict": deepcopy(self.optimizer.state_dict())
+            "optimizer_state_dict": deepcopy(self.optimizer.state_dict()),
         }
         return checkpoint
 

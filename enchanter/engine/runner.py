@@ -361,6 +361,7 @@ class BaseRunner(ABC, RunnerIO):
                         self.pbar.set_postfix(  # type: ignore
                             OrderedDict(test_batch=per), refresh=True
                         )
+
                         self.pbar.update(1)  # type: ignore
 
                     outputs = {

@@ -2,9 +2,7 @@ from torch.tensor import Tensor
 from torch import nn
 
 
-__all__ = [
-    "SELayer1d", "SELayer2d"
-]
+__all__ = ["SELayer1d", "SELayer2d"]
 
 
 class SELayer1d(nn.Module):
@@ -17,7 +15,7 @@ class SELayer1d(nn.Module):
             nn.Linear(in_features, reduction_size, bias=False),
             nn.ReLU(inplace=True),
             nn.Linear(reduction_size, in_features, bias=False),
-            nn.Sigmoid()
+            nn.Sigmoid(),
         )
 
     def forward(self, x: Tensor) -> Tensor:
@@ -39,7 +37,7 @@ class SELayer2d(nn.Module):
             nn.Linear(in_features, reduction_size, bias=False),
             nn.ReLU(inplace=True),
             nn.Linear(reduction_size, in_features, bias=False),
-            nn.Sigmoid()
+            nn.Sigmoid(),
         )
 
     def forward(self, x: Tensor) -> Tensor:

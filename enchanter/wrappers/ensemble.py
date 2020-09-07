@@ -4,7 +4,14 @@
 
 import warnings
 
-warnings.warn("`wrappers.ensemble` package has been renamed to `tasks` since v0.7.0"
-              "The deprecated package name will be remove in v0.8.0", DeprecationWarning)
+warnings.warn(
+    "`wrappers.ensemble` package has been renamed to `tasks` since v0.7.0"
+    "The deprecated package name will be remove in v0.8.0",
+    DeprecationWarning,
+)
 
-from enchanter.tasks.ensemble import BaseEnsembleEstimator, SoftEnsemble, HardEnsemble      # noqa: F403    # pylint: disable=unused-import
+from enchanter.tasks.ensemble import (
+    BaseEnsembleEstimator,
+    SoftEnsemble,
+    HardEnsemble,
+)  # noqa: F403    # pylint: disable=unused-import

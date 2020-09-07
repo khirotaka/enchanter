@@ -15,9 +15,7 @@ from pandas import DataFrame
 from tqdm.auto import tqdm
 
 
-__all__ = [
-    "FixedSlidingWindow", "adjust_sequences"
-]
+__all__ = ["FixedSlidingWindow", "adjust_sequences"]
 
 
 _Numerical = Union[int, float]
@@ -46,6 +44,7 @@ class FixedSlidingWindow:
             argument overlap_rate under 0.0 or over 1.0.n error occurred.
 
     """
+
     def __init__(self, window_size: int, overlap_rate: Union[float, None], step_size: Optional[int] = None) -> None:
         self.window_size: int = window_size
 
@@ -79,9 +78,9 @@ class FixedSlidingWindow:
         if verbose:
             data = []
             for i in tqdm(range(0, seq_len - self.window_size, self.overlap)):
-                data.append(inputs[i:i + self.window_size])
+                data.append(inputs[i : i + self.window_size])
         else:
-            data = [inputs[i:i + self.window_size] for i in range(0, seq_len-self.window_size, self.overlap)]
+            data = [inputs[i : i + self.window_size] for i in range(0, seq_len - self.window_size, self.overlap)]
 
         data = stack(data, 0)
         return data
@@ -117,10 +116,10 @@ class FixedSlidingWindow:
 
 
 def adjust_sequences(
-        sequences: List[ndarray],
-        max_len: Optional[Union[int, Callable[[List[int]], int]]] = None,
-        fill: Union[str, _Numerical] = "ffill",
-        dtype: Type = float32
+    sequences: List[ndarray],
+    max_len: Optional[Union[int, Callable[[List[int]], int]]] = None,
+    fill: Union[str, _Numerical] = "ffill",
+    dtype: Type = float32,
 ) -> ndarray:
     """
     長さが一定でない系列データを一定の長さに整える関数。
@@ -196,7 +195,7 @@ def adjust_sequences(
             seq = seq.astype(dtype)
 
         if maximum_len > seq.shape[0]:
-            new_seq[:seq.shape[0]] = seq
+            new_seq[: seq.shape[0]] = seq
             if fill == "ffill":
                 new_seq = new_seq.ffill()
             elif isinstance(fill, int) or isinstance(fill, float):

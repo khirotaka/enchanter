@@ -1,9 +1,7 @@
 from torch import narrow, Tensor
 
 
-__all__ = [
-    "slice_axis"
-]
+__all__ = ["slice_axis"]
 
 
 def slice_axis(data: Tensor, axis: int, begin: int, end: int) -> Tensor:

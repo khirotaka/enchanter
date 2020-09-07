@@ -12,9 +12,7 @@ import numpy as np
 from torch.optim.optimizer import Optimizer
 
 
-__all__ = [
-    "TransformerOptimizer"
-]
+__all__ = ["TransformerOptimizer"]
 
 
 class TransformerOptimizer:
@@ -24,6 +22,7 @@ class TransformerOptimizer:
         <https://github.com/jadore801120/attention-is-all-you-need-pytorch/blob/master/transformer/Optim.py>`_
 
     """
+
     def __init__(self, optimizer: Optimizer, d_model: int, warm_up: int) -> None:
         self._optimizer: Optimizer = optimizer
         self.warm_up: int = warm_up
@@ -38,10 +37,12 @@ class TransformerOptimizer:
         self._optimizer.zero_grad()
 
     def _get_lr_scale(self) -> np.ndarray:
-        return np.min([
-            np.power(self.n_current_steps, -0.5),
-            np.power(self.warm_up, -1.5) * self.n_current_steps
-        ])
+        return np.min(
+            [
+                np.power(self.n_current_steps, -0.5),
+                np.power(self.warm_up, -1.5) * self.n_current_steps,
+            ]
+        )
 
     def get_lr(self) -> float:
         lr = self.init_lr * self._get_lr_scale()

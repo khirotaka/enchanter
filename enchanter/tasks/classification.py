@@ -25,9 +25,7 @@ from enchanter.callbacks import EarlyStopping
 from enchanter.metrics import calculate_accuracy as calculate_accuracy
 
 
-__all__ = [
-    "ClassificationRunner"
-]
+__all__ = ["ClassificationRunner"]
 
 
 class ClassificationRunner(BaseRunner, ClassifierMixin):
@@ -55,13 +53,13 @@ class ClassificationRunner(BaseRunner, ClassifierMixin):
     """
 
     def __init__(
-            self,
-            model: Module,
-            optimizer: Optimizer,
-            criterion: _Loss,
-            experiment: Union[BaseExperiment, BaseLogger],
-            scheduler: Optional[List] = None,
-            early_stop: Optional[EarlyStopping] = None
+        self,
+        model: Module,
+        optimizer: Optimizer,
+        criterion: _Loss,
+        experiment: Union[BaseExperiment, BaseLogger],
+        scheduler: Optional[List] = None,
+        early_stop: Optional[EarlyStopping] = None,
     ) -> None:
         super(ClassificationRunner, self).__init__()
         self.model: Module = model
