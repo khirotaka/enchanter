@@ -21,9 +21,7 @@ from torch.cuda import is_available as cuda_is_available
 from torch.utils.data import TensorDataset
 
 
-__all__ = [
-    "is_jupyter", "get_dataset", "fix_seed", "send"
-]
+__all__ = ["is_jupyter", "get_dataset", "fix_seed", "send"]
 
 
 def is_jupyter() -> bool:
@@ -39,13 +37,15 @@ def is_jupyter() -> bool:
     except ImportError:
         return False
 
-    env = get_ipython().__class__.__name__      # noqa
+    env = get_ipython().__class__.__name__  # noqa
     if env == "TerminalInteractiveShell":
         return False
     return True
 
 
-def get_dataset(x: Union[ndarray, torch.Tensor], y: Union[ndarray, torch.Tensor] = None) -> Dataset:
+def get_dataset(
+    x: Union[ndarray, torch.Tensor], y: Union[ndarray, torch.Tensor] = None
+) -> Dataset:
     """
     入力された値をもとに `torch.utils.data.TensorDataset` を生成します。
 
@@ -93,6 +93,7 @@ def send(batch: Tuple[Any, ...], device: torch.device) -> Tuple[Any, ...]:
             return torch.tensor(x, device=device)
         else:
             return x
+
     return tuple(map(transfer, batch))
 
 

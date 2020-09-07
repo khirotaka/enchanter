@@ -39,9 +39,7 @@ from enchanter.callbacks import BaseLogger as BaseLogger
 from enchanter.callbacks import EarlyStopping as EarlyStopping
 
 
-__all__ = [
-    "BaseRunner"
-]
+__all__ = ["BaseRunner"]
 
 
 class BaseRunner(ABC, RunnerIO):
@@ -69,6 +67,7 @@ class BaseRunner(ABC, RunnerIO):
         >>>         return {"loss": loss}
 
     """
+
     def __init__(self) -> None:
         super(BaseRunner, self).__init__()
         self.device: torch.device = torch.device("cuda" if is_available() else "cpu")
@@ -77,9 +76,7 @@ class BaseRunner(ABC, RunnerIO):
         self.scheduler: List = list()
         self.experiment: Union[BaseExperiment, BaseLogger] = NotImplemented
         self.early_stop: Optional[EarlyStopping] = None
-        self.configures: Dict[str, Any] = {
-            "epochs": 0
-        }
+        self.configures: Dict[str, Any] = {"epochs": 0}
         self.api_experiment: Optional[APIExperiment] = None
         self.scaler: Optional[amp.GradScaler] = None
 
@@ -140,7 +137,9 @@ class BaseRunner(ABC, RunnerIO):
         for scheduler in self.scheduler:
             scheduler.step()
 
-        self.experiment.log_metric("scheduler_lr", self.scheduler[-1].get_last_lr(), epoch=epoch)
+        self.experiment.log_metric(
+            "scheduler_lr", self.scheduler[-1].get_last_lr(), epoch=epoch
+        )
 
     def train_step(self, batch: Tuple) -> Dict[str, Tensor]:
         """
@@ -263,19 +262,21 @@ class BaseRunner(ABC, RunnerIO):
 
                 if hasattr(self.pbar, "set_postfix"):
                     per = "{:1.0%}".format(step / loader_size)
-                    self.pbar.set_postfix(                                  # type: ignore
+                    self.pbar.set_postfix(  # type: ignore
                         OrderedDict(train_batch=per), refresh=True
                     )
 
                 outputs = {
-                    key: outputs[key].detach().cpu() if isinstance(outputs[key], Tensor) else outputs[key]
+                    key: outputs[key].detach().cpu()
+                    if isinstance(outputs[key], Tensor)
+                    else outputs[key]
                     for key in outputs.keys()
                 }
                 self.experiment.log_metrics(outputs, step=self.global_step, epoch=epoch)
                 results.append(outputs)
                 # on_step_end()
 
-            dic = self.train_end(results)        # pylint: disable=E1111
+            dic = self.train_end(results)  # pylint: disable=E1111
 
             if len(dic) != 0:
                 self._metrics.update(dic)
@@ -305,23 +306,27 @@ class BaseRunner(ABC, RunnerIO):
                     batch = send(batch, self.device)
                     self.global_step += 1
                     # on_step_start()
-                    outputs = self.val_step(batch)        # pylint: disable=E1111
+                    outputs = self.val_step(batch)  # pylint: disable=E1111
 
                     if hasattr(self.pbar, "set_postfix"):
                         per = "{:1.0%}".format(step / loader_size)
-                        self.pbar.set_postfix(                             # type: ignore
+                        self.pbar.set_postfix(  # type: ignore
                             OrderedDict(val_batch=per), refresh=True
                         )
 
                     outputs = {
-                        key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
+                        key: outputs[key].cpu()
+                        if isinstance(outputs[key], Tensor)
+                        else outputs[key]
                         for key in outputs.keys()
                     }
-                    self.experiment.log_metrics(outputs, step=self.global_step, epoch=epoch)
+                    self.experiment.log_metrics(
+                        outputs, step=self.global_step, epoch=epoch
+                    )
                     results.append(outputs)
                     # on_step_end()
 
-                dic = self.val_end(results)        # pylint: disable=E1111
+                dic = self.val_end(results)  # pylint: disable=E1111
 
                 if len(dic) != 0:
                     self._metrics.update(dic)
@@ -349,17 +354,19 @@ class BaseRunner(ABC, RunnerIO):
                 for step, batch in enumerate(loader):
                     batch = send(batch, self.device)
                     # on_step_start()
-                    outputs = self.test_step(batch)        # pylint: disable=E1111
+                    outputs = self.test_step(batch)  # pylint: disable=E1111
 
                     per = "{:1.0%}".format(step / loader_size)
                     if hasattr(self.pbar, "set_postfix"):
-                        self.pbar.set_postfix(                                  # type: ignore
+                        self.pbar.set_postfix(  # type: ignore
                             OrderedDict(test_batch=per), refresh=True
                         )
-                        self.pbar.update(1)                                     # type: ignore
+                        self.pbar.update(1)  # type: ignore
 
                     outputs = {
-                        key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
+                        key: outputs[key].cpu()
+                        if isinstance(outputs[key], Tensor)
+                        else outputs[key]
                         for key in outputs.keys()
                     }
 
@@ -367,13 +374,18 @@ class BaseRunner(ABC, RunnerIO):
                     results.append(outputs)
                     # on_step_end()
 
-                dic = self.test_end(results)        # pylint: disable=E1111
+                dic = self.test_end(results)  # pylint: disable=E1111
 
                 if len(dic) != 0:
                     self._metrics.update(dic)
                     self.experiment.log_metrics(dic)
 
-    def train_config(self, epochs: int, checkpoint_path: Optional[str] = None, monitor: Optional[str] = None):
+    def train_config(
+        self,
+        epochs: int,
+        checkpoint_path: Optional[str] = None,
+        monitor: Optional[str] = None,
+    ):
         """
         This method is used to specify epochs and so on when you execute using the .run() method.
 
@@ -402,9 +414,13 @@ class BaseRunner(ABC, RunnerIO):
         self.configures["checkpoint_path"] = checkpoint_path
         if monitor:
             try:
-                _ = re.search("train|validate", monitor)[0]         # type: ignore
+                _ = re.search("train|validate", monitor)[0]  # type: ignore
             except TypeError:
-                raise KeyError("The argument monitor is not an expected expression. {}".format(monitor))
+                raise KeyError(
+                    "The argument monitor is not an expected expression. {}".format(
+                        monitor
+                    )
+                )
             else:
                 self.configures["monitor"] = monitor
 
@@ -434,7 +450,9 @@ class BaseRunner(ABC, RunnerIO):
             None
 
         """
-        self.experiment.log_parameters(self.optimizer.__dict__["defaults"], prefix="optimizer")
+        self.experiment.log_parameters(
+            self.optimizer.__dict__["defaults"], prefix="optimizer"
+        )
         self.experiment.log_parameter("Optimizer", self.optimizer.__class__.__name__)
 
         if dic is not None:
@@ -465,7 +483,9 @@ class BaseRunner(ABC, RunnerIO):
             raise ValueError("`scheduler` must be a list object.")
 
         if isinstance(self.experiment, Experiment):
-            self.api_experiment = APIExperiment(previous_experiment=self.experiment.id, cache=False)
+            self.api_experiment = APIExperiment(
+                previous_experiment=self.experiment.id, cache=False
+            )
 
         if self.global_step < 0:
             self.global_step = 0
@@ -501,11 +521,13 @@ class BaseRunner(ABC, RunnerIO):
         """
         phases = {"train", "train/val", "test", "all", "debug"}
         if phase not in phases:
-            raise KeyError("The argument 'phase' must be one of the following. {}".format(phases))
+            raise KeyError(
+                "The argument 'phase' must be one of the following. {}".format(phases)
+            )
 
         if phase == "debug":
             if hasattr(self.experiment, "add_tag"):
-                self.experiment.add_tag("debug")        # type: ignore
+                self.experiment.add_tag("debug")  # type: ignore
 
         self.initialize()
         self.log_hyperparams()
@@ -515,8 +537,11 @@ class BaseRunner(ABC, RunnerIO):
 
         if phase in {"all", "train", "train/val", "debug"}:
             if "train" in self.loaders:
-                self.pbar = tqdm(range(self.configures["epochs"]), desc="Epochs") if verbose \
+                self.pbar = (
+                    tqdm(range(self.configures["epochs"]), desc="Epochs")
+                    if verbose
                     else range(self.configures["epochs"])
+                )
                 # .on_epoch_start()
                 for epoch in self.pbar:
                     # on_train_start()
@@ -539,8 +564,12 @@ class BaseRunner(ABC, RunnerIO):
 
                     if self.configures["checkpoint_path"]:
                         ops = {
-                            "==": operator.eq, "!=": operator.ne, "<": operator.lt,
-                            "<=": operator.le, ">": operator.gt, ">=": operator.ge
+                            "==": operator.eq,
+                            "!=": operator.ne,
+                            "<": operator.lt,
+                            "<=": operator.le,
+                            ">": operator.gt,
+                            ">=": operator.ge,
                         }
 
                         if "monitor" in self.configures.keys():
@@ -550,7 +579,7 @@ class BaseRunner(ABC, RunnerIO):
 
                             try:
                                 current_value = float(
-                                    self.api_experiment.get_metrics_summary(key)["valueCurrent"]        # type: ignore
+                                    self.api_experiment.get_metrics_summary(key)["valueCurrent"]  # type: ignore
                                 )
                             except TypeError:
                                 raise KeyError(
@@ -559,7 +588,9 @@ class BaseRunner(ABC, RunnerIO):
 
                             if current_value:
                                 if ops[op](current_value, value):
-                                    self.save(self.configures["checkpoint_path"], epoch=epoch)
+                                    self.save(
+                                        self.configures["checkpoint_path"], epoch=epoch
+                                    )
 
                         else:
                             self.save(self.configures["checkpoint_path"], epoch=epoch)
@@ -567,7 +598,11 @@ class BaseRunner(ABC, RunnerIO):
         if phase in {"all", "test", "debug"}:
             if "test" in self.loaders:
                 # on_test_start()
-                self.pbar = tqdm(total=len(self.loaders["test"]), desc="Evaluating") if verbose else None
+                self.pbar = (
+                    tqdm(total=len(self.loaders["test"]), desc="Evaluating")
+                    if verbose
+                    else None
+                )
                 self.test_cycle(self.loaders["test"])
                 # on_test_end()
 
@@ -603,13 +638,18 @@ class BaseRunner(ABC, RunnerIO):
             raise KeyError("argument `mode` must be one of 'train', 'val', or 'test'.")
 
         if isinstance(loader, tf.data.Dataset):
-            warnings.warn("TensorFlow Dataset detection. Experimental support at this stage.", UserWarning)
+            warnings.warn(
+                "TensorFlow Dataset detection. Experimental support at this stage.",
+                UserWarning,
+            )
 
         elif isinstance(loader, DataLoader):
             pass
 
         else:
-            raise TypeError("The argument `loader` must be an instance of `torch.utils.data.DataLoader`.")
+            raise TypeError(
+                "The argument `loader` must be an instance of `torch.utils.data.DataLoader`."
+            )
 
         self._loaders[mode] = loader
         return self
@@ -655,13 +695,18 @@ class BaseRunner(ABC, RunnerIO):
         val_sampler = SubsetRandomSampler(val_idx)
 
         train_loader = DataLoader(
-            train_ds, batch_size=batch_size,
-            sampler=train_sampler, num_workers=num_workers,
-            pin_memory=pin_memory
+            train_ds,
+            batch_size=batch_size,
+            sampler=train_sampler,
+            num_workers=num_workers,
+            pin_memory=pin_memory,
         )
         val_loader = DataLoader(
-            val_ds, batch_size=batch_size,
-            sampler=val_sampler, num_workers=num_workers, pin_memory=pin_memory
+            val_ds,
+            batch_size=batch_size,
+            sampler=val_sampler,
+            num_workers=num_workers,
+            pin_memory=pin_memory,
         )
 
         self.add_loader("train", train_loader)
@@ -700,5 +745,5 @@ class BaseRunner(ABC, RunnerIO):
         self.experiment.log_asset_data(
             buffer.getvalue(),
             step=self.global_step,
-            file_name="context_api/enchanter_checkpoints_latest.pth"
+            file_name="context_api/enchanter_checkpoints_latest.pth",
         )
