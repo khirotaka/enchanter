@@ -43,9 +43,7 @@ def is_jupyter() -> bool:
     return True
 
 
-def get_dataset(
-    x: Union[ndarray, torch.Tensor], y: Union[ndarray, torch.Tensor] = None
-) -> Dataset:
+def get_dataset(x: Union[ndarray, torch.Tensor], y: Union[ndarray, torch.Tensor] = None) -> Dataset:
     """
     入力された値をもとに `torch.utils.data.TensorDataset` を生成します。
 
