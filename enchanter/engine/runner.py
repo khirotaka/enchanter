@@ -7,7 +7,9 @@
 #
 # ***************************************************
 
+import io
 import re
+import warnings
 import operator
 from abc import ABC
 from time import sleep
@@ -23,6 +25,9 @@ from torch.tensor import Tensor
 from torch.cuda import is_available, amp
 from torch.optim.optimizer import Optimizer
 from torch.utils.data import DataLoader, SubsetRandomSampler
+
+import tensorflow as tf
+import tensorflow_datasets as tfds
 
 from comet_ml import Experiment
 from comet_ml.api import APIExperiment
@@ -76,7 +81,7 @@ class BaseRunner(ABC, RunnerIO):
         self.scaler: Optional[amp.GradScaler] = None
 
         self.pbar: Union[tqdm, range] = range(self.configures["epochs"])
-        self._loaders: Dict[str, DataLoader] = {}
+        self._loaders: Dict[str, Union[DataLoader, tf.data.Dataset]] = {}
         self._metrics: Dict = {}
         self.global_step: int = 0
 
@@ -239,6 +244,9 @@ class BaseRunner(ABC, RunnerIO):
         results = list()
         loader_size = len(loader)
 
+        if isinstance(loader, tf.data.Dataset):
+            loader = tfds.as_numpy(loader)
+
         self.model.train()
         with self.experiment.train():
             for step, batch in enumerate(loader):
@@ -282,6 +290,9 @@ class BaseRunner(ABC, RunnerIO):
         results = list()
         loader_size = len(loader)
 
+        if isinstance(loader, tf.data.Dataset):
+            loader = tfds.as_numpy(loader)
+
         self.model.eval()
         with self.experiment.validate():
             with torch.no_grad():
@@ -322,6 +333,9 @@ class BaseRunner(ABC, RunnerIO):
         results = list()
         loader_size = len(loader)
 
+        if isinstance(loader, tf.data.Dataset):
+            loader = tfds.as_numpy(loader)
+
         self.model.eval()
         with self.experiment.test():
             with torch.no_grad():
@@ -333,6 +347,7 @@ class BaseRunner(ABC, RunnerIO):
                     per = "{:1.0%}".format(step / loader_size)
                     if hasattr(self.pbar, "set_postfix"):
                         self.pbar.set_postfix(OrderedDict(test_batch=per), refresh=True)  # type: ignore
+
                         self.pbar.update(1)  # type: ignore
 
                     outputs = {
@@ -350,7 +365,12 @@ class BaseRunner(ABC, RunnerIO):
                     self._metrics.update(dic)
                     self.experiment.log_metrics(dic)
 
-    def train_config(self, epochs: int, checkpoint_path: Optional[str] = None, monitor: Optional[str] = None):
+    def train_config(
+        self,
+        epochs: int,
+        checkpoint_path: Optional[str] = None,
+        monitor: Optional[str] = None,
+    ):
         """
         This method is used to specify epochs and so on when you execute using the .run() method.
 
@@ -569,7 +589,7 @@ class BaseRunner(ABC, RunnerIO):
         """
         raise NotImplementedError
 
-    def add_loader(self, mode: str, loader: DataLoader):
+    def add_loader(self, mode: str, loader: Union[DataLoader, tf.data.Dataset]):
         """
         A method to register a DataLoader to be used for training etc. in a runner.
 
@@ -586,7 +606,16 @@ class BaseRunner(ABC, RunnerIO):
         if mode not in ["train", "val", "test"]:
             raise KeyError("argument `mode` must be one of 'train', 'val', or 'test'.")
 
-        if not isinstance(loader, DataLoader):
+        if isinstance(loader, tf.data.Dataset):
+            warnings.warn(
+                "TensorFlow Dataset detection. Experimental support at this stage.",
+                UserWarning,
+            )
+
+        elif isinstance(loader, DataLoader):
+            pass
+
+        else:
             raise TypeError("The argument `loader` must be an instance of `torch.utils.data.DataLoader`.")
 
         self._loaders[mode] = loader
@@ -673,3 +702,15 @@ class BaseRunner(ABC, RunnerIO):
             param.requires_grad = True
 
         self.model.train()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        buffer = io.BytesIO()
+        torch.save(self.save_checkpoint(), buffer)
+        self.experiment.log_asset_data(
+            buffer.getvalue(),
+            step=self.global_step,
+            file_name="context_api/enchanter_checkpoints_latest.pth",
+        )

@@ -28,7 +28,9 @@ jobs:
       - name: Add path for Poetry
         run: echo "::add-path::$HOME/.poetry/bin"
       - name: Install Dependencies
-        run: poetry install --no-interaction
+        run: |
+          poetry run pip install -U pip
+          poetry install --no-interaction
 
       - name: Lint with flake8
         run: |

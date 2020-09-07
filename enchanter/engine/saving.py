@@ -62,21 +62,23 @@ class RunnerIO:
     def save(self, directory: Optional[str] = None, epoch: Optional[int] = None):
 
         """
-        指定したディレクトリにモデルとOptimizerの状態を記録したファイルを保存します。
+        Save the model and the Optimizer state file in the specified directory.
+
+        Notes:
+            ``enchanter_checkpoints_epoch_{}.pth`` file contains ``model_state_dict`` & ``optimizer_state_dict``.
 
         Args:
             directory (Optional[str]):
             epoch (Optional[int]):
 
         """
-        if directory is None and self._checkpoint_path is not None:
-            directory_name: str = self._checkpoint_path
-
-        elif directory is None and self._checkpoint_path is None:
-            raise ValueError("The argument `directory` must be specified.")
-
+        if directory is None:
+            if self._checkpoint_path is not None:
+                directory_name: str = self._checkpoint_path
+            else:
+                raise ValueError("The argument `directory` must be specified.")
         else:
-            raise ValueError
+            directory_name = directory
 
         directory_path = Path(directory_name)
         if not directory_path.exists():
@@ -88,12 +90,13 @@ class RunnerIO:
         else:
             epoch_str = str(epoch)
 
-        filename = "checkpoint_epoch_{}.pth".format(epoch_str)
+        filename = "enchanter_checkpoints_epoch_{}.pth".format(epoch_str)
         path = directory_path / filename
         save(checkpoint, path)
 
-        if hasattr(self.experiment, "log_asset"):
-            self.experiment.log_asset(path)
+        if hasattr(self.experiment, "log_model"):
+            model_name = self.model.__class__.__name__
+            self.experiment.log_model(model_name, str(path))
 
     def load(self, filename: str, map_location: str = "cpu"):
         """
