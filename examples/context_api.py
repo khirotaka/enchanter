@@ -49,4 +49,3 @@ with tasks.ClassificationRunner(model, optimizer, nn.CrossEntropyLoss(), experim
                 test_out = runner.test_step(test_batch)["loss"]
                 runner.experiment.log_metric("test_loss", test_out)
 
-runner.save("checkpoint")
