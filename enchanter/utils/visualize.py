@@ -12,7 +12,7 @@ __all__ = ["with_netron"]
 def with_netron(
     model: torch.nn.Module,
     dummy: Tuple[torch.Tensor, ...],
-    backend: str = "torchscript",
+    backend: str = "onnx",
     open_browser: bool = True,
     port: int = 8080,
     host: str = "localhost",
@@ -32,7 +32,7 @@ def with_netron(
     Args:
         model: PyTorch model
         dummy: dummy input for generate graph
-        backend: specified graph format. [torchscript or onnx]. default torchscript.
+        backend: specified graph format. [torchscript or onnx]. default onnx.
         open_browser: if True, open browser.
         port: port number. default: 8080.
         host: hostname. default: localhost.
@@ -56,5 +56,5 @@ def with_netron(
         torch.onnx.export(model, dummy, buffer)
 
     netron.serve("{}.{}".format(model_name, extension), buffer.getvalue(), browse=open_browser, port=port, host=host)
-    sys.stdout.write("Press CTRL+C to quit\n")
+    sys.stdout.write("Press CTRL+C to quit.\n")
     netron.wait()
