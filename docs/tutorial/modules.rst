@@ -20,6 +20,7 @@ Basic Usage
     mnist
     sklearn_style
     scheduler_chaining
+    visualize_with_netron
 
 
 
