@@ -9,7 +9,6 @@
 
 import io
 import re
-import warnings
 import operator
 from abc import ABC
 from time import sleep
@@ -26,15 +25,12 @@ from torch.cuda import is_available, amp
 from torch.optim.optimizer import Optimizer
 from torch.utils.data import DataLoader, SubsetRandomSampler
 
-import tensorflow as tf
-import tensorflow_datasets as tfds
-
 from comet_ml import Experiment
 from comet_ml.api import APIExperiment
 from comet_ml.experiment import BaseExperiment
 
 from enchanter.engine.saving import RunnerIO
-from enchanter.engine.modules import send, get_dataset
+from enchanter.engine.modules import send, get_dataset, is_tfds, tfds_to_numpy
 from enchanter.callbacks import BaseLogger as BaseLogger
 from enchanter.callbacks import EarlyStopping as EarlyStopping
 
@@ -81,7 +77,7 @@ class BaseRunner(ABC, RunnerIO):
         self.scaler: Optional[amp.GradScaler] = None
 
         self.pbar: Union[tqdm, range] = range(self.configures["epochs"])
-        self._loaders: Dict[str, Union[DataLoader, tf.data.Dataset]] = {}
+        self._loaders: Dict[str, Union[DataLoader, Any]] = {}
         self._metrics: Dict = {}
         self.global_step: int = 0
 
@@ -244,8 +240,8 @@ class BaseRunner(ABC, RunnerIO):
         results = list()
         loader_size = len(loader)
 
-        if isinstance(loader, tf.data.Dataset):
-            loader = tfds.as_numpy(loader)
+        if is_tfds(loader):
+            loader = tfds_to_numpy(loader)
 
         self.model.train()
         with self.experiment.train():
@@ -290,8 +286,8 @@ class BaseRunner(ABC, RunnerIO):
         results = list()
         loader_size = len(loader)
 
-        if isinstance(loader, tf.data.Dataset):
-            loader = tfds.as_numpy(loader)
+        if is_tfds(loader):
+            loader = tfds_to_numpy(loader)
 
         self.model.eval()
         with self.experiment.validate():
@@ -333,8 +329,8 @@ class BaseRunner(ABC, RunnerIO):
         results = list()
         loader_size = len(loader)
 
-        if isinstance(loader, tf.data.Dataset):
-            loader = tfds.as_numpy(loader)
+        if is_tfds(loader):
+            loader = tfds_to_numpy(loader)
 
         self.model.eval()
         with self.experiment.test():
@@ -589,7 +585,7 @@ class BaseRunner(ABC, RunnerIO):
         """
         raise NotImplementedError
 
-    def add_loader(self, mode: str, loader: Union[DataLoader, tf.data.Dataset]):
+    def add_loader(self, mode: str, loader: Union[DataLoader, Any]):
         """
         A method to register a DataLoader to be used for training etc. in a runner.
 
@@ -606,13 +602,7 @@ class BaseRunner(ABC, RunnerIO):
         if mode not in ["train", "val", "test"]:
             raise KeyError("argument `mode` must be one of 'train', 'val', or 'test'.")
 
-        if isinstance(loader, tf.data.Dataset):
-            warnings.warn(
-                "TensorFlow Dataset detection. Experimental support at this stage.",
-                UserWarning,
-            )
-
-        elif isinstance(loader, DataLoader):
+        if is_tfds(loader) or isinstance(loader, DataLoader):
             pass
 
         else:
