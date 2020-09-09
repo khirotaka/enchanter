@@ -25,7 +25,7 @@ class CausalConv1d(nn.Conv1d):
             kernel_size: kernel size
             stride: stride
             dilation: rate of dilation
-            groups: the numer of gropus
+            groups: the number of groups
             bias: if true use bias (default: True)
 
         """
