@@ -1,5 +1,3 @@
-from typing import Union
-
 import torch
 import torch.nn as nn
 
@@ -12,7 +10,7 @@ class CausalConv1d(nn.Conv1d):
         self,
         in_channels: int,
         out_channels: int,
-        kernel_size: Union[int, tuple],
+        kernel_size: int,
         stride: int = 1,
         dilation: int = 1,
         groups: int = 1,
