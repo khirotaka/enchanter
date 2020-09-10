@@ -133,4 +133,3 @@ def negative_criterion_for_triplet_loss(anchor: torch.Tensor, positive: torch.Te
     """
     negative_loss = -torch.mean(F.logsigmoid(-torch.bmm(anchor, positive)))
     return negative_loss
-

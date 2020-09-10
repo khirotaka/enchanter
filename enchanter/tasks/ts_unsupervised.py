@@ -61,7 +61,9 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         for i in range(self.n_rand_samples):
             negative_data: torch.Tensor = generate_negative_input(
                 begin_neg_samples, len_pos_neg, batch_size, i, self.train_ds.tensors[0], samples
-            ).to(self.device)       # [batch_size, features, seq_len]
+            ).to(
+                self.device
+            )  # [batch_size, features, seq_len]
 
             negative_representation: torch.Tensor = self.model(negative_data).view(batch_size, representation_size, 1)
             negative_loss: torch.Tensor = negative_criterion_for_triplet_loss(
