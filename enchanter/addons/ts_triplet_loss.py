@@ -64,7 +64,12 @@ def generate_anchor_positive_input(
 
 
 def generate_negative_input(
-    begin_neg_samples, len_pos_neg, batch_size, idx: int, train: torch.Tensor, samples: torch.Tensor
+    begin_neg_samples: np.ndarray,
+    len_pos_neg: int,
+    batch_size: int,
+    idx: int,
+    train: torch.Tensor,
+    samples: torch.Tensor,
 ) -> torch.Tensor:
     """
 
@@ -77,6 +82,7 @@ def generate_negative_input(
         samples:
 
     Returns:
+        negative_input: (torch.Tensor) - [batch_size, features, len_pos_neg]
 
     """
     negative_data = torch.cat(
@@ -127,3 +133,4 @@ def negative_criterion_for_triplet_loss(anchor: torch.Tensor, positive: torch.Te
     """
     negative_loss = -torch.mean(F.logsigmoid(-torch.bmm(anchor, positive)))
     return negative_loss
+

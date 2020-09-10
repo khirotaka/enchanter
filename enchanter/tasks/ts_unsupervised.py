@@ -50,7 +50,7 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         train_size: int = len(self.train_ds)
         representation_size: int = anchor_representation.shape[2]
         multiplicative_ration: float = self.negative_penalty / self.n_rand_samples
-        batch_size = anchor_representation.shape[0]
+        batch_size: int = anchor_representation.shape[0]
         length: int = min(self.compared_len, self.train_ds.tensors[0].shape[2])
         samples: torch.Tensor = torch.tensor(
             np.random.choice(train_size, size=(self.n_rand_samples, batch_size)), dtype=torch.long
@@ -61,7 +61,7 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         for i in range(self.n_rand_samples):
             negative_data: torch.Tensor = generate_negative_input(
                 begin_neg_samples, len_pos_neg, batch_size, i, self.train_ds.tensors[0], samples
-            ).to(self.device)
+            ).to(self.device)       # [batch_size, features, seq_len]
 
             negative_representation: torch.Tensor = self.model(negative_data).view(batch_size, representation_size, 1)
             negative_loss: torch.Tensor = negative_criterion_for_triplet_loss(
