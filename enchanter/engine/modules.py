@@ -11,11 +11,12 @@ import warnings
 from typing import Union, Tuple, Any
 from os import environ as os_environ
 from random import seed as std_seed
+
 from numpy import ndarray
 from numpy.random import seed as np_seed
 import torch
 from torch.backends import cudnn
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, TensorDataset
 from torch.cuda import is_available as cuda_is_available
 
 try:
@@ -26,8 +27,6 @@ try:
 
 except ImportError:
     IS_TF_DS_AVAILABLE = False
-
-from torch.utils.data import TensorDataset
 
 
 __all__ = ["is_jupyter", "get_dataset", "fix_seed", "send", "is_tfds", "tfds_to_numpy"]
@@ -80,13 +79,14 @@ def get_dataset(x: Union[ndarray, torch.Tensor], y: Union[ndarray, torch.Tensor]
     return ds
 
 
-def send(batch: Tuple[Any, ...], device: torch.device) -> Tuple[Any, ...]:
+def send(batch: Tuple[Any, ...], device: torch.device, non_blocking: bool = True) -> Tuple[Any, ...]:
     """
     Send `variable` to `device`
 
     Args:
         batch: Tuple which contain variable
         device: torch.device
+        non_blocking: bool
 
     Returns:
         new tuple
@@ -95,7 +95,7 @@ def send(batch: Tuple[Any, ...], device: torch.device) -> Tuple[Any, ...]:
 
     def transfer(x):
         if isinstance(x, torch.Tensor):
-            return x.to(device)
+            return x.to(device, non_blocking=non_blocking)
         elif isinstance(x, ndarray):
             return torch.tensor(x, device=device)
         else:

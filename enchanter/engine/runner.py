@@ -8,6 +8,7 @@
 # ***************************************************
 
 import io
+import os
 import re
 import operator
 from abc import ABC
@@ -72,14 +73,15 @@ class BaseRunner(ABC, RunnerIO):
         self.scheduler: List = list()
         self.experiment: Union[BaseExperiment, BaseLogger] = NotImplemented
         self.early_stop: Optional[EarlyStopping] = None
-        self.configures: Dict[str, Any] = {"epochs": 0}
-        self.api_experiment: Optional[APIExperiment] = None
         self.scaler: Optional[amp.GradScaler] = None
+        self.api_experiment: Optional[APIExperiment] = None
 
-        self.pbar: Union[tqdm, range] = range(self.configures["epochs"])
-        self._loaders: Dict[str, Union[DataLoader, Any]] = {}
-        self._metrics: Dict = {}
         self.global_step: int = 0
+        self.non_blocking: bool = True
+        self.configures: Dict[str, Any] = {"epochs": 0}
+        self.pbar: Union[tqdm, range] = range(self.configures["epochs"])
+        self._metrics: Dict = dict()
+        self._loaders: Dict[str, Union[DataLoader, Any]] = dict()
 
     def backward(self, loss: Tensor) -> None:
         """
@@ -247,7 +249,7 @@ class BaseRunner(ABC, RunnerIO):
         with self.experiment.train():
             for step, batch in enumerate(loader):
                 self.optimizer.zero_grad()
-                batch = send(batch, self.device)
+                batch = send(batch, self.device, self.non_blocking)
                 # on_step_start()
                 self.global_step += 1
                 outputs = self.train_step(batch)
@@ -293,7 +295,7 @@ class BaseRunner(ABC, RunnerIO):
         with self.experiment.validate():
             with torch.no_grad():
                 for step, batch in enumerate(loader):
-                    batch = send(batch, self.device)
+                    batch = send(batch, self.device, self.non_blocking)
                     self.global_step += 1
                     # on_step_start()
                     outputs = self.val_step(batch)  # pylint: disable=E1111
@@ -336,7 +338,7 @@ class BaseRunner(ABC, RunnerIO):
         with self.experiment.test():
             with torch.no_grad():
                 for step, batch in enumerate(loader):
-                    batch = send(batch, self.device)
+                    batch = send(batch, self.device, self.non_blocking)
                     # on_step_start()
                     outputs = self.test_step(batch)  # pylint: disable=E1111
 
@@ -629,10 +631,10 @@ class BaseRunner(ABC, RunnerIO):
 
         """
         val_size: float = kwargs.get("val_size", 0.1)
-        num_workers = kwargs.get("num_workers", 0)
-        batch_size = kwargs.get("batch_size", 1)
-        pin_memory = kwargs.get("pin_memory", False)
-        verbose = kwargs.get("verbose", True)
+        num_workers: int = kwargs.get("num_workers", os.cpu_count())
+        batch_size: int = kwargs.get("batch_size", 1)
+        pin_memory: bool = kwargs.get("pin_memory", False)
+        verbose: bool = kwargs.get("verbose", True)
         checkpoint_path = kwargs.get("checkpoint_path", None)
         monitor = kwargs.get("monitor", None)
 

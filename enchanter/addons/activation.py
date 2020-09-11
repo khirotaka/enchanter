@@ -17,7 +17,9 @@ __all__ = ["Swish", "mish", "Mish", "FReLU1d", "FReLU2d"]
 
 class Swish(nn.Module):
     """
-    Swish活性化関数を適用します。
+
+    Apply Swish activate function.
+
     """
 
     def __init__(self, beta: bool = False):
@@ -29,7 +31,7 @@ class Swish(nn.Module):
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """
-        入力値に対してSwishを適用します。
+        Apply Swish function.
 
         Examples:
             >>> import torch
@@ -41,16 +43,17 @@ class Swish(nn.Module):
             inputs (torch.Tensor):
 
         Returns:
-            Swishを適用した結果
+            Result of applying Swish (torch.Tensor)
 
         """
         out = inputs * torch.sigmoid(self.weight * inputs)
         return out
 
 
+@torch.jit.script
 def mish(x: torch.Tensor) -> torch.Tensor:
     """
-    mish活性化関数を適用します。
+    Apply mish function.
 
     Examples:
         >>> import torch
@@ -58,10 +61,10 @@ def mish(x: torch.Tensor) -> torch.Tensor:
         >>> outouts = mish(inputs)
 
     Args:
-        x (torch.Tensor):
+        x (torch.Tensor): Input Data
 
     Returns:
-        mishを適用した結果 (torch.Tensor)
+        Result of applying mish (torch.Tensor)
 
     """
     return x * torch.tanh(nn.functional.softplus(x))
@@ -69,7 +72,7 @@ def mish(x: torch.Tensor) -> torch.Tensor:
 
 class Mish(nn.Module):
     """
-    Mish活性化関数を適用します。
+    Apply mish activate function.
 
     """
 
@@ -80,7 +83,7 @@ class Mish(nn.Module):
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """
-        入力に対して Mish を適用します。
+        Apply Mish to the input.
 
         Examples:
             >>> import torch
@@ -92,7 +95,7 @@ class Mish(nn.Module):
             inputs(torch.Tensor):
 
         Returns:
-            mishを適用した結果 (torch.Tensor)
+            Result of applying mish (torch.Tensor)
 
         """
         return inputs * self.tanh(self.softplus(inputs))
