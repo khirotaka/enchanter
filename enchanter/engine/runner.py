@@ -695,6 +695,17 @@ class BaseRunner(ABC, RunnerIO):
 
         self.model.train()
 
+    def quite(self) -> None:
+        """
+        Quit Runner.
+
+        When this method is executed, it sends an exit command to `comet.ml`.
+
+        """
+
+        if hasattr(self.experiment, "end"):
+            self.experiment.end()
+
     def __enter__(self):
         return self
 
@@ -706,3 +717,4 @@ class BaseRunner(ABC, RunnerIO):
             step=self.global_step,
             file_name="context_api/enchanter_checkpoints_latest.pth",
         )
+        self.quite()
