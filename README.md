@@ -34,11 +34,11 @@ pip install git+https://github.com/khirotaka/enchanter.git@develop
 *   [Tutorial](https://enchanter.readthedocs.io/ja/latest/tutorial/modules.html)
 
 ## Getting Started
-Try your first Enchanter Program. To train a neural network written in PyTorch in Enchanter, use the `Runner`.  
-There are 2 ways to define a `runner`:
+Try your first Enchanter Program. To train a neural network written in PyTorch on Enchanter, use the `Runner`.  
+There are 2 ways to define a `Runner`:
 
-1.  To use a `runner` already implemented under `enchanter.tasks`
-2.  To define a custom `runner` that inherit `enchanter.engine.BaseRunner`.
+1.  To use a `Runner` already implemented under `enchanter.tasks`
+2.  To define a custom `Runner` that inherit `enchanter.engine.BaseRunner`.
 
 Let's see how to use the `enchanter.tasks.ClassificationRunner`, which is the easiest way.
 
