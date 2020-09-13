@@ -34,7 +34,13 @@ pip install git+https://github.com/khirotaka/enchanter.git@develop
 *   [Tutorial](https://enchanter.readthedocs.io/ja/latest/tutorial/modules.html)
 
 ## Getting Started
-Try your first Enchanter Program
+Try your first Enchanter Program. To train a neural network written in PyTorch in Enchanter, use the `Runner`.  
+There are 2 ways to define a `runner`:
+
+1.  To use a `runner` already implemented under `enchanter.tasks`
+2.  To define a custom `runner` that inherit `enchanter.engine.BaseRunner`.
+
+Let's see how to use the `enchanter.tasks.ClassificationRunner`, which is the easiest way.
 
 ### Training Neural Network
 
@@ -57,6 +63,9 @@ runner.add_loader("train", train_loader)
 runner.train_config(epochs=10)
 runner.run()
 ```
+
+Register a `torch.utils.data.DataLoader` with the `Runner` by using `.add_loader()`.  
+Set up the number of epochs using `.train_config()`, and execute `Runner` with `.run()`. 
 
 ### Hyper parameter searching using Comet.ml
 
