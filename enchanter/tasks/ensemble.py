@@ -15,9 +15,7 @@ from torch import as_tensor, device, Tensor
 from torch.cuda import is_available
 from enchanter.engine.runner import BaseRunner
 
-__all__ = [
-    "BaseEnsembleEstimator", "SoftEnsemble", "HardEnsemble"
-]
+__all__ = ["BaseEnsembleEstimator", "SoftEnsemble", "HardEnsemble"]
 
 
 class BaseEnsembleEstimator(BaseEstimator):
@@ -65,6 +63,7 @@ class HardEnsemble(BaseEnsembleEstimator):
     """
     多数決をとるアンサンブル
     """
+
     def __init__(self, runners: List[BaseRunner]) -> None:
         super(HardEnsemble, self).__init__(runners, mode="classification")
 

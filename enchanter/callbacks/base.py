@@ -11,9 +11,7 @@ from abc import ABC
 from typing import Any
 
 
-__all__ = [
-    "Callback"
-]
+__all__ = ["Callback"]
 
 
 class Callback(ABC):

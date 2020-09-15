@@ -7,24 +7,29 @@
 #
 # ***************************************************
 
+import warnings
 from typing import Union, Tuple, Any
 from os import environ as os_environ
 from random import seed as std_seed
+
 from numpy import ndarray
 from numpy.random import seed as np_seed
+import torch
 from torch.backends import cudnn
-from torch.utils.data import Dataset
-from torch import device as torch_device
-from torch import manual_seed, Tensor, as_tensor
+from torch.utils.data import Dataset, TensorDataset
 from torch.cuda import is_available as cuda_is_available
 
+try:
+    import tensorflow as tf
+    import tensorflow_datasets as tfds
 
-from torch.utils.data import TensorDataset
+    IS_TF_DS_AVAILABLE = True
+
+except ImportError:
+    IS_TF_DS_AVAILABLE = False
 
 
-__all__ = [
-    "is_jupyter", "get_dataset", "fix_seed", "send"
-]
+__all__ = ["is_jupyter", "get_dataset", "fix_seed", "send", "is_tfds", "tfds_to_numpy"]
 
 
 def is_jupyter() -> bool:
@@ -40,13 +45,13 @@ def is_jupyter() -> bool:
     except ImportError:
         return False
 
-    env = get_ipython().__class__.__name__      # noqa
+    env = get_ipython().__class__.__name__  # noqa
     if env == "TerminalInteractiveShell":
         return False
     return True
 
 
-def get_dataset(x: Union[ndarray, Tensor], y: Union[ndarray, Tensor] = None) -> Dataset:
+def get_dataset(x: Union[ndarray, torch.Tensor], y: Union[ndarray, torch.Tensor] = None) -> Dataset:
     """
     入力された値をもとに `torch.utils.data.TensorDataset` を生成します。
 
@@ -63,10 +68,10 @@ def get_dataset(x: Union[ndarray, Tensor], y: Union[ndarray, Tensor] = None) -> 
     Returns:
         `torch.utils.data.TensorDataset`
     """
-    x = as_tensor(x)
+    x = torch.as_tensor(x)
 
     if y is not None:
-        y = as_tensor(y)
+        y = torch.as_tensor(y)
         ds = TensorDataset(x, y)
     else:
         ds = TensorDataset(x)
@@ -74,20 +79,29 @@ def get_dataset(x: Union[ndarray, Tensor], y: Union[ndarray, Tensor] = None) -> 
     return ds
 
 
-def send(batch: Tuple[Any, ...], device: torch_device) -> Tuple[Any, ...]:
+def send(batch: Tuple[Any, ...], device: torch.device, non_blocking: bool = True) -> Tuple[Any, ...]:
     """
     Send `variable` to `device`
 
     Args:
         batch: Tuple which contain variable
         device: torch.device
+        non_blocking: bool
 
     Returns:
         new tuple
 
     """
 
-    return tuple(map(lambda x: x.to(device) if isinstance(x, Tensor) else x, batch))
+    def transfer(x):
+        if isinstance(x, torch.Tensor):
+            return x.to(device, non_blocking=non_blocking)
+        elif isinstance(x, ndarray):
+            return torch.tensor(x, device=device)
+        else:
+            return x
+
+    return tuple(map(transfer, batch))
 
 
 def fix_seed(seed: int, deterministic: bool = False, benchmark: bool = False) -> None:
@@ -112,7 +126,7 @@ def fix_seed(seed: int, deterministic: bool = False, benchmark: bool = False) ->
     std_seed(seed)
     os_environ["PYTHONHASHSEED"] = str(seed)
     np_seed(seed)
-    manual_seed(seed)
+    torch.manual_seed(seed)
 
     if cuda_is_available():
         if deterministic:
@@ -121,3 +135,23 @@ def fix_seed(seed: int, deterministic: bool = False, benchmark: bool = False) ->
             cudnn.benchmark = False
 
 
+def is_tfds(loader: Any) -> bool:
+    if IS_TF_DS_AVAILABLE:
+        if isinstance(loader, tf.data.Dataset):
+            warnings.warn(
+                "TensorFlow Dataset detection. Experimental support at this stage.",
+                UserWarning,
+            )
+            return True
+
+        else:
+            return False
+    else:
+        return False
+
+
+def tfds_to_numpy(loader):
+    if IS_TF_DS_AVAILABLE:
+        return tfds.as_numpy(loader)
+    else:
+        raise RuntimeError

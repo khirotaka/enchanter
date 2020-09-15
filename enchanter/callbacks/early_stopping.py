@@ -12,18 +12,16 @@ from numpy import greater, less, Inf
 from .base import Callback
 
 
-__all__ = [
-    "EarlyStopping"
-]
+__all__ = ["EarlyStopping"]
 
 
 class EarlyStopping(Callback):
     def __init__(
-            self,
-            monitor: str = "validate_avg_loss",
-            min_delta=0.0,
-            patience: int = 0,
-            mode: str = "auto"
+        self,
+        monitor: str = "validate_avg_loss",
+        min_delta=0.0,
+        patience: int = 0,
+        mode: str = "auto",
     ) -> None:
         Callback.__init__(self)
         self.monitor: Any = monitor
@@ -35,7 +33,7 @@ class EarlyStopping(Callback):
         mode_dict = {
             "min": less,
             "max": greater,
-            "auto": greater if "acc" in self.monitor else less
+            "auto": greater if "acc" in self.monitor else less,
         }
         if mode not in mode_dict:
             mode = "auto"

@@ -28,14 +28,20 @@ jobs:
       - name: Add path for Poetry
         run: echo "::add-path::$HOME/.poetry/bin"
       - name: Install Dependencies
-        run: poetry install --no-interaction
+        run: |
+          poetry run pip install -U pip
+          poetry install --no-interaction
 
       - name: Lint with flake8
         run: |
           # Pythonの構文エラーもしくは未定義の名前があればビルドを停止
           poetry run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zeroはすべてのエラーを警告として扱う。 GitHubのエディタの幅は127文字
-          poetry run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          # exit-zeroはすべてのエラーを警告として扱う。
+          poetry run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+
+      - name: Check code style with Black
+        run : poetry run black --check --diff .
+
       - name: Test with pytest
         env:
            COMET_API_KEY: ${{ secrets.COMET_API_KEY }}
