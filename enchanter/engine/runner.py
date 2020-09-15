@@ -715,6 +715,6 @@ class BaseRunner(ABC, RunnerIO):
         self.experiment.log_asset_data(
             buffer.getvalue(),
             step=self.global_step,
-            file_name="context_api/enchanter_checkpoints_latest.pth",
+            name="context_api/enchanter_checkpoints_latest.pth",
         )
         self.quite()
