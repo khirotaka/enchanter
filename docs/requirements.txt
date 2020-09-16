@@ -1,4 +1,4 @@
-sphinx-material>=0.0.27
+sphinx-material>=0.0.32
 
 sphinx-copybutton>=0.2.11
 sphinx-autoapi<1.6.0
