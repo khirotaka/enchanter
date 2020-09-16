@@ -7,21 +7,29 @@
 #
 # ***************************************************
 
+import warnings
 from typing import Union, Tuple, Any
 from os import environ as os_environ
 from random import seed as std_seed
+
 from numpy import ndarray
 from numpy.random import seed as np_seed
 import torch
 from torch.backends import cudnn
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, TensorDataset
 from torch.cuda import is_available as cuda_is_available
 
+try:
+    import tensorflow as tf
+    import tensorflow_datasets as tfds
 
-from torch.utils.data import TensorDataset
+    IS_TF_DS_AVAILABLE = True
+
+except ImportError:
+    IS_TF_DS_AVAILABLE = False
 
 
-__all__ = ["is_jupyter", "get_dataset", "fix_seed", "send"]
+__all__ = ["is_jupyter", "get_dataset", "fix_seed", "send", "is_tfds", "tfds_to_numpy"]
 
 
 def is_jupyter() -> bool:
@@ -71,13 +79,14 @@ def get_dataset(x: Union[ndarray, torch.Tensor], y: Union[ndarray, torch.Tensor]
     return ds
 
 
-def send(batch: Tuple[Any, ...], device: torch.device) -> Tuple[Any, ...]:
+def send(batch: Tuple[Any, ...], device: torch.device, non_blocking: bool = True) -> Tuple[Any, ...]:
     """
     Send `variable` to `device`
 
     Args:
         batch: Tuple which contain variable
         device: torch.device
+        non_blocking: bool
 
     Returns:
         new tuple
@@ -86,7 +95,7 @@ def send(batch: Tuple[Any, ...], device: torch.device) -> Tuple[Any, ...]:
 
     def transfer(x):
         if isinstance(x, torch.Tensor):
-            return x.to(device)
+            return x.to(device, non_blocking=non_blocking)
         elif isinstance(x, ndarray):
             return torch.tensor(x, device=device)
         else:
@@ -124,3 +133,25 @@ def fix_seed(seed: int, deterministic: bool = False, benchmark: bool = False) ->
             cudnn.deterministic = True
         if benchmark:
             cudnn.benchmark = False
+
+
+def is_tfds(loader: Any) -> bool:
+    if IS_TF_DS_AVAILABLE:
+        if isinstance(loader, tf.data.Dataset):
+            warnings.warn(
+                "TensorFlow Dataset detection. Experimental support at this stage.",
+                UserWarning,
+            )
+            return True
+
+        else:
+            return False
+    else:
+        return False
+
+
+def tfds_to_numpy(loader):
+    if IS_TF_DS_AVAILABLE:
+        return tfds.as_numpy(loader)
+    else:
+        raise RuntimeError
