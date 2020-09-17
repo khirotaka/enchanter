@@ -4,9 +4,8 @@ from time import ctime
 from pathlib import Path
 from copy import deepcopy
 
-from torch.tensor import Tensor
-from torch.nn import DataParallel
-from torch.serialization import save, load
+import torch
+import torch.nn as nn
 
 
 __all__ = ["RunnerIO"]
@@ -14,7 +13,7 @@ __all__ = ["RunnerIO"]
 
 class RunnerIO:
     """
-    PyTorch モデルの重み、Optimizerの状態といったパラメータの読み込み・保存を担当するクラス。
+    A class responsible for loading and saving parameters such as PyTorch model weights and Optimizer state.
 
     """
 
@@ -24,17 +23,25 @@ class RunnerIO:
         self.experiment = NotImplemented
         self._checkpoint_path = NotImplemented
 
-    def save_checkpoint(self) -> Dict[str, Union[Dict[str, Tensor], dict]]:
+    def model_name(self) -> str:
+        if isinstance(self.model, nn.DataParallel) or isinstance(self.model, nn.parallel.DistributedDataParallel):
+            model_name = self.model.module.__class__.__name__
+        else:
+            model_name = self.model.__class__.__name__
+
+        return model_name
+
+    def save_checkpoint(self) -> Dict[str, Union[Dict[str, torch.Tensor], dict]]:
         """
-        ニューラルネットの重みと、 Optimizerの状態を辞書として出力するメソッドです。
+        A method to output model weights and Optimizer state as a dictionary.
 
         Returns:
-            以下のキーと値を持つ辞書を返します。
-                - "model_state_dict": ニューラルネットの重み
-                - "optimizer_state_dict": Optimizer の状態
+            Returns a dictionary with the following keys and values.
+                - "model_state_dict": model weights
+                - "optimizer_state_dict": Optimizer state
 
         """
-        if isinstance(self.model, DataParallel):
+        if isinstance(self.model, nn.DataParallel) or isinstance(self.model, nn.parallel.DistributedDataParallel):
             model = self.model.module.state_dict()
         else:
             model = self.model.state_dict()
@@ -47,13 +54,14 @@ class RunnerIO:
 
     def load_checkpoint(self, checkpoint: Dict[str, OrderedDict]):
         """
-        'model_state_dict', 'optimizer_state_dict' を持つ辞書を受け取り、それらを元に モデル と Optimizer の状態を復元します。
+        Takes a dictionary with keys 'model_state_dict' and 'optimizer_state_dict'
+        and uses them to restore the state of the model and the Optimizer.
 
         Args:
             checkpoint:
-                以下のキーと値を持つ辞書。
-                    - "model_state_dict": ニューラルネットの重み
-                    - "optimizer_state_dict": Optimizer の状態
+                Takes a dictionary with the following keys and values.
+                    - "model_state_dict": model weights
+                    - "optimizer_state_dict": Optimizer state
         """
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
@@ -92,22 +100,21 @@ class RunnerIO:
 
         filename = "enchanter_checkpoints_epoch_{}.pth".format(epoch_str)
         path = directory_path / filename
-        save(checkpoint, path)
+        torch.save(checkpoint, path)
 
         if hasattr(self.experiment, "log_model"):
-            model_name = self.model.__class__.__name__
-            self.experiment.log_model(model_name, str(path))
+            self.experiment.log_model(self.model_name(), str(path))
 
     def load(self, filename: str, map_location: str = "cpu"):
         """
-        指定したファイルを元にモデルとOptimizerの状態を復元します。
+        Restores the model and Optimizer state based on the specified file.
 
         Args:
             filename (str):
-            map_location (str):
+            map_location (str): default: 'cpu'
 
         """
-        checkpoint = load(filename, map_location=map_location)
+        checkpoint = torch.load(filename, map_location=map_location)
         self.load_checkpoint(checkpoint)
 
         return self
