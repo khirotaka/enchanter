@@ -21,7 +21,6 @@ class RunnerIO:
         self.model = NotImplemented
         self.optimizer = NotImplemented
         self.experiment = NotImplemented
-        self._checkpoint_path = NotImplemented
 
     def model_name(self) -> str:
         if isinstance(self.model, nn.DataParallel) or isinstance(self.model, nn.parallel.DistributedDataParallel):
@@ -67,7 +66,7 @@ class RunnerIO:
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         return self
 
-    def save(self, directory: Optional[str] = None, epoch: Optional[int] = None):
+    def save(self, directory: Optional[str] = None, epoch: Optional[int] = None, filename: Optional[str] = None):
 
         """
         Save the model and the Optimizer state file in the specified directory.
@@ -78,32 +77,31 @@ class RunnerIO:
         Args:
             directory (Optional[str]):
             epoch (Optional[int]):
+            filename (Optional[str]):
 
         """
         if directory is None:
-            if self._checkpoint_path is not None:
-                directory_name: str = self._checkpoint_path
+            if filename is None:
+                raise ValueError("The argument `directory` or `filename` must be specified.")
             else:
-                raise ValueError("The argument `directory` must be specified.")
+                path = filename
         else:
-            directory_name = directory
+            directory_path = Path(directory)
+            if not directory_path.exists():
+                directory_path.mkdir(parents=True)
 
-        directory_path = Path(directory_name)
-        if not directory_path.exists():
-            directory_path.mkdir(parents=True)
+            if epoch is None:
+                epoch_str = ctime().replace(" ", "_")
+            else:
+                epoch_str = str(epoch)
+
+            if not filename:
+                filename = "enchanter_checkpoints_epoch_{}.pth".format(epoch_str)
+
+            path = str(directory_path / filename)
+
         checkpoint = self.save_checkpoint()
-
-        if epoch is None:
-            epoch_str = ctime().replace(" ", "_")
-        else:
-            epoch_str = str(epoch)
-
-        filename = "enchanter_checkpoints_epoch_{}.pth".format(epoch_str)
-        path = directory_path / filename
         torch.save(checkpoint, path)
-
-        if hasattr(self.experiment, "log_model"):
-            self.experiment.log_model(self.model_name(), str(path))
 
     def load(self, filename: str, map_location: str = "cpu"):
         """
