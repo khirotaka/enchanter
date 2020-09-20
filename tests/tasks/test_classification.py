@@ -31,7 +31,8 @@ def test_classification_1():
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        TensorBoardLogger("./logs")
+        TensorBoardLogger(),
+        scheduler=[optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)]
     )
     runner.add_loader("train", train_loader).add_loader("val", val_loader).add_loader("test", test_loader)
     runner.train_config(epochs=1)
@@ -39,8 +40,9 @@ def test_classification_1():
     try:
         runner.run(verbose=True)
         is_pass = True
-    except Exception:
+    except Exception as e:
         is_pass = False
+        print(e)
 
     assert is_pass is True
 
@@ -50,7 +52,7 @@ def test_classification_2():
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        TensorBoardLogger("./logs")
+        TensorBoardLogger()
     )
     runner.train_config(epochs=1)
 
@@ -69,7 +71,7 @@ def test_classification_3():
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        TensorBoardLogger("./logs")
+        TensorBoardLogger()
     )
     try:
         runner.fit(x.astype(np.float32), y.astype(np.int64))

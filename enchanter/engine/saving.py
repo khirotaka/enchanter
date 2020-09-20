@@ -103,6 +103,9 @@ class RunnerIO:
         checkpoint = self.save_checkpoint()
         torch.save(checkpoint, path)
 
+        model_name = self.model_name()
+        self.experiment.log_model(model_name, str(path))
+
     def load(self, filename: str, map_location: str = "cpu"):
         """
         Restores the model and Optimizer state based on the specified file.
