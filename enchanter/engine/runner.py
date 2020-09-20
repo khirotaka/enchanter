@@ -703,8 +703,7 @@ class BaseRunner(ABC, RunnerIO):
 
         """
 
-        if hasattr(self.experiment, "end"):
-            self.experiment.end()
+        self.experiment.end()
 
     def __enter__(self):
         return self

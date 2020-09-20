@@ -9,7 +9,7 @@
 
 from typing import Any, Optional, Dict, Union, Iterator
 from contextlib import contextmanager
-from numpy import ndarray
+import numpy as np
 from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
 
@@ -56,7 +56,7 @@ class BaseLogger:
         epoch: Optional[int] = None,
         include_context: bool = True,
     ) -> None:
-        pass
+        raise NotImplementedError
 
     def log_metrics(
         self,
@@ -65,22 +65,62 @@ class BaseLogger:
         step: Optional[int] = None,
         epoch: Optional[int] = None,
     ) -> None:
-        pass
+        raise NotImplementedError
 
     def log_parameter(self, name: str, value: Any, step: Optional[int] = None) -> None:
-        pass
+        raise NotImplementedError
 
     def log_parameters(self, dic: Dict, prefix: Optional[str] = None, step: Optional[int] = None) -> None:
-        pass
+        raise NotImplementedError
 
     def set_model_graph(self, *args: Any, **kwargs: Any) -> None:
         pass
 
+    def end(self):
+        raise NotImplementedError
+
+    def log_model(self, name, file_or_folder, file_name=None, overwrite=False, metadata=None, copy_to_tmp=True):
+        pass
+
+    def log_asset(self, file_data, file_name=None, overwrite=False, copy_to_tmp=True, step=None, metadata=None):
+        pass
+
+    def log_asset_data(self, data, name=None, overwrite=False, step=None, metadata=None, file_name=None):
+        pass
+
+    def log_asset_folder(self, folder, step=None, log_file_name=False, recursive=False):
+        pass
+
+
+def _value2str(value) -> str:
+    if isinstance(value, Tensor):
+        value = value.cpu().item()
+    elif isinstance(value, np.ndarray):
+        value = value.item()
+
+    return str(value)
+
 
 class TensorBoardLogger(BaseLogger):
-    def __init__(self, log_dir, *args, **kwargs):
+    """
+    TenorBoardLogger is a module that supports the minimum logging in the environment where comet.ml cannot be used.
+
+    Examples:
+        >>> from enchanter.tasks import ClassificationRunner
+        >>> model, optimizer, criterion = ...
+        >>> runner = ClassificationRunner(
+        >>>     model, optimizer, criterion, experiment=TensorBoardLogger()
+        >>> )
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        """
+        See the initializer argument for `torch.utils.tensorboard.writer.SummaryWriter
+        <https://pytorch.org/docs/master/tensorboard.html>`_ .
+        """
         super(TensorBoardLogger, self).__init__()
-        self.writer: SummaryWriter = SummaryWriter(log_dir, *args, **kwargs)
+        self.writer: SummaryWriter = SummaryWriter(*args, **kwargs)
 
     def log_metric(
         self,
@@ -90,7 +130,37 @@ class TensorBoardLogger(BaseLogger):
         epoch: Optional[int] = None,
         include_context: bool = True,
     ) -> None:
-        self.writer.add_scalar("{}/{}".format(self.context, name), value)
+        """
+        Logs a metric.
+
+        Args:
+            name: name of metric
+            value: value
+            step: Used as the X axis when plotting on TensorBoard.
+            epoch: Used as the X axis when plotting on TensorBoard.
+            include_context:
+
+        Returns:
+            None
+
+        """
+        if step is not None:
+            tmp = step
+        else:
+            if epoch is not None:
+                tmp = epoch
+            else:
+                tmp = 0
+
+        if step is not None and epoch is None:
+            tmp = step
+        elif step is None and epoch is not None:
+            tmp = epoch
+
+        if isinstance(value, list):
+            value = np.array(value)
+
+        self.writer.add_scalar("{}/{}".format(self.context, name), value, global_step=tmp)
 
     def log_metrics(
         self,
@@ -99,18 +169,60 @@ class TensorBoardLogger(BaseLogger):
         step: Optional[int] = None,
         epoch: Optional[int] = None,
     ) -> None:
-        for k, v in dic.items():
-            self.writer.add_scalar(k, v)
+        """
+        Logs a key, value dictionary of metrics.
 
-    def log_parameter(self, name: str, value: Any, step: Optional[int] = None) -> None:
-        if (
-            isinstance(value, Tensor)
-            or isinstance(value, ndarray)
-            or isinstance(value, float)
-            or isinstance(value, int)
-        ):
-            self.writer.add_scalar("{}/{}/{}".format(self.context, "params", name), value, step)
+        See Also:
+            log_metric
+
+        """
+        for k, v in dic.items():
+            if prefix:
+                k = "{}_{}".format(prefix, k)
+            self.log_metric(name=k, value=v, step=step, epoch=epoch)
+
+    def log_parameter(self, name: Optional[str], value: Any, step: Optional[int] = None) -> None:
+        """
+        Logs a single hyper-parameter.
+
+        Args:
+            name: name of hyper-parameter
+            value: value
+            step: used as the X-axis when plotting on TensorBoard.
+
+        Returns:
+
+        """
+        value = _value2str(value)
+        if self.context:
+            prefix = self.context
+        else:
+            prefix = "Hyperparameters"
+
+        if name:
+            table = "|key|value|\n|-|-|\n|{}|{}|  \n".format(name, value)
+        else:
+            table = value
+
+        self.writer.add_text("{}/{}".format(prefix, name), table, global_step=step)
 
     def log_parameters(self, dic: Dict, prefix: Optional[str] = None, step: Optional[int] = None) -> Any:
+        """
+        Logs a key, value dictionary of hyper-parameters.
+
+        See Also:
+            log_peramter
+
+        """
+        table = "|key|value|\n|-|-|\n"
         for k, v in dic.items():
-            self.log_parameter(k, v, step)
+            table += "|{}|{}|  \n".format(k, v)
+
+        self.log_parameter(None, table, step)
+
+    def end(self):
+        """
+        Use to indicate that the experiment is complete.
+
+        """
+        self.writer.close()
