@@ -1,72 +1,49 @@
-from typing import Callable
-
 import torch
 import torch.nn as nn
-from torch.tensor import Tensor
-
-from enchanter.utils.backend import slice_axis
 
 
 __all__ = ["CausalConv1d"]
 
 
-class CausalConv1d(nn.Module):
+class CausalConv1d(nn.Conv1d):
     def __init__(
         self,
         in_channels: int,
         out_channels: int,
         kernel_size: int,
+        stride: int = 1,
         dilation: int = 1,
-        activation: Callable[[Tensor], Tensor] = torch.relu,
-        **kwargs,
+        groups: int = 1,
+        bias: bool = True,
     ) -> None:
         """
-        Causal Conv 1d
-
-        Warnings:
-            `torch.jit` を用いたJust-In-Time Compile には現在対応していません。
+        Causal Conv1d
 
         Args:
-            in_channels: 入力チャンネル数
-            out_channels: 出力チャンネル数
-            kernel_size: カーネルサイズ
-            dilation: dilation
-            activation: 活性化関数
-            **kwargs:
+            in_channels: the number of input channels
+            out_channels: the number of output channels
+            kernel_size: kernel size
+            stride: stride
+            dilation: rate of dilation
+            groups: the number of groups
+            bias: if true use bias (default: True)
 
         """
-        super(CausalConv1d, self).__init__()
-        self.dilation: int = dilation
-        self.kernel_size: int = kernel_size
-        self.padding: int = dilation * (kernel_size - 1)
-        self.activation: Callable[[Tensor], Tensor] = activation
-
-        self.conv1d = nn.Conv1d(
-            in_channels,
-            out_channels,
-            kernel_size,
-            dilation=dilation,
-            padding=self.padding,
-            **kwargs,
+        super(CausalConv1d, self).__init__(
+            in_channels, out_channels, kernel_size, stride, padding=0, dilation=dilation, groups=groups, bias=bias
         )
+        self.left_padding: int = (kernel_size - 1) * dilation
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, inputs) -> torch.Tensor:
         """
-        順伝搬処理
-
+        Forward pass
 
         Args:
-            x: [N, C, L] の３次元配列
+            inputs: [N, in_channels, L]
 
         Returns:
-            CausalConv1dを適用した結果 [N, C, L]
+            outputs: [N, out_channels, L]
 
         """
-        out = self.conv1d(x)
-        if self.activation is not None:
-            out = self.activation(out)
-
-        if self.kernel_size > 0:
-            out = slice_axis(out, axis=2, begin=0, end=-self.padding)
-
-        return out
+        inputs = nn.functional.pad(inputs, [self.left_padding, 0])
+        return super(CausalConv1d, self).forward(inputs)

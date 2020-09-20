@@ -7,6 +7,8 @@
 #
 # ***************************************************
 
+import io
+import os
 import re
 import operator
 from abc import ABC
@@ -29,7 +31,7 @@ from comet_ml.api import APIExperiment
 from comet_ml.experiment import BaseExperiment
 
 from enchanter.engine.saving import RunnerIO
-from enchanter.engine.modules import send, get_dataset
+from enchanter.engine.modules import send, get_dataset, is_tfds, tfds_to_numpy
 from enchanter.callbacks import BaseLogger as BaseLogger
 from enchanter.callbacks import EarlyStopping as EarlyStopping
 
@@ -71,14 +73,15 @@ class BaseRunner(ABC, RunnerIO):
         self.scheduler: List = list()
         self.experiment: Union[BaseExperiment, BaseLogger] = NotImplemented
         self.early_stop: Optional[EarlyStopping] = None
-        self.configures: Dict[str, Any] = {"epochs": 0}
-        self.api_experiment: Optional[APIExperiment] = None
         self.scaler: Optional[amp.GradScaler] = None
+        self.api_experiment: Optional[APIExperiment] = None
 
-        self.pbar: Union[tqdm, range] = range(self.configures["epochs"])
-        self._loaders: Dict[str, DataLoader] = {}
-        self._metrics: Dict = {}
         self.global_step: int = 0
+        self.non_blocking: bool = True
+        self.configures: Dict[str, Any] = {"epochs": 0}
+        self.pbar: Union[tqdm, range] = range(self.configures["epochs"])
+        self._metrics: Dict = dict()
+        self._loaders: Dict[str, Union[DataLoader, Any]] = dict()
 
     def backward(self, loss: Tensor) -> None:
         """
@@ -239,11 +242,14 @@ class BaseRunner(ABC, RunnerIO):
         results = list()
         loader_size = len(loader)
 
+        if is_tfds(loader):
+            loader = tfds_to_numpy(loader)
+
         self.model.train()
         with self.experiment.train():
             for step, batch in enumerate(loader):
                 self.optimizer.zero_grad()
-                batch = send(batch, self.device)
+                batch = send(batch, self.device, self.non_blocking)
                 # on_step_start()
                 self.global_step += 1
                 outputs = self.train_step(batch)
@@ -282,11 +288,14 @@ class BaseRunner(ABC, RunnerIO):
         results = list()
         loader_size = len(loader)
 
+        if is_tfds(loader):
+            loader = tfds_to_numpy(loader)
+
         self.model.eval()
         with self.experiment.validate():
             with torch.no_grad():
                 for step, batch in enumerate(loader):
-                    batch = send(batch, self.device)
+                    batch = send(batch, self.device, self.non_blocking)
                     self.global_step += 1
                     # on_step_start()
                     outputs = self.val_step(batch)  # pylint: disable=E1111
@@ -322,17 +331,21 @@ class BaseRunner(ABC, RunnerIO):
         results = list()
         loader_size = len(loader)
 
+        if is_tfds(loader):
+            loader = tfds_to_numpy(loader)
+
         self.model.eval()
         with self.experiment.test():
             with torch.no_grad():
                 for step, batch in enumerate(loader):
-                    batch = send(batch, self.device)
+                    batch = send(batch, self.device, self.non_blocking)
                     # on_step_start()
                     outputs = self.test_step(batch)  # pylint: disable=E1111
 
                     per = "{:1.0%}".format(step / loader_size)
                     if hasattr(self.pbar, "set_postfix"):
                         self.pbar.set_postfix(OrderedDict(test_batch=per), refresh=True)  # type: ignore
+
                         self.pbar.update(1)  # type: ignore
 
                     outputs = {
@@ -350,7 +363,12 @@ class BaseRunner(ABC, RunnerIO):
                     self._metrics.update(dic)
                     self.experiment.log_metrics(dic)
 
-    def train_config(self, epochs: int, checkpoint_path: Optional[str] = None, monitor: Optional[str] = None):
+    def train_config(
+        self,
+        epochs: int,
+        checkpoint_path: Optional[str] = None,
+        monitor: Optional[str] = None,
+    ):
         """
         This method is used to specify epochs and so on when you execute using the .run() method.
 
@@ -569,7 +587,7 @@ class BaseRunner(ABC, RunnerIO):
         """
         raise NotImplementedError
 
-    def add_loader(self, mode: str, loader: DataLoader):
+    def add_loader(self, mode: str, loader: Union[DataLoader, Any]):
         """
         A method to register a DataLoader to be used for training etc. in a runner.
 
@@ -586,7 +604,10 @@ class BaseRunner(ABC, RunnerIO):
         if mode not in ["train", "val", "test"]:
             raise KeyError("argument `mode` must be one of 'train', 'val', or 'test'.")
 
-        if not isinstance(loader, DataLoader):
+        if is_tfds(loader) or isinstance(loader, DataLoader):
+            pass
+
+        else:
             raise TypeError("The argument `loader` must be an instance of `torch.utils.data.DataLoader`.")
 
         self._loaders[mode] = loader
@@ -610,10 +631,10 @@ class BaseRunner(ABC, RunnerIO):
 
         """
         val_size: float = kwargs.get("val_size", 0.1)
-        num_workers = kwargs.get("num_workers", 0)
-        batch_size = kwargs.get("batch_size", 1)
-        pin_memory = kwargs.get("pin_memory", False)
-        verbose = kwargs.get("verbose", True)
+        num_workers: int = kwargs.get("num_workers", os.cpu_count())
+        batch_size: int = kwargs.get("batch_size", 1)
+        pin_memory: bool = kwargs.get("pin_memory", False)
+        verbose: bool = kwargs.get("verbose", True)
         checkpoint_path = kwargs.get("checkpoint_path", None)
         monitor = kwargs.get("monitor", None)
 
@@ -673,3 +694,27 @@ class BaseRunner(ABC, RunnerIO):
             param.requires_grad = True
 
         self.model.train()
+
+    def quite(self) -> None:
+        """
+        Quit Runner.
+
+        When this method is executed, it sends an exit command to `comet.ml`.
+
+        """
+
+        if hasattr(self.experiment, "end"):
+            self.experiment.end()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        buffer = io.BytesIO()
+        torch.save(self.save_checkpoint(), buffer)
+        self.experiment.log_asset_data(
+            buffer.getvalue(),
+            step=self.global_step,
+            name="context_api/enchanter_checkpoints_latest.pth",
+        )
+        self.quite()

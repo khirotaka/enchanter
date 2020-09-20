@@ -1,4 +1,4 @@
-:tocdepth: 3
+:tocdepth: 2
 
 enchanter.utils
 =======================
@@ -7,16 +7,26 @@ enchanter.utils
 enchanter.utils.comet
 ----------------------------
 
-.. automodule:: enchanter.utils.comet
-   :members:
-   :undoc-members:
-   :show-inheritance:
+..  automodule:: enchanter.utils.comet
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 
 enchanter.utils.backend
 ----------------------------
 
-.. automodule:: enchanter.utils.backend
-   :members:
-   :undoc-members:
-   :show-inheritance:
+..  automodule:: enchanter.utils.backend
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+enchanter.utils.visualize
+----------------------------
+
+..  automodule:: enchanter.utils.visualize
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

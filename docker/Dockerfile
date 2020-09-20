@@ -4,11 +4,10 @@ SHELL ["/bin/bash", "-c"]
 
 WORKDIR /enchanter-build
 COPY enchanter/ /enchanter-build/enchanter/
-COPY README.md /enchanter-build/
-COPY pyproject.toml /enchanter-build/
+COPY README.md pyproject.toml /enchanter-build/
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl=7.64.1 \
+    curl vim \
     && rm -rf /var/lib/apt/lists/*
 
 COPY docker/bashrc /etc/bash.bashrc
