@@ -160,7 +160,7 @@ class TensorBoardLogger(BaseLogger):
         if isinstance(value, list):
             value = np.array(value)
 
-        self.writer.add_scalar("{}/{}".format(self.context, name), value, global_step=tmp)
+        self.writer.add_scalar("{}/{}".format(name, self.context), value, global_step=tmp)
 
     def log_metrics(
         self,
