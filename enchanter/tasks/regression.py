@@ -22,7 +22,7 @@ from comet_ml.experiment import BaseExperiment as BaseExperiment
 from enchanter.engine import BaseRunner
 from enchanter.callbacks import EarlyStopping, BaseLogger
 
-__all__ = ["RegressionRunner"]
+__all__ = ["RegressionRunner", "AutoEncoderRunner"]
 
 
 class RegressionRunner(BaseRunner, RegressorMixin):
