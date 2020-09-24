@@ -31,6 +31,7 @@ from comet_ml.api import APIExperiment
 from comet_ml.experiment import BaseExperiment
 
 from enchanter.callbacks import BaseLogger
+from enchanter.callbacks import Callback
 from enchanter.callbacks import CallbackManager
 from enchanter.engine.saving import RunnerIO
 from enchanter.engine.modules import send, get_dataset, is_tfds, tfds_to_numpy
@@ -73,6 +74,7 @@ class BaseRunner(ABC, RunnerIO):
         self.scheduler: List = list()
         self.experiment: Union[BaseExperiment, BaseLogger] = NotImplemented
         self.manager = CallbackManager()
+        self.callbacks: Optional[List[Callback]] = None
         self.scaler: Optional[amp.GradScaler] = None
         self.api_experiment: Optional[APIExperiment] = None
 
@@ -465,6 +467,9 @@ class BaseRunner(ABC, RunnerIO):
         if self.global_step < 0:
             self.global_step = 0
 
+        self.manager.callbacks = self.callbacks
+
+        self.manager.set_device(self.device)
         self.manager.set_optimizer(self.optimizer)
         self.manager.set_model(self.model)
 

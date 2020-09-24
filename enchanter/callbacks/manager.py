@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict
-from .base import Callback, Dummy
+from .base import Callback
 
 
 __all__ = ["CallbackManager"]
@@ -24,103 +24,124 @@ class CallbackManager(Callback):
 
     def __init__(self, callbacks: Optional[List[Callback]] = None):
         super(CallbackManager, self).__init__()
-        if callbacks is not None:
-            self.callbacks = callbacks
-        else:
-            self.callbacks = [Dummy()]
+        self.callbacks = callbacks
+
+    def set_device(self, device):
+        self.device = device
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.device = self.device
 
     def set_model(self, model):
-        for callback in self.callbacks:
-            callback.set_model(model)
+        self.model = model
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.model = self.model
 
     def set_optimizer(self, optimizer):
-        for callback in self.callbacks:
-            callback.set_optimizer(optimizer)
+        self.optimizer = optimizer
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.optimizer = self.optimizer
 
     def flag_check(self, stop_runner: bool):
-        if stop_runner:
+        if stop_runner and self.callbacks is not None:
             self.stop_runner = stop_runner
 
     def on_epoch_start(self, epoch, logs=None):
-        for callback in self.callbacks:
-            callback.on_epoch_start(epoch, logs)
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.on_epoch_start(epoch, logs)
 
-            self.flag_check(callback.stop_runner)
+                self.flag_check(callback.stop_runner)
 
     def on_epoch_end(self, epoch, logs=None):
-        for callback in self.callbacks:
-            callback.on_epoch_end(epoch, logs)
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.on_epoch_end(epoch, logs)
 
-            self.flag_check(callback.stop_runner)
+                self.flag_check(callback.stop_runner)
 
     def on_train_step_start(self, logs: Optional[Dict] = None):
-        for callback in self.callbacks:
-            callback.on_train_step_start(logs)
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.on_train_step_start(logs)
 
-            self.flag_check(callback.stop_runner)
+                self.flag_check(callback.stop_runner)
 
     def on_train_step_end(self, logs: Optional[Dict] = None):
-        for callback in self.callbacks:
-            callback.on_train_step_end(logs)
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.on_train_step_end(logs)
 
-            self.flag_check(callback.stop_runner)
+                self.flag_check(callback.stop_runner)
 
     def on_validation_step_start(self, logs: Optional[Dict] = None):
-        for callback in self.callbacks:
-            callback.on_validation_step_start(logs)
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.on_validation_step_start(logs)
 
-            self.flag_check(callback.stop_runner)
+                self.flag_check(callback.stop_runner)
 
     def on_validation_step_end(self, logs: Optional[Dict] = None):
-        for callback in self.callbacks:
-            callback.on_validation_step_end(logs)
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.on_validation_step_end(logs)
 
-            self.flag_check(callback.stop_runner)
+                self.flag_check(callback.stop_runner)
 
     def on_test_step_start(self, logs: Optional[Dict] = None):
-        for callback in self.callbacks:
-            callback.on_test_step_start(logs)
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.on_test_step_start(logs)
 
-            self.flag_check(callback.stop_runner)
+                self.flag_check(callback.stop_runner)
 
     def on_test_step_end(self, logs: Optional[Dict] = None):
-        for callback in self.callbacks:
-            callback.on_test_step_end(logs)
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.on_test_step_end(logs)
 
-            self.flag_check(callback.stop_runner)
+                self.flag_check(callback.stop_runner)
 
     def on_train_start(self, logs=None):
-        for callback in self.callbacks:
-            callback.on_train_start(logs)
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.on_train_start(logs)
 
-            self.flag_check(callback.stop_runner)
+                self.flag_check(callback.stop_runner)
 
     def on_train_end(self, logs=None):
-        for callback in self.callbacks:
-            callback.on_train_end(logs)
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.on_train_end(logs)
 
-            self.flag_check(callback.stop_runner)
+                self.flag_check(callback.stop_runner)
 
     def on_validation_start(self, logs=None):
-        for callback in self.callbacks:
-            callback.on_validation_start(logs)
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.on_validation_start(logs)
 
-            self.flag_check(callback.stop_runner)
+                self.flag_check(callback.stop_runner)
 
     def on_validation_end(self, logs=None):
-        for callback in self.callbacks:
-            callback.on_validation_end(logs)
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.on_validation_end(logs)
 
-            self.flag_check(callback.stop_runner)
+                self.flag_check(callback.stop_runner)
 
     def on_test_start(self, logs=None):
-        for callback in self.callbacks:
-            callback.on_test_start(logs)
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.on_test_start(logs)
 
-            self.flag_check(callback.stop_runner)
+                self.flag_check(callback.stop_runner)
 
     def on_test_end(self, logs=None):
-        for callback in self.callbacks:
-            callback.on_test_end(logs)
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.on_test_end(logs)
 
-            self.flag_check(callback.stop_runner)
+                self.flag_check(callback.stop_runner)

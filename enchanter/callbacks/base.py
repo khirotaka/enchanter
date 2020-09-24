@@ -11,7 +11,7 @@ from abc import ABC
 from typing import Dict, Optional
 
 
-__all__ = ["Callback", "Dummy"]
+__all__ = ["Callback"]
 
 
 class Callback(ABC):
@@ -19,6 +19,10 @@ class Callback(ABC):
         self.stop_runner: bool = False
         self.model = None
         self.optimizer = None
+        self.device = None
+
+    def set_device(self, device):
+        self.device = device
 
     def set_model(self, model):
         self.model = model
@@ -79,7 +83,3 @@ class Callback(ABC):
     def on_test_end(self, logs: Optional[Dict] = None):
         """Called when the test ends."""
         pass
-
-
-class Dummy(Callback):
-    pass
