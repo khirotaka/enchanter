@@ -8,49 +8,78 @@
 # ***************************************************
 
 from abc import ABC
-from typing import Any
+from typing import Dict, Optional
 
 
-__all__ = ["Callback"]
+__all__ = ["Callback", "Dummy"]
 
 
 class Callback(ABC):
-    def on_epoch_start(self, *args: Any, **kwargs: Any) -> Any:
+    def __init__(self):
+        self.stop_runner: bool = False
+        self.model = None
+        self.optimizer = None
+
+    def set_model(self, model):
+        self.model = model
+
+    def set_optimizer(self, optimizer):
+        self.optimizer = optimizer
+
+    def on_epoch_start(self, epoch, logs: Optional[Dict] = None):
         """Called when the epoch begins."""
         pass
 
-    def on_epoch_end(self, epoch: int, logs: Any = None) -> Any:
+    def on_epoch_end(self, epoch, logs: Optional[Dict] = None):
         """Called when the epoch ends."""
         pass
 
-    def on_step_start(self, *args: Any, **kwargs: Any) -> Any:
+    def on_train_step_start(self, logs: Optional[Dict] = None):
         """Called when the training batch begins."""
         pass
 
-    def on_step_end(self, *args: Any, **kwargs: Any) -> Any:
-        """Called when the training batch ends."""
+    def on_train_step_end(self, logs: Optional[Dict] = None):
+        """Called when the training batch ends. You can access the output of train_step."""
         pass
 
-    def on_train_start(self, *args: Any, **kwargs: Any) -> Any:
+    def on_validation_step_start(self, logs: Optional[Dict] = None):
+        pass
+
+    def on_validation_step_end(self, logs: Optional[Dict] = None):
+        """Called when the validation batch ends. You can access the output of val_step."""
+        pass
+
+    def on_test_step_start(self, logs: Optional[Dict] = None):
+        pass
+
+    def on_test_step_end(self, logs: Optional[Dict] = None):
+        """Called when the test batch ends. You can access the output of test_step."""
+        pass
+
+    def on_train_start(self, logs: Optional[Dict] = None):
         """Called when the train begins."""
         pass
 
-    def on_train_end(self, *args: Any, **kwargs: Any) -> Any:
+    def on_train_end(self, logs: Optional[Dict] = None):
         """Called when the train ends."""
         pass
 
-    def on_validation_start(self, *args: Any, **kwargs: Any) -> Any:
+    def on_validation_start(self, logs: Optional[Dict] = None):
         """Called when the validation loop begins."""
         pass
 
-    def on_validation_end(self, *args: Any, **kwargs: Any) -> Any:
+    def on_validation_end(self, logs: Optional[Dict] = None):
         """Called when the validation loop ends."""
         pass
 
-    def on_test_start(self, *args: Any, **kwargs: Any) -> Any:
+    def on_test_start(self, logs: Optional[Dict] = None):
         """Called when the test begins."""
         pass
 
-    def on_test_end(self, *args: Any, **kwargs: Any) -> Any:
+    def on_test_end(self, logs: Optional[Dict] = None):
         """Called when the test ends."""
         pass
+
+
+class Dummy(Callback):
+    pass
