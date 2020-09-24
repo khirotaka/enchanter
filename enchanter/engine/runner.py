@@ -703,10 +703,11 @@ class BaseRunner(ABC, RunnerIO):
 
         """
 
-        if hasattr(self.experiment, "end"):
-            self.experiment.end()
+        self.experiment.end()
 
     def __enter__(self):
+        self.initialize()
+        self.log_hyperparams()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
