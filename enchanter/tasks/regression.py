@@ -20,7 +20,9 @@ from torch import stack, tensor, no_grad, as_tensor
 from comet_ml.experiment import BaseExperiment as BaseExperiment
 
 from enchanter.engine import BaseRunner
-from enchanter.callbacks import EarlyStopping, BaseLogger
+from enchanter.callbacks import BaseLogger
+from enchanter.callbacks import Callback
+from enchanter.callbacks import CallbackManager
 
 __all__ = ["RegressionRunner", "AutoEncoderRunner"]
 
@@ -46,7 +48,7 @@ class RegressionRunner(BaseRunner, RegressorMixin):
         criterion: _Loss,
         experiment: Union[BaseExperiment, BaseLogger],
         scheduler: Optional[List] = None,
-        early_stop: Optional[EarlyStopping] = None,
+        callbacks: Optional[List[Callback]] = None,
     ) -> None:
         super(RegressionRunner, self).__init__()
         self.model: Module = model
@@ -57,7 +59,7 @@ class RegressionRunner(BaseRunner, RegressorMixin):
             self.scheduler: List = list()
         else:
             self.scheduler = scheduler
-        self.early_stop = early_stop
+        self.manager = CallbackManager(callbacks)
 
     def general_step(self, batch: Tuple) -> Dict:
         x, y = batch

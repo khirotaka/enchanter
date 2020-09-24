@@ -7,7 +7,7 @@
 #
 # ***************************************************
 
-from typing import Any
+from typing import Any, Dict
 from numpy import greater, less, Inf
 from .base import Callback
 
@@ -18,12 +18,12 @@ __all__ = ["EarlyStopping"]
 class EarlyStopping(Callback):
     def __init__(
         self,
-        monitor: str = "validate_avg_loss",
+        monitor: str = "val_avg_loss",
         min_delta=0.0,
         patience: int = 0,
         mode: str = "auto",
     ) -> None:
-        Callback.__init__(self)
+        super(EarlyStopping, self).__init__()
         self.monitor: Any = monitor
         self.patience: Any = patience
         self.min_delta: Any = min_delta
@@ -42,7 +42,7 @@ class EarlyStopping(Callback):
         self.min_delta *= 1 if self.monitor_op == greater else -1
         self.best: Any = Inf if self.monitor_op == less else -Inf
 
-    def check_metrics(self, logs: Any):
+    def check_metrics(self, logs: Dict):
         monitor_val = logs.get(self.monitor)
 
         if monitor_val is None:
@@ -50,14 +50,20 @@ class EarlyStopping(Callback):
 
         return True
 
-    def on_epoch_end(self, epoch, logs=None) -> bool:
+    def on_epoch_end(self, runner) -> None:
         stop = False
+        epoch = runner.current_epoch
+        logs = runner.metrics
 
-        if logs:
-            if not self.check_metrics(logs):
-                return stop
+        cat_logs = {}
+        for pk in logs.keys():
+            for ck, cv in logs[pk].items():
+                cat_logs["{}_{}".format(pk, ck)] = cv
 
-            current = logs.get(self.monitor)
+        if not self.check_metrics(cat_logs):
+            self.stop_runner = stop
+        else:
+            current = cat_logs.get(self.monitor)
             if self.monitor_op(current - self.min_delta, self.best):
                 self.best = current
                 self.wait = 0
@@ -67,4 +73,4 @@ class EarlyStopping(Callback):
                     self.stopped_epoch = epoch
                     stop = True
 
-        return stop
+            self.stop_runner = stop

@@ -30,10 +30,10 @@ from comet_ml import Experiment
 from comet_ml.api import APIExperiment
 from comet_ml.experiment import BaseExperiment
 
+from enchanter.callbacks import BaseLogger
+from enchanter.callbacks import CallbackManager
 from enchanter.engine.saving import RunnerIO
 from enchanter.engine.modules import send, get_dataset, is_tfds, tfds_to_numpy
-from enchanter.callbacks import BaseLogger as BaseLogger
-from enchanter.callbacks import EarlyStopping as EarlyStopping
 
 
 __all__ = ["BaseRunner"]
@@ -72,15 +72,20 @@ class BaseRunner(ABC, RunnerIO):
         self.optimizer: Optimizer = NotImplemented
         self.scheduler: List = list()
         self.experiment: Union[BaseExperiment, BaseLogger] = NotImplemented
-        self.early_stop: Optional[EarlyStopping] = None
+        self.manager = CallbackManager()
         self.scaler: Optional[amp.GradScaler] = None
         self.api_experiment: Optional[APIExperiment] = None
 
         self.global_step: int = 0
+        self.current_epoch: int = 0
         self.non_blocking: bool = True
         self.configures: Dict[str, Any] = {"epochs": 0}
         self.pbar: Union[tqdm, range] = range(self.configures["epochs"])
-        self._metrics: Dict = dict()
+        self.metrics: Dict = {
+            "train": dict(),
+            "val": dict(),
+            "test": dict()
+        }
         self._loaders: Dict[str, Union[DataLoader, Any]] = dict()
 
     def backward(self, loss: Tensor) -> None:
@@ -271,7 +276,7 @@ class BaseRunner(ABC, RunnerIO):
             dic = self.train_end(results)  # pylint: disable=E1111
 
             if len(dic) != 0:
-                self._metrics.update(dic)
+                self.metrics["train"].update(dic)
                 self.experiment.log_metrics(dic, step=epoch, epoch=epoch)
 
     def val_cycle(self, epoch: int, loader: DataLoader) -> None:
@@ -315,7 +320,7 @@ class BaseRunner(ABC, RunnerIO):
                 dic = self.val_end(results)  # pylint: disable=E1111
 
                 if len(dic) != 0:
-                    self._metrics.update(dic)
+                    self.metrics["val"].update(dic)
                     self.experiment.log_metrics(dic, step=epoch, epoch=epoch)
 
     def test_cycle(self, loader: DataLoader) -> None:
@@ -360,7 +365,7 @@ class BaseRunner(ABC, RunnerIO):
                 dic = self.test_end(results)  # pylint: disable=E1111
 
                 if len(dic) != 0:
-                    self._metrics.update(dic)
+                    self.metrics["test"].update(dic)
                     self.experiment.log_metrics(dic)
 
     def train_config(
@@ -465,6 +470,8 @@ class BaseRunner(ABC, RunnerIO):
         if self.global_step < 0:
             self.global_step = 0
 
+        self.current_epoch = 0
+
         self.model = self.model.to(self.device)
 
     def run(self, phase: str = "all", verbose: bool = True, sleep_time: int = 1):
@@ -515,25 +522,25 @@ class BaseRunner(ABC, RunnerIO):
                     if verbose
                     else range(self.configures["epochs"])
                 )
-                # .on_epoch_start()
+                self.manager.on_epoch_start(self)
                 for epoch in self.pbar:
-                    # on_train_start()
+                    self.manager.on_train_start(self)
                     self.train_cycle(epoch, self.loaders["train"])
-                    # on_train_end()
+                    self.manager.on_train_end(self)
 
                     if phase in {"all", "train/val", "debug"}:
                         if "val" in self.loaders:
-                            # on_validation_start()
+                            self.manager.on_validation_start(self)
                             self.val_cycle(epoch, self.loaders["val"])
-                            # on_validation_end()
+                            self.manager.on_validation_end(self)
 
                     if self.scheduler:
                         self.update_scheduler(epoch)
 
-                    if self.early_stop:
-                        if self.early_stop.on_epoch_end(epoch, self._metrics):
-                            break
-                        # .on_epoch_end()
+                    self.manager.on_epoch_end(self)
+
+                    if self.manager.stop_runner:
+                        break
 
                     if self.configures["checkpoint_path"]:
                         ops = {
@@ -568,10 +575,10 @@ class BaseRunner(ABC, RunnerIO):
 
         if phase in {"all", "test", "debug"}:
             if "test" in self.loaders:
-                # on_test_start()
+                self.manager.on_test_start(self)
                 self.pbar = tqdm(total=len(self.loaders["test"]), desc="Evaluating") if verbose else None
                 self.test_cycle(self.loaders["test"])
-                # on_test_end()
+                self.manager.on_test_end(self)
 
         return self
 
