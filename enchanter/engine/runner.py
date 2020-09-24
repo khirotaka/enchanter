@@ -77,15 +77,10 @@ class BaseRunner(ABC, RunnerIO):
         self.api_experiment: Optional[APIExperiment] = None
 
         self.global_step: int = 0
-        self.current_epoch: int = 0
         self.non_blocking: bool = True
         self.configures: Dict[str, Any] = {"epochs": 0}
         self.pbar: Union[tqdm, range] = range(self.configures["epochs"])
-        self.metrics: Dict = {
-            "train": dict(),
-            "val": dict(),
-            "test": dict()
-        }
+        self.metrics: Dict = {"train": dict(), "val": dict(), "test": dict()}
         self._loaders: Dict[str, Union[DataLoader, Any]] = dict()
 
     def backward(self, loss: Tensor) -> None:
@@ -271,7 +266,7 @@ class BaseRunner(ABC, RunnerIO):
                 }
                 self.experiment.log_metrics(outputs, step=self.global_step, epoch=epoch)
                 results.append(outputs)
-                # on_step_end()
+                self.manager.on_train_step_end(outputs)
 
             dic = self.train_end(results)  # pylint: disable=E1111
 
@@ -315,7 +310,7 @@ class BaseRunner(ABC, RunnerIO):
                     }
                     self.experiment.log_metrics(outputs, step=self.global_step, epoch=epoch)
                     results.append(outputs)
-                    # on_step_end()
+                    self.manager.on_validation_step_end(outputs)
 
                 dic = self.val_end(results)  # pylint: disable=E1111
 
@@ -360,7 +355,7 @@ class BaseRunner(ABC, RunnerIO):
 
                     self.experiment.log_metrics(outputs)
                     results.append(outputs)
-                    # on_step_end()
+                    self.manager.on_test_step_end(outputs)
 
                 dic = self.test_end(results)  # pylint: disable=E1111
 
@@ -470,7 +465,8 @@ class BaseRunner(ABC, RunnerIO):
         if self.global_step < 0:
             self.global_step = 0
 
-        self.current_epoch = 0
+        self.manager.set_optimizer(self.optimizer)
+        self.manager.set_model(self.model)
 
         self.model = self.model.to(self.device)
 
@@ -522,24 +518,28 @@ class BaseRunner(ABC, RunnerIO):
                     if verbose
                     else range(self.configures["epochs"])
                 )
-                self.manager.on_epoch_start(self)
+
                 for epoch in self.pbar:
-                    self.manager.on_train_start(self)
+                    self.manager.on_epoch_start(epoch, self.metrics)
+
+                    self.manager.on_train_start(self.metrics)
                     self.train_cycle(epoch, self.loaders["train"])
-                    self.manager.on_train_end(self)
+                    self.manager.on_train_end(self.metrics)
 
                     if phase in {"all", "train/val", "debug"}:
                         if "val" in self.loaders:
-                            self.manager.on_validation_start(self)
+                            self.manager.on_validation_start(self.metrics)
                             self.val_cycle(epoch, self.loaders["val"])
-                            self.manager.on_validation_end(self)
+                            self.manager.on_validation_end(self.metrics)
 
                     if self.scheduler:
                         self.update_scheduler(epoch)
 
-                    self.manager.on_epoch_end(self)
+                    self.manager.on_epoch_end(epoch, self.metrics)
 
                     if self.manager.stop_runner:
+                        if hasattr(self.pbar, "close"):
+                            self.pbar.close()  # type: ignore
                         break
 
                     if self.configures["checkpoint_path"]:
@@ -575,10 +575,10 @@ class BaseRunner(ABC, RunnerIO):
 
         if phase in {"all", "test", "debug"}:
             if "test" in self.loaders:
-                self.manager.on_test_start(self)
+                self.manager.on_test_start(self.metrics)
                 self.pbar = tqdm(total=len(self.loaders["test"]), desc="Evaluating") if verbose else None
                 self.test_cycle(self.loaders["test"])
-                self.manager.on_test_end(self)
+                self.manager.on_test_end(self.metrics)
 
         return self
 
