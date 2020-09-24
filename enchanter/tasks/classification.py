@@ -21,8 +21,9 @@ from comet_ml.experiment import BaseExperiment as BaseExperiment
 
 from enchanter.engine import BaseRunner
 from enchanter.callbacks import BaseLogger
-from enchanter.callbacks import EarlyStopping
-from enchanter.metrics import calculate_accuracy as calculate_accuracy
+from enchanter.callbacks import Callback
+from enchanter.callbacks import CallbackManager
+from enchanter.metrics import calculate_accuracy
 
 
 __all__ = ["ClassificationRunner"]
@@ -59,7 +60,7 @@ class ClassificationRunner(BaseRunner, ClassifierMixin):
         criterion: _Loss,
         experiment: Union[BaseExperiment, BaseLogger],
         scheduler: Optional[List] = None,
-        early_stop: Optional[EarlyStopping] = None,
+        callbacks: Optional[List[Callback]] = None,
     ) -> None:
         super(ClassificationRunner, self).__init__()
         self.model: Module = model
@@ -71,7 +72,7 @@ class ClassificationRunner(BaseRunner, ClassifierMixin):
         else:
             self.scheduler = scheduler
 
-        self.early_stop = early_stop
+        self.manager = CallbackManager(callbacks)
 
     def general_step(self, batch: Tuple) -> Dict:
         x, y = batch

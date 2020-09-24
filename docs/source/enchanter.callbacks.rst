@@ -7,6 +7,29 @@ enchanter.callbacks
 .. currentmodule:: enchanter.callbacks
 
 
+A set of functions to be executed during training, verification and testing.
+
+Callback
+-------------
+
+`Callback`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: Callback
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+CallbackManager
+------------------
+
+`CallbackManager`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: CallbackManager
+
+
 EarlyStopping
 -------------
 
@@ -23,13 +46,15 @@ EarlyStopping
 
 Logging
 -------------
+Provides an alternative logging method to ``comet_ml.Experiment``.
+
+
 
 `BaseLogger`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: BaseLogger
     :members:
-    :undoc-members:
     :show-inheritance:
 
 
