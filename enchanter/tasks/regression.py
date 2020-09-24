@@ -59,7 +59,7 @@ class RegressionRunner(BaseRunner, RegressorMixin):
             self.scheduler: List = list()
         else:
             self.scheduler = scheduler
-        self.manager = CallbackManager(callbacks)
+        self.callbacks = callbacks
 
     def general_step(self, batch: Tuple) -> Dict:
         x, y = batch

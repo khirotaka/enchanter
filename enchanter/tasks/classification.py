@@ -72,7 +72,7 @@ class ClassificationRunner(BaseRunner, ClassifierMixin):
         else:
             self.scheduler = scheduler
 
-        self.manager = CallbackManager(callbacks)
+        self.callbacks = callbacks
 
     def general_step(self, batch: Tuple) -> Dict:
         x, y = batch
