@@ -33,6 +33,7 @@ sphinx-material = "^0.0.32"
 sphinx-copybutton = "^0.3"
 sphinx-autoapi = "1.5.0"
 mypy = "^0.782"
+tslearn = "^0.4.1"
 
 
 [tool.black]
