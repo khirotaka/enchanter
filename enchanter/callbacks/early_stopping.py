@@ -7,12 +7,16 @@
 #
 # ***************************************************
 
-from typing import Any, Dict, Optional
-from numpy import greater, less, Inf
+from typing import Any, Dict, Optional, Union
+
+import torch
+import numpy as np
+from sklearn.svm import SVC
+from sklearn.model_selection import cross_validate, StratifiedKFold
 from .base import Callback
 
 
-__all__ = ["EarlyStopping"]
+__all__ = ["EarlyStopping", "EarlyStoppingForTSUS"]
 
 
 class EarlyStopping(Callback):
@@ -43,23 +47,23 @@ class EarlyStopping(Callback):
 
         """
         super(EarlyStopping, self).__init__()
-        self.monitor: Any = monitor
-        self.patience: Any = patience
-        self.min_delta: Any = min_delta
+        self.monitor: str = monitor
+        self.patience: int = patience
+        self.min_delta: float = min_delta
         self.wait: int = 0
         self.stopped_epoch: int = 0
 
         mode_dict = {
-            "min": less,
-            "max": greater,
-            "auto": greater if "acc" in self.monitor else less,
+            "min": np.less,
+            "max": np.greater,
+            "auto": np.greater if "acc" in self.monitor else np.less,
         }
         if mode not in mode_dict:
             mode = "auto"
 
         self.monitor_op: Any = mode_dict[mode]
-        self.min_delta *= 1 if self.monitor_op == greater else -1
-        self.best: Any = Inf if self.monitor_op == less else -Inf
+        self.min_delta *= 1 if self.monitor_op == np.greater else -1
+        self.best: Any = np.Inf if self.monitor_op == np.less else -np.Inf
 
     def check_metrics(self, logs: Dict) -> bool:
         monitor_val = logs.get(self.monitor)
@@ -75,7 +79,7 @@ class EarlyStopping(Callback):
         if not isinstance(logs, dict):
             raise TypeError("The argument `logs` is not the expected data type.")
         else:
-            cat_logs = {}
+            cat_logs: Dict[str, Union[float, int]] = {}
             for pk in logs.keys():
                 for ck, cv in logs[pk].items():
                     cat_logs["{}_{}".format(pk, ck)] = cv
@@ -83,14 +87,80 @@ class EarlyStopping(Callback):
             if not self.check_metrics(cat_logs):
                 self.stop_runner = stop
             else:
-                current = cat_logs.get(self.monitor)
+                try:
+                    current = cat_logs[self.monitor]
+                except KeyError:
+                    raise KeyError("Can't find the value specified in the argument `monitor`.")
+
                 if self.monitor_op(current - self.min_delta, self.best):
                     self.best = current
                     self.wait = 0
                 else:
                     self.wait += 1
-                    if self.wait >= self.patience:
+                    if self.wait > self.patience:
                         self.stopped_epoch = epoch
                         stop = True
 
                 self.stop_runner = stop
+
+
+class EarlyStoppingForTSUS(Callback):
+    """
+    Early Stopping for Time Series Unsupervised Runner
+    """
+
+    def __init__(
+        self,
+        data: torch.Tensor,
+        target: torch.Tensor,
+        classifier=SVC(),
+        monitor: str = "accuracy",
+        patience: int = 5,
+        kfold=None,
+    ):
+        # TODO min_delta
+        super(EarlyStoppingForTSUS, self).__init__()
+        self.classifier = classifier
+        self.data: torch.Tensor = data
+        self.target: torch.Tensor = target
+        self.patience = patience
+        self.monitor: str = monitor
+        self.best: float = 0.0
+        self.wait: int = 0
+        self.stopped_epoch: int = 0
+
+        if kfold is not None:
+            self.kfold = kfold
+        else:
+            self.kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
+
+    def encode(self):
+        out = []
+        self.model.eval()
+        with torch.no_grad():
+            self.data = self.data.to(self.device)
+            out.append(self.model(self.data).cpu().numpy())
+
+        return np.vstack(out)
+
+    def cross_val(self):
+        features: np.ndarray = self.encode()
+        score = cross_validate(
+            self.classifier, features, self.target.cpu().numpy(), cv=self.kfold, scoring=[self.monitor]
+        )["test_{}".format(self.monitor)].mean()
+        return score
+
+    def on_epoch_end(self, epoch, logs: Optional[Dict] = None):
+        stop = False
+        current_score = self.cross_val()
+
+        if current_score > self.best:
+            self.best = current_score
+            self.wait = 0
+        else:
+            self.wait += 1
+            if self.wait > self.patience:
+                self.stopped_epoch = epoch
+                stop = True
+
+        self.stop_runner = stop

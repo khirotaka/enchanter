@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 import numpy as np
 import torch
 from enchanter.engine import BaseRunner
@@ -9,6 +9,7 @@ from enchanter.addons.ts_triplet_loss import (
     positive_criterion_for_triplet_loss,
     negative_criterion_for_triplet_loss,
 )
+from enchanter.callbacks import Callback
 
 
 class TimeSeriesUnsupervisedRunner(BaseRunner):
@@ -22,6 +23,7 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         compared_len=None,
         save_memory: bool = False,
         scheduler: List = None,
+        callbacks: Optional[List[Callback]] = None,
     ):
         super(TimeSeriesUnsupervisedRunner, self).__init__()
         self.model = model
@@ -41,6 +43,8 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
             self.scheduler = list()
         else:
             self.scheduler = scheduler
+
+        self.callbacks = callbacks
 
     def initialize(self) -> None:
         super(TimeSeriesUnsupervisedRunner, self).initialize()
@@ -81,7 +85,7 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         return positive_loss
 
     def train_step(self, batch) -> Dict[str, torch.Tensor]:
-        (x_train,) = batch
+        x_train = batch[0]
         batch_size: int = x_train.shape[0]
 
         length: int = min(self.compared_len, self.train_ds.tensors[0].shape[2])
@@ -113,6 +117,6 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         return {"avg_loss": avg_loss}
 
     def encode(self, data: np.ndarray) -> np.ndarray:
-        data = torch.from_numpy(data).to(self.device)
+        data = torch.tensor(data, device=self.device)
         out = self.model(data).cpu().numpy()
         return out
