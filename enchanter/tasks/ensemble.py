@@ -9,7 +9,7 @@
 
 from typing import List, Union, Optional
 
-from numpy import stack, ravel, ndarray, int as np_int
+import numpy as np
 from sklearn.base import BaseEstimator
 from torch import as_tensor, device, Tensor
 from torch.cuda import is_available
@@ -24,7 +24,7 @@ class BaseEnsembleEstimator(BaseEstimator):
         self.mode: Optional[str] = mode
         self.device: device = device("cuda" if is_available() else "cpu")
 
-    def predict(self, x: Union[ndarray, Tensor]) -> List[ndarray]:
+    def predict(self, x: Union[np.ndarray, Tensor]) -> List[np.ndarray]:
         x = as_tensor(x, device=self.device)
 
         predicts = []
@@ -36,47 +36,31 @@ class BaseEnsembleEstimator(BaseEstimator):
 
 class SoftEnsemble(BaseEnsembleEstimator):
     """
-    確率の平均をとるアンサンブル
+    Ensemble that averages probabilities
     """
 
-    def predict(self, x: Union[ndarray, Tensor]) -> ndarray:
-        """
-
-        Args:
-            x:
-
-        Returns:
-
-        """
+    def predict(self, x: Union[np.ndarray, Tensor]) -> np.ndarray:
         predicts = super(SoftEnsemble, self).predict(x)
 
         predicts = sum(predicts)
         probs = predicts / len(self.runners)
 
         if self.mode == "classification":
-            probs = probs.astype(np_int)
+            probs = probs.astype(np.int)
 
         return probs
 
 
 class HardEnsemble(BaseEnsembleEstimator):
     """
-    多数決をとるアンサンブル
+    Ensemble that takes a majority vote
     """
 
     def __init__(self, runners: List[BaseRunner]) -> None:
         super(HardEnsemble, self).__init__(runners, mode="classification")
 
-    def predict(self, x: Union[ndarray, Tensor]) -> ndarray:
-        """
-
-        Args:
-            x:
-
-        Returns:
-
-        """
+    def predict(self, x: Union[np.ndarray, Tensor]) -> np.ndarray:
         predicts = super().predict(x)
-        predicts = stack(predicts)
+        predicts = np.stack(predicts)
 
-        return ravel(predicts[0])
+        return np.ravel(predicts[0])

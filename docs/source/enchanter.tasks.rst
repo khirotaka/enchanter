@@ -16,8 +16,12 @@ Classification Task
 
 .. autoclass:: ClassificationRunner
     :members:
-    :undoc-members:
     :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~general_step
+        ~general_end
 
 
 Regression Task
@@ -28,8 +32,24 @@ Regression Task
 
 .. autoclass:: RegressionRunner
     :members:
-    :undoc-members:
     :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~general_step
+        ~general_end
+
+`AutoEncoderRunner`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: AutoEncoderRunner
+    :members:
+    :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~general_step
+        ~general_end
 
 
 Ensemble
@@ -40,7 +60,6 @@ Ensemble
 
 .. autoclass:: BaseEnsembleEstimator
     :members:
-    :undoc-members:
     :show-inheritance:
 
 `SoftEnsemble`
@@ -48,7 +67,6 @@ Ensemble
 
 .. autoclass:: SoftEnsemble
     :members:
-    :undoc-members:
     :show-inheritance:
 
 
@@ -57,6 +75,4 @@ Ensemble
 
 .. autoclass:: HardEnsemble
     :members:
-    :undoc-members:
     :show-inheritance:
-
