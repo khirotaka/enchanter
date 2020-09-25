@@ -18,14 +18,14 @@ __all__ = ["MLP", "PositionWiseFeedForward", "ResidualSequential", "AutoEncoder"
 
 class MLP(Module):
     """
-    MLPを作成するクラス
+    Class to create MLP.
 
     Args:
-        shapes (List[int]): MLPの各層におけるニューロン数。int型の要素で構成される配列を想定。
-                与えられる配列の第0番目の要素の値はモデルへの入力次元の数として扱われます。
+        shapes (List[int]): The number of neurons in each layer of MLP. Assuming an array consisting of int type elements.
+                The value of the 0th element of the given array is treated as the number of input dimensions to the model.
 
-        activation (Union[Callable[[torch.Tensor], torch.Tensor], nn.Module]): 活性化関数。
-                    torch.relu や enchanter.addons.Mish() 等の微分可能な Callableなオブジェクト
+        activation (Union[Callable[[torch.Tensor], torch.Tensor], nn.Module]): Activation Function.
+                    Differentiable Callable objects such as ``torch.relu`` and ``enchanter.addons.Mish()``
 
     Examples:
         >>> import enchanter.addons as addons
@@ -50,6 +50,15 @@ class MLP(Module):
         self.layers: Module = ModuleList(layers)
 
     def forward(self, x: Tensor) -> Tensor:
+        """
+        forward propagation processing.
+
+        Args:
+            x: input data
+
+        Returns:
+
+        """
         for layer in self.layers[:-1]:  # type: ignore
             x = layer(x)
             x = self.activation(x)
@@ -60,7 +69,7 @@ class MLP(Module):
 
 class PositionWiseFeedForward(Module):
     """
-    Attention is all you need. で提案された PositionWiseFeedForward の 1×1 Conv1d を使ったバージョン
+    ``PositionWise FeedForward`` proposed in `Attention is all you need`. This class uses ``1x1 Conv1d`` internally.
 
 
     Args:
@@ -86,7 +95,7 @@ class PositionWiseFeedForward(Module):
 
     def forward(self, x: Tensor) -> Tensor:
         """
-        入力に対して PositionWiseFeedForward を適用します。
+        Apply ``PositionWiseFeedForward`` to the input.
 
         Args:
             x (torch.Tensor):
@@ -113,16 +122,41 @@ class ResidualSequential(Sequential):
     """
 
     def forward(self, x: Tensor) -> Tensor:
+        """
+        Forward propagation
+
+        Args:
+            x: input data
+
+        Returns:
+
+        """
         return x + super(ResidualSequential, self).forward(x)
 
 
 class AutoEncoder(Module):
+    """
+    A class that creates an ``AutoEncoder``.
+
+    Examples:
+        >>> ae = AutoEncoder([32, 16, 8])
+
+    """
     def __init__(self, shapes: List[int], activation: Union[Callable[[Tensor], Tensor], Module] = relu):
         super(AutoEncoder, self).__init__()
         self.encoder = MLP(shapes, activation)
         self.decoder = MLP(list(reversed(shapes)), activation)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
+        """
+        forward propagation processing.
+
+        Args:
+            x: input data
+
+        Returns:
+
+        """
         mid = self.encoder(x)
         out = self.decoder(mid)
         return out

@@ -6,6 +6,11 @@ __all__ = ["SELayer1d", "SELayer2d"]
 
 
 class SELayer1d(nn.Module):
+    """
+    Squeeze and Excitation block for time series data.
+
+    Paper: `Squeeze-and-Excitation Networks <https://arxiv.org/abs/1709.01507>`_
+    """
     def __init__(self, in_features: int, reduction: int = 16) -> None:
         super(SELayer1d, self).__init__()
         reduction_size = max(1, in_features // reduction)
@@ -19,6 +24,15 @@ class SELayer1d(nn.Module):
         )
 
     def forward(self, x: Tensor) -> Tensor:
+        """
+        Forward pass
+
+        Args:
+            x: input data [N, C, L]
+
+        Returns:
+
+        """
         b, c, _ = x.shape
         y = self.avg_pool(x).view(b, c)
         y = self.fc(y).view(b, c, 1)
@@ -28,6 +42,12 @@ class SELayer1d(nn.Module):
 
 
 class SELayer2d(nn.Module):
+    """
+    Squeeze and Excitation block for image data.
+
+    Paper: `Squeeze-and-Excitation Networks <https://arxiv.org/abs/1709.01507>`_
+
+    """
     def __init__(self, in_features: int, reduction: int = 16) -> None:
         super(SELayer2d, self).__init__()
         reduction_size = max(1, in_features // reduction)
@@ -41,6 +61,15 @@ class SELayer2d(nn.Module):
         )
 
     def forward(self, x: Tensor) -> Tensor:
+        """
+        Forward pass
+
+        Args:
+            x: input data [N, C, H, W]
+
+        Returns:
+
+        """
         b, c, _, _ = x.shape
         y = self.avg_pool(x).view(b, c)
         y = self.fc(y).view(b, c, 1, 1)

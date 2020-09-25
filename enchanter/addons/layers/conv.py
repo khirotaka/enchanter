@@ -19,6 +19,8 @@ class CausalConv1d(nn.Conv1d):
         """
         Causal Conv1d
 
+        Paper: `WaveNet: A Generative Model for Raw Audio <https://arxiv.org/abs/1609.03499>`_
+
         Args:
             in_channels: the number of input channels
             out_channels: the number of output channels
@@ -34,16 +36,16 @@ class CausalConv1d(nn.Conv1d):
         )
         self.left_padding: int = (kernel_size - 1) * dilation
 
-    def forward(self, inputs) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
-        Forward pass
+        Forward propagation
 
         Args:
-            inputs: [N, in_channels, L]
+            x: [N, in_channels, L]
 
         Returns:
-            outputs: [N, out_channels, L]
+            [N, out_channels, L]
 
         """
-        inputs = nn.functional.pad(inputs, [self.left_padding, 0])
-        return super(CausalConv1d, self).forward(inputs)
+        x = nn.functional.pad(x, [self.left_padding, 0])
+        return super(CausalConv1d, self).forward(x)
