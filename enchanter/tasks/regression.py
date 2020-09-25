@@ -125,6 +125,7 @@ class AutoEncoderRunner(RegressionRunner):
     Runner for training AutoEncoder.
 
     """
+
     def general_step(self, batch: Tuple) -> Dict:
         """
         This method is executed by train_step, val_step, test_step.

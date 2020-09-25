@@ -11,6 +11,7 @@ class SELayer1d(nn.Module):
 
     Paper: `Squeeze-and-Excitation Networks <https://arxiv.org/abs/1709.01507>`_
     """
+
     def __init__(self, in_features: int, reduction: int = 16) -> None:
         super(SELayer1d, self).__init__()
         reduction_size = max(1, in_features // reduction)
@@ -48,6 +49,7 @@ class SELayer2d(nn.Module):
     Paper: `Squeeze-and-Excitation Networks <https://arxiv.org/abs/1709.01507>`_
 
     """
+
     def __init__(self, in_features: int, reduction: int = 16) -> None:
         super(SELayer2d, self).__init__()
         reduction_size = max(1, in_features // reduction)

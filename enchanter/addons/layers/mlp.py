@@ -142,6 +142,7 @@ class AutoEncoder(Module):
         >>> ae = AutoEncoder([32, 16, 8])
 
     """
+
     def __init__(self, shapes: List[int], activation: Union[Callable[[Tensor], Tensor], Module] = relu):
         super(AutoEncoder, self).__init__()
         self.encoder = MLP(shapes, activation)
