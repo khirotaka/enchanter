@@ -125,6 +125,15 @@ class FReLU1d(nn.Module):
         self.norm = nn.BatchNorm1d(in_features)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Applies the Funnel Activation (FReLU) for 1d inputs such as sensor signals.
+
+        Args:
+            x: torch.Tensor
+
+        Returns:
+
+        """
         out = self.conv(x)
         out = self.norm(out)
         out = torch.max(x, out)
@@ -155,6 +164,15 @@ class FReLU2d(nn.Module):
         self.norm = nn.BatchNorm2d(in_features)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Applies the Funnel Activation (FReLU) for 2d inputs such as images.
+
+        Args:
+            x: torch.Tensor
+
+        Returns:
+
+        """
         out = self.conv(x)
         out = self.norm(out)
         out = torch.max(x, out)
