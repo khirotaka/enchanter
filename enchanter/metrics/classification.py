@@ -15,15 +15,14 @@ __all__ = ["calculate_accuracy"]
 
 def calculate_accuracy(inputs: torch.Tensor, targets: torch.Tensor) -> float:
     """
-    バッチ処理向けの精度計算関数。
-    分類度を Python float で返します。
+    A function that calculates accuracy for batch processing.
+    Returns accuracy as a Python float.
 
     Args:
         inputs (torch.Tensor): shape == [N, n_class]
         targets (torch.Tensor): shape == [N]
 
-    Returns:
-        分類精度 (float)
+    Returns: accracy (float)
     """
     with torch.no_grad():
         total = targets.shape[0]

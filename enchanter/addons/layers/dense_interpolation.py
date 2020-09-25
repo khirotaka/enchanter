@@ -41,13 +41,13 @@ class DenseInterpolation(Module):
 
     def forward(self, x: Tensor) -> Tensor:
         """
-        Dense Interpolation を入力に適用する。
+        Apply ``Dense Interpolation`` to the input.
 
         Args:
-            x (torch.Tensor): 入力する配列の形状は、 `[N, seq_len, features]` を想定
+            x (torch.Tensor): The shape of the input array is assumed to be ``[N, seq_len, features]``.
 
         Returns:
-            適用した結果 (torch.Tensor)
+            (torch.Tensor)
         """
         w = self.W.repeat(x.shape[0], 1, 1).requires_grad_(False)  # type: ignore
         u = bmm(w, x)

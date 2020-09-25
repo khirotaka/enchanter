@@ -17,7 +17,7 @@ __all__ = ["PositionalEncoding"]
 
 class PositionalEncoding(nn.Module):
     """
-    Attention is all you need. で提案された　Transformer モデルで用いられる Positional Encoding
+    ``Positional Encoding`` used in the ``Transformer`` model proposed in `Attention is all you need`.
 
     References:
         `Sequence-to-Sequence Modeling with nn.Transformer and TorchText \
@@ -47,13 +47,10 @@ class PositionalEncoding(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
+        Forward propagation
 
         Args:
-            x: (N, E, L)
-
-                - N ... batch size
-                - E ... features
-                - L ... seq len
+            x: input data ``[N, F, L]``
 
         Returns:
 

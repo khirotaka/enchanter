@@ -7,57 +7,105 @@ enchanter.addons.layers
 .. currentmodule:: enchanter.addons.layers
 
 
-PositionalEncoding
+AutoEncoder
 --------------------
-.. autoclass:: PositionalEncoding
+.. autoclass:: AutoEncoder
     :members:
-    :undoc-members:
     :show-inheritance:
 
+    .. rubric:: Methods
+    .. autosummary::
+        ~forward
 
-MLP
--------
-.. autoclass:: MLP
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-PositionWiseFeedForward
-----------------------------
-.. autoclass:: PositionWiseFeedForward
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-SELayer1d
---------------------
-.. autoclass:: SELayer1d
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-SELayer2d
---------------------
-.. autoclass:: SELayer2d
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-DenseInterpolation
---------------------
-.. autoclass:: DenseInterpolation
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 
 CausalConv1d
 --------------------
 .. autoclass:: CausalConv1d
     :members:
-    :undoc-members:
     :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~forward
+
+
+
+DenseInterpolation
+--------------------
+.. autoclass:: DenseInterpolation
+    :members:
+    :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~forward
+
+
+MLP
+-------
+.. autoclass:: MLP
+    :members:
+    :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~forward
+
+
+PositionalEncoding
+--------------------
+.. autoclass:: PositionalEncoding
+    :members:
+    :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~forward
+
+
+
+
+PositionWiseFeedForward
+----------------------------
+.. autoclass:: PositionWiseFeedForward
+    :members:
+    :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~forward
+
+
+ResidualSequential
+----------------------------
+.. autoclass:: ResidualSequential
+    :members:
+    :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~forward
+
+
+SELayer1d
+--------------------
+.. autoclass:: SELayer1d
+    :members:
+    :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~forward
+
+
+SELayer2d
+--------------------
+.. autoclass:: SELayer2d
+    :members:
+    :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~forward
+

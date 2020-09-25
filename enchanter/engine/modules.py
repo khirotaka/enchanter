@@ -34,7 +34,7 @@ __all__ = ["is_jupyter", "get_dataset", "fix_seed", "send", "is_tfds", "tfds_to_
 
 def is_jupyter() -> bool:
     """
-    実行中の環境が Jupyter Notebookかどうかを判定します。
+    Determines if the running environment is a Jupyter Notebook.
 
     Returns:
         True if run on jupyrer notebook else False
@@ -53,7 +53,7 @@ def is_jupyter() -> bool:
 
 def get_dataset(x: Union[ndarray, torch.Tensor], y: Union[ndarray, torch.Tensor] = None) -> Dataset:
     """
-    入力された値をもとに `torch.utils.data.TensorDataset` を生成します。
+    Generates ``torch.utils.data.TensorDataset`` based on the values entered.
 
     Examples:
         >>> import torch
@@ -106,7 +106,7 @@ def send(batch: Tuple[Any, ...], device: torch.device, non_blocking: bool = True
 
 def fix_seed(seed: int, deterministic: bool = False, benchmark: bool = False) -> None:
     """
-    PyTorch, NumPy, Pure Python Random のSEED値を一括固定します。
+    Fixed the ``Seed`` value of PyTorch, NumPy, Pure Python Random at once.
 
     Examples:
         >>> import torch
@@ -116,8 +116,8 @@ def fix_seed(seed: int, deterministic: bool = False, benchmark: bool = False) ->
         >>> y = np.random.randn(...)
 
     Args:
-        seed (int): SEED値
-        deterministic (bool): CuDNN上で可能な限り再現性を担保するかどうか
+        seed (int): random state (sedd)
+        deterministic (bool): Whether to ensure reproducibility as much as possible on CuDNN.
         benchmark (bool):
 
     Returns:
@@ -136,6 +136,15 @@ def fix_seed(seed: int, deterministic: bool = False, benchmark: bool = False) ->
 
 
 def is_tfds(loader: Any) -> bool:
+    """
+    Determines if the input is a TensorFlow Dataset. Returns False if TensorFlow is not installed.
+
+    Args:
+        loader:
+
+    Returns: True if input is TensorFlow Dataset
+
+    """
     if IS_TF_DS_AVAILABLE:
         if isinstance(loader, tf.data.Dataset):
             warnings.warn(
@@ -151,6 +160,17 @@ def is_tfds(loader: Any) -> bool:
 
 
 def tfds_to_numpy(loader):
+    """
+    If TensorFlow Dataset is entered, it will be converted to numpy.
+
+    Args:
+        loader:
+
+    Returns: TensorFlow Dataset
+
+    Raises: If `tfds <https://www.tensorflow.org/datasets>`_ is not installed, this function will raise a ``RuntimeError``.
+
+    """
     if IS_TF_DS_AVAILABLE:
         return tfds.as_numpy(loader)
     else:

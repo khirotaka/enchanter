@@ -1,5 +1,5 @@
 from .classification import ClassificationRunner
-from .regression import RegressionRunner
+from .regression import RegressionRunner, AutoEncoderRunner
 from .ensemble import HardEnsemble, SoftEnsemble, BaseEnsembleEstimator
 
 __all__ = [
@@ -8,4 +8,5 @@ __all__ = [
     "HardEnsemble",
     "SoftEnsemble",
     "BaseEnsembleEstimator",
+    "AutoEncoderRunner",
 ]

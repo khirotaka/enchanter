@@ -27,7 +27,7 @@ __all__ = ["RegressionRunner", "AutoEncoderRunner"]
 
 class RegressionRunner(BaseRunner, RegressorMixin):
     """
-    回帰問題を対象にしたRunner。
+    Runner for regression problems.
 
     Examples:
         >>> runner = RegressionRunner(...)
@@ -60,6 +60,15 @@ class RegressionRunner(BaseRunner, RegressorMixin):
         self.early_stop = early_stop
 
     def general_step(self, batch: Tuple) -> Dict:
+        """
+        This method is executed by train_step, val_step, test_step.
+
+        Args:
+            batch:
+
+        Returns:
+
+        """
         x, y = batch
 
         with autocast(enabled=isinstance(self.scaler, GradScaler)):
@@ -71,6 +80,15 @@ class RegressionRunner(BaseRunner, RegressorMixin):
 
     @staticmethod
     def general_end(outputs: List) -> Dict:
+        """
+        This method is executed by train_end, val_end, test_end.
+
+        Args:
+            outputs:
+
+        Returns:
+
+        """
         avg_loss = stack([x["loss"] for x in outputs]).mean()
         avg_r2 = stack([tensor(x["r2"]) for x in outputs]).mean()
         return {"avg_loss": avg_loss, "avg_r2": avg_r2}
@@ -103,7 +121,21 @@ class RegressionRunner(BaseRunner, RegressorMixin):
 
 
 class AutoEncoderRunner(RegressionRunner):
+    """
+    Runner for training AutoEncoder.
+
+    """
+
     def general_step(self, batch: Tuple) -> Dict:
+        """
+        This method is executed by train_step, val_step, test_step.
+
+        Args:
+            batch:
+
+        Returns:
+
+        """
         x, _ = batch
         with autocast(enabled=isinstance(self.scaler, GradScaler)):
             out = self.model(x)
@@ -113,5 +145,14 @@ class AutoEncoderRunner(RegressionRunner):
 
     @staticmethod
     def general_end(outputs: List) -> Dict:
+        """
+        This method is executed by train_end, val_end, test_end.
+
+        Args:
+            outputs:
+
+        Returns:
+
+        """
         avg_loss = stack([x["loss"] for x in outputs]).mean()
         return {"avg_loss": avg_loss}
