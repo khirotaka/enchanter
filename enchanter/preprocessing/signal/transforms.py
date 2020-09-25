@@ -131,8 +131,8 @@ class GaussianNoise:
         >>> y = noise(x)
 
     Args:
-        sigma: 正規分布の :math:`\sigma`
-        mu: 正規分布の :math:`\mu`
+        sigma: normal distribution paramter :math:`\sigma`
+        mu: normal distribution paramter :math:`\mu`
 
     """
 
