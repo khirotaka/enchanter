@@ -35,6 +35,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "sphinx.ext.autosummary",
     "sphinx.ext.viewcode",
     "sphinx_copybutton",
     "sphinx_material"
@@ -53,7 +54,7 @@ templates_path = ['_templates']
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = 'ja'
+language = 'en'
 
 # List of patterns, relative to reference directory, that match files and
 # directories to ignore when looking for reference files.
@@ -99,15 +100,15 @@ html_theme_options = {
     "version_dropdown": True,
     "version_json": "_static/versions.json",
     "version_info": {
-        "master": "https://enchanter.readthedocs.io/ja/latest/",
-        "develop": "https://enchanter.readthedocs.io/ja/develop/",
-        "v0.5.0": "https://enchanter.readthedocs.io/ja/v0.5.0/",
-        "v0.5.1": "https://enchanter.readthedocs.io/ja/v0.5.1/",
-        "v0.5.2": "https://enchanter.readthedocs.io/ja/v0.5.2/",
-        "v0.5.3": "https://enchanter.readthedocs.io/ja/v0.5.3/",
-        "v0.6.0": "https://enchanter.readthedocs.io/ja/v0.6.0/",
-        "v0.7.0": "https://enchanter.readthedocs.io/ja/v0.7.0/",
-        "v0.7.1": "https://enchanter.readthedocs.io/ja/v0.7.1/",
+        "master": "https://enchanter.readthedocs.io/en/latest/",
+        "develop": "https://enchanter.readthedocs.io/en/develop/",
+        "v0.5.0": "https://enchanter.readthedocs.io/en/v0.5.0/",
+        "v0.5.1": "https://enchanter.readthedocs.io/en/v0.5.1/",
+        "v0.5.2": "https://enchanter.readthedocs.io/en/v0.5.2/",
+        "v0.5.3": "https://enchanter.readthedocs.io/en/v0.5.3/",
+        "v0.6.0": "https://enchanter.readthedocs.io/en/v0.6.0/",
+        "v0.7.0": "https://enchanter.readthedocs.io/en/v0.7.0/",
+        "v0.7.1": "https://enchanter.readthedocs.io/en/v0.7.1/",
     },
 }
 
