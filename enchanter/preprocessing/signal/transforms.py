@@ -161,8 +161,8 @@ class RandomScaling:
         >>> y = scale(x)
 
     Args:
-        start(float): スケーリング範囲の開始点
-        end(float):　スケーリング範囲の終了点
+        start(float): Starting point of scaling range.
+        end(float):　End point of scaling range.
 
     """
 

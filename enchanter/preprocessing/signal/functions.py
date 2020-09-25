@@ -61,6 +61,7 @@ class FixedSlidingWindow:
 
     def transform(self, inputs: ndarray, verbose: bool = False) -> ndarray:
         """
+        Apply Fixed Sliding Window
 
         Args:
             inputs: 2 or 3 dim of np.ndarray
@@ -68,6 +69,7 @@ class FixedSlidingWindow:
 
         Returns:
             np.ndarray
+
         """
         seq_len = inputs.shape[0]
         if not seq_len > self.window_size:
@@ -89,9 +91,12 @@ class FixedSlidingWindow:
     def clean(labels: ndarray) -> ndarray:
         """
         Clean up
+
         Args:
             labels:
+
         Returns:
+
         """
         tmp = []
         for lbl in labels:
@@ -122,20 +127,26 @@ def adjust_sequences(
     dtype: Type = float32,
 ) -> ndarray:
     """
-    長さが一定でない系列データを一定の長さに整える関数。
-    各サンプルに対して、 `max_len` よりもサンプルの系列が長い場合は、`max_len` まででそれ以降は無視され、
-    `max_len` より短い場合は、足りない部分は最後の値を用いて埋められます。
+    The function to adjust the length of the series data to a certain value.
+    For each sample, if the series is longer than ``max_len``, the length is up to ``max_len``, and the rest is ignored.
+    If it is shorter than ``max_len``, the missing part is filled in with the last value.
 
     Args:
-        sequences: 要素に、長さが一定でない np.ndarray オブジェクトを持つ Python配列。
-                   各要素は2次元配列、第0次元目は系列の長さ、第1次元目は時系列の特徴の数で、全てのサンプルにおいて同じ特徴数である必要があります。
-        max_len: 入力された全ての要素を指定した長さに加工します。
-                   もし、指定されなかった場合は、与えられたサンプルの中で最も大きい系列長がmax_lenになります。
-                   また、np.max や np.min, np.mean と言った関数が与えられた場合、それを用いて新しい長さの系列を生成できます。
-        fill: `max_len` より短い場合は、足りない部分を埋める方法を指定します。 fill='ffill' とされた場合、最後の値を用いて埋められます。
-               数値(Python int or Python float) が与えられた場合は、その値を用いて値を埋めます。
-               fill=["ffill" or int or float]
-        dtype:  NumPy のデータ型を指定してください。この値を元に出力系列のデータ型が決定されます。
+        sequences: A Python list whose elements have ``np.ndarray`` objects that are not constant in length.
+                   Each element is a 2D array, the 0th dimension is the length of the series, the 1st dimension is
+                   the number of features in the time series, and all samples must have the same number of features.
+
+        max_len: Processes all input elements to the specified length.
+                    If not specified, the largest sequence length in a given sample will be max_len.
+                    Also, given functions such as np.max, np.min, and np.mean,
+                    you can use them to generate new length series.
+
+        fill: If it is shorter than ``max_len``, specify how to fill in the missing parts.
+                If ``fill ='ffill'``, it will be filled with the last value.
+                If a number (Python int or Python float) is given, use that value to fill the value.
+                ``fill=["ffill" or int or float]``
+
+        dtype:  Specify the data type of NumPy. The data type of the output series is determined based on this value.
 
     Examples:
         >>> import numpy as np
@@ -169,7 +180,8 @@ def adjust_sequences(
         >>> #         [3]]])
 
     Returns:
-        長さを調整した系列を np.dstack し、[Samples, Seq_len, Features] の3次元配列にし返します。
+        Returns a 3D array of ``[Sample, Seq_len, Features]``.
+
     """
     features = sequences[0].shape[1]
 
