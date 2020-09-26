@@ -1,4 +1,5 @@
 from comet_ml import Experiment
+# from enchanter.callbacks import TensorBoardLogger as Experiment
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -7,7 +8,11 @@ from tslearn.datasets import UCR_UEA_datasets
 from enchanter.addons import layers as L
 from enchanter.callbacks import EarlyStoppingForTSUS
 from enchanter.tasks import TimeSeriesUnsupervisedRunner
+from enchanter.engine.modules import fix_seed
+from enchanter.utils.datasets import TimeSeriesLabeledDataset
 
+
+fix_seed(800)
 
 downloader = UCR_UEA_datasets()
 x_train, y_train, x_test, y_test = downloader.load_dataset("Libras")
@@ -40,12 +45,11 @@ class Encoder(nn.Module):
         return self.fc(out)
 
 
-
 experiment = Experiment()
 experiment.add_tag("ts-us")
 
-train_ds = TensorDataset(x_train, y_train)
-test_ds = TensorDataset(x_test, y_test)
+train_ds = TimeSeriesLabeledDataset(x_train, y_train)
+test_ds = TimeSeriesLabeledDataset(x_test, y_test)
 
 train_loader = DataLoader(train_ds, batch_size=32)
 test_loader = DataLoader(test_ds, batch_size=32)
@@ -54,7 +58,8 @@ model = Encoder(x_train.shape[1], 30, 100)
 optimizer = optim.Adam(model.parameters())
 
 runner = TimeSeriesUnsupervisedRunner(
-    model, optimizer, experiment, 10, 1, callbacks=[EarlyStoppingForTSUS(x_train, y_train)]
+    model, optimizer, experiment, 10, 1,
+    callbacks=[EarlyStoppingForTSUS(x_train, y_train)]
 )
 
 runner.train_config(10)
