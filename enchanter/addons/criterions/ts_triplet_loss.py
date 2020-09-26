@@ -3,19 +3,21 @@ from typing import Tuple
 import numpy as np
 import torch
 import torch.nn.functional as F
+import torch.jit
 
 
 def generate_sample_indices(
     n_rand_samples: int, batch_size: int, length: int
-) -> Tuple[np.ndarray, int, np.ndarray, int, np.ndarray]:
+) -> Tuple[np.ndarray, int, np.ndarray, int, torch.Tensor]:
     """
 
     Args:
-        n_rand_samples:
-        batch_size:
-        length:
+        n_rand_samples: the number of negative samples
+        batch_size: batch size
+        length: length of time series.
 
     Returns:
+
 
     """
     len_pos_neg: int = np.random.randint(1, length + 1)
@@ -29,7 +31,7 @@ def generate_sample_indices(
 
     end_pos: np.ndarray = begin_pos + len_pos_neg
 
-    begin_neg_samples: np.ndarray = np.random.randint(0, length - len_pos_neg + 1, size=(n_rand_samples, batch_size))
+    begin_neg_samples: torch.Tensor = torch.randint(0, high=length - len_pos_neg + 1, size=(n_rand_samples, batch_size))
 
     return begin_batches, random_len, end_pos, len_pos_neg, begin_neg_samples
 
@@ -40,12 +42,14 @@ def generate_anchor_positive_input(
     """
 
     Args:
-        n_rand_samples:
-        batch_size:
-        length:
-        original_data:
+        n_rand_samples: the number of negative samples
+        batch_size: batch size
+        length: length of time series
+        original_data: training data
 
     Returns:
+        - anchor data (torch.Tensor)
+        - positive data (torch.Tensor)
 
     """
     begin_batches, random_len, end_pos, len_pos_neg, begin_neg_samples = generate_sample_indices(
@@ -63,8 +67,9 @@ def generate_anchor_positive_input(
     return anchor_data, positive_data
 
 
+@torch.jit.script
 def generate_negative_input(
-    begin_neg_samples: np.ndarray,
+    begin_neg_samples: torch.Tensor,
     len_pos_neg: int,
     batch_size: int,
     idx: int,
@@ -74,15 +79,20 @@ def generate_negative_input(
     """
 
     Args:
-        begin_neg_samples:
-        len_pos_neg:
-        batch_size:
-        idx:
-        train:
+        begin_neg_samples: Starting points of negative samples
+        len_pos_neg: length of negative and postive samples
+        batch_size: batch size
+        idx: Parameter `k` on the paper.
+        train: training dataset
         samples:
 
     Returns:
-        negative_input: (torch.Tensor) - [batch_size, features, len_pos_neg]
+        negative_input (torch.Tensor) - [batch_size, features, len_pos_neg]
+
+    Notes:
+        When running mypy, ``error: Slice index must be an integer or None`` is detected on lines 97 and 98.
+        Ignore it for now.
+        Also, I didn't add ``type: ignore`` as a comment because it has a negative impact on ``TorchScript`` execution.
 
     """
     negative_data = torch.cat(
@@ -97,39 +107,66 @@ def generate_negative_input(
     return negative_data
 
 
+@torch.jit.script
 def positive_criterion_for_triplet_loss(anchor: torch.Tensor, positive: torch.Tensor) -> torch.Tensor:
     """
 
     .. math::
 
-        positive loss =
-            -\log\Bigl(\sigma\bigl(f(\bm{x}^{ref}) ^\mathrm{T} f(\bm{x}^{pos})\bigr)\Bigr)
+        positive\ loss =
+            -\log\Bigl(\sigma(f(x^{ref}) ^\mathrm{T} f(x^{pos}))\Bigr)
 
     Args:
-        anchor:
-        positive:
+        anchor: :math:`f(x^{ref})` ... anchor representation
+        positive: :math:`f(x^{pos})` ... positive representation
 
     Returns:
+        positive loss (torch.Tensor)
 
     """
     positive_loss: torch.Tensor = -torch.mean(F.logsigmoid(torch.bmm(anchor, positive)))
     return positive_loss
 
 
+@torch.jit.script
 def negative_criterion_for_triplet_loss(anchor: torch.Tensor, positive: torch.Tensor) -> torch.Tensor:
     """
 
     .. math::
 
-        negative loss =
-            - \sum^K_{k=1}\log\Bigl(\sigma\bigl(-f(\bm{x}^{ref}) ^\mathrm{T}f(\bm{x}_k^{neg})\bigr)\Bigl)
+        negative\ loss = - \log\Bigl(\sigma(-f(x^{ref}) ^\mathrm{T}f(x_k^{neg}))\Bigl)
 
     Args:
-        anchor:
-        positive:
+        anchor: :math:`f(x^{ref})` ... anchor representation
+        positive: :math:`f(x^{neg})` ... negative representation
 
     Returns:
+        negative loss (torch.Tensor)
 
     """
     negative_loss = -torch.mean(F.logsigmoid(-torch.bmm(anchor, positive)))
     return negative_loss
+
+
+@torch.jit.script
+def calculate_triplet_loss(
+    positive_loss: torch.Tensor, negative_loss: torch.Tensor, multiplicative_ration: float
+) -> torch.Tensor:
+    """
+
+    .. math::
+
+        Loss = positive\ loss + α × negative\ loss
+
+    Args:
+        positive_loss: output of ``positive_criterion_for_triplet_loss``
+        negative_loss: output of ``negative_criterion_for_triplet_loss``
+        multiplicative_ration: :math:`α`
+
+    Returns:
+        loss (torch.Tensor)
+
+    """
+    loss: torch.Tensor = positive_loss + multiplicative_ration * negative_loss
+
+    return loss
