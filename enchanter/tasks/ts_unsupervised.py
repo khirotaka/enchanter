@@ -22,7 +22,7 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
     Unsupervised representation learning for time series uses
     the the Unsupervised Triplet Loss proposed in NeurIPS 2019.
 
-    Paper: `Unsupervised Scalable Representation Learning for Multivariate Time Series
+    Paper: `Unsupervised Scalable Representation Learning for Multivariate Time Series \
         <https://papers.nips.cc/paper/8713-unsupervised-scalable-representation-learning-for-multivariate-time-series>`_
 
     """
@@ -93,6 +93,21 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         anchor_representation: torch.Tensor,
         data: torch.Tensor,
     ) -> torch.Tensor:
+        """
+        calculate negative loss per negative sample
+
+        Args:
+            begin_neg:
+            len_pos_neg:
+            batch_size:
+            negative_sample_step:
+            anchor_representation:
+            data:
+
+        Returns:
+            negative loss (torch.Tensor)
+
+        """
         representation_size: int = anchor_representation.shape[2]
         negative_data: torch.Tensor = generate_negative_input(
             begin_neg, len_pos_neg, batch_size, negative_sample_step, self.train_ds.data, data  # type: ignore
@@ -107,6 +122,17 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         return negative_loss
 
     def calculate_negative_loss(self, positive_loss, anchor_representation):
+        """
+        calculate negative loss using all negative samples.
+
+        Args:
+            positive_loss:
+            anchor_representation:
+
+        Returns:
+            loss (torch.Tensor)
+
+        """
         train_size: int = len(self.train_ds)
         multiplicative_ration: float = self.negative_penalty / self.n_negative_samples
         batch_size: int = anchor_representation.shape[0]
@@ -167,6 +193,16 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         return {"avg_loss": avg_loss}
 
     def encode(self, data: np.ndarray) -> np.ndarray:
+        """
+        output encoded data.
+
+        Args:
+            data: data
+
+        Returns:
+            encoded data
+
+        """
         data = torch.tensor(data, device=self.device)
         out = self.model(data).cpu().numpy()
         return out
