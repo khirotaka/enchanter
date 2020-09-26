@@ -6,11 +6,22 @@ enchanter.utils
 
 enchanter.utils.comet
 ----------------------------
-
 ..  automodule:: enchanter.utils.comet
+..  autoclass:: TunerConfigGenerator
     :members:
-    :undoc-members:
     :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~export
+        ~generate
+        ~suggest_categorical
+        ~suggest_linear
+        ~suggest_uniform
+        ~suggest_normal
+        ~suggest_lognormal
+        ~suggest_loguniform
+        ~suggest_discrete
 
 
 enchanter.utils.backend

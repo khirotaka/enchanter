@@ -1,5 +1,5 @@
 from .classification import ClassificationRunner
-from .regression import RegressionRunner
+from .regression import RegressionRunner, AutoEncoderRunner
 from .ensemble import HardEnsemble, SoftEnsemble, BaseEnsembleEstimator
 from .ts_unsupervised import TimeSeriesUnsupervisedRunner
 
@@ -10,4 +10,5 @@ __all__ = [
     "SoftEnsemble",
     "BaseEnsembleEstimator",
     "TimeSeriesUnsupervisedRunner",
+    "AutoEncoderRunner",
 ]

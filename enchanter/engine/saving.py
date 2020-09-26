@@ -23,6 +23,12 @@ class RunnerIO:
         self.experiment = NotImplemented
 
     def model_name(self) -> str:
+        """
+        fetch model name
+
+        Returns: model name
+
+        """
         if isinstance(self.model, nn.DataParallel) or isinstance(self.model, nn.parallel.DistributedDataParallel):
             model_name = self.model.module.__class__.__name__
         else:
@@ -36,8 +42,8 @@ class RunnerIO:
 
         Returns:
             Returns a dictionary with the following keys and values.
-                - "model_state_dict": model weights
-                - "optimizer_state_dict": Optimizer state
+                - ``model_state_dict``: model weights
+                - ``optimizer_state_dict``: Optimizer state
 
         """
         if isinstance(self.model, nn.DataParallel) or isinstance(self.model, nn.parallel.DistributedDataParallel):
@@ -53,14 +59,14 @@ class RunnerIO:
 
     def load_checkpoint(self, checkpoint: Dict[str, OrderedDict]):
         """
-        Takes a dictionary with keys 'model_state_dict' and 'optimizer_state_dict'
+        Takes a dictionary with keys ``model_state_dict`` and ``optimizer_state_dict``
         and uses them to restore the state of the model and the Optimizer.
 
         Args:
             checkpoint:
                 Takes a dictionary with the following keys and values.
-                    - "model_state_dict": model weights
-                    - "optimizer_state_dict": Optimizer state
+                    - ``model_state_dict``: model weights
+                    - ``optimizer_state_dict``: Optimizer state
         """
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])

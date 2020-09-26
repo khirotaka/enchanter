@@ -35,17 +35,16 @@ Enchanterへの貢献には2つのカテゴリに分類されます。
     $ git remote add upstream git@github.com:khirotaka/enchanter.git
 
 
-Enchanterでは開発のための仮想環境に `Poetry <https://python-poetry.org>`_ を利用することができます。
+Enchanterでは開発のための仮想環境に `Poetry <https://python-poetry.org>`_ を利用しています。
 既にインストール済みなら、以下のコマンドで開発環境を整備することができます。
 
 .. code-block:: shell
 
-    $ poetry develop
+    $ poetry install
     $ poetry shell
 
 これにより、Enchanterを編集可能モードでインストールすることができ、変更内容がすぐ反映されます。
 
-もし、Poetryをインストールしていなくても、``pip install -e .`` を実行することで上と同じ結果を得ることができます。
 なお、Enchanterが確実に動作するPythonのバージョンは3.6.5 ~ 3.8です。
 
 

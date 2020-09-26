@@ -39,7 +39,7 @@ To develop Enchanter on your machine.
     and install Enchanter on develop mode.
 
     ```shell script
-    poetry develop    # install enchanter
+    poetry install    # install enchanter
     poetry shell      # activate virtual environment
     ```
 

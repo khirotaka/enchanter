@@ -15,17 +15,22 @@ Activation functions
 
 .. autoclass:: Mish
     :members:
-    :undoc-members:
     :show-inheritance:
 
+    .. rubric:: Methods
+    .. autosummary::
+        ~forward
 
 `Swish`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: Swish
     :members:
-    :undoc-members:
     :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~forward
 
 
 `FReLU1d`
@@ -33,8 +38,11 @@ Activation functions
 
 .. autoclass:: FReLU1d
     :members:
-    :undoc-members:
     :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~forward
 
 
 `FReLU2d`
@@ -42,8 +50,11 @@ Activation functions
 
 .. autoclass:: FReLU2d
     :members:
-    :undoc-members:
     :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~forward
 
 
 Optimizers
