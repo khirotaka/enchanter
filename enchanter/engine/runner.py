@@ -101,6 +101,10 @@ class BaseRunner(ABC, RunnerIO):
             loss.backward()
 
     def update_optimizer(self) -> None:
+        """
+        update optimizer
+
+        """
         if isinstance(self.scaler, amp.GradScaler):
             self.scaler.step(self.optimizer)
             self.scaler.update()
@@ -420,6 +424,7 @@ class BaseRunner(ABC, RunnerIO):
 
     def log_hyperparams(self, dic: Dict = None, prefix: Optional[str] = None) -> None:
         """
+        logging hyper parameters
 
         Args:
             dic (Dict):

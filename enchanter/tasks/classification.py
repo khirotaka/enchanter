@@ -31,7 +31,7 @@ __all__ = ["ClassificationRunner"]
 
 class ClassificationRunner(BaseRunner, ClassifierMixin):
     """
-    分類タスク向けの Runner です。
+    Runner for classification tasks.
 
     Examples:
         >>> from comet_ml import Experiment
@@ -75,6 +75,15 @@ class ClassificationRunner(BaseRunner, ClassifierMixin):
         self.manager = CallbackManager(callbacks)
 
     def general_step(self, batch: Tuple) -> Dict:
+        """
+        This method is executed by train_step, val_step, test_step.
+
+        Args:
+            batch:
+
+        Returns:
+
+        """
         x, y = batch
 
         with autocast(enabled=isinstance(self.scaler, GradScaler)):
@@ -86,6 +95,15 @@ class ClassificationRunner(BaseRunner, ClassifierMixin):
 
     @staticmethod
     def general_end(outputs: List) -> Dict:
+        """
+        This method is executed by train_end, val_end, test_end.
+
+        Args:
+            outputs:
+
+        Returns:
+
+        """
         avg_loss = stack([x["loss"] for x in outputs]).mean()
         avg_acc = stack([tensor(x["accuracy"]) for x in outputs]).mean()
         return {"avg_loss": avg_loss, "avg_acc": avg_acc}

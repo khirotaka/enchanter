@@ -131,8 +131,8 @@ class GaussianNoise:
         >>> y = noise(x)
 
     Args:
-        sigma: 正規分布の :math:`\sigma`
-        mu: 正規分布の :math:`\mu`
+        sigma: normal distribution paramter :math:`\sigma`
+        mu: normal distribution paramter :math:`\mu`
 
     """
 
@@ -161,8 +161,8 @@ class RandomScaling:
         >>> y = scale(x)
 
     Args:
-        start(float): スケーリング範囲の開始点
-        end(float):　スケーリング範囲の終了点
+        start(float): Starting point of scaling range.
+        end(float):　End point of scaling range.
 
     """
 

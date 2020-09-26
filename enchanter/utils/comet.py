@@ -35,20 +35,20 @@ class TunerConfigGenerator:
         trials: int = 1,
     ) -> None:
         """
-        各引数のより詳しい説明は https://www.comet.ml/docs/python-sdk/introduction-optimizer/ を参照してください。
+        See https://www.comet.ml/docs/python-sdk/introduction-optimizer/ for a more detailed explanation of each argument.
 
         Args:
-            algorithm: パラメータチューニングに用いるアルゴリズムを指定します。対応しているアルゴリズムは ['grid', 'random', 'bayes'] です。
-            metric: 最小化/最大化する値を指定します。デフォルトでは、'validate_avg_loss' が指定されています。
-            objective: metrics を最大化/最小化するかを指定します。['minimize', 'maximize'] で指定してください。
-            seed: シード値を設定します。デフォルトでは指定されていません。
-            max_combo: 整数、試行するパラメーターの組み合わせの制限（デフォルトは0、制限なしを意味します）
-            grid_size: 整数、グリッドを作成するときのパラメーターあたりのビンの数（デフォルトは10）
-            min_sample_size: 整数、適切なグリッド範囲を見つけるのに役立つサンプル数（デフォルトは100）
-            retry_limit: 整数、中断する前に一意のパラメータセットを作成しようとする制限（デフォルトは20）
+            algorithm: Specifies the algorithm used for parameter tuning. The supported algorithms are ``['grid','random','bayes']``.
+            metric: Specify the value to be minimized / maximized. By default,``validate_avg_loss`` is specified.
+            objective: Specifies whether to maximize / minimize metrics. Specify with ``['minimize','maximize']``.
+            seed: Set the seed value. Not specified by default.
+            max_combo: Integer. Limit on the combination of parameters to try (default is 0, meaning no limit)
+            grid_size: Integer. Number of bins per parameter when creating a grid (default is 10).
+            min_sample_size: Integer. Number of samples to help find a suitable grid range (default is 100).
+            retry_limit: integer. A limit that attempts to create a unique set of parameters before suspending (default is 20).
             retry_assign_limit:
-            name: 文字列、この検索インスタンスに関連付けるパーソナライズ可能な名前（オプション）
-            trials: 試行回数を指定します。
+            name: String. A personalizable name associated with this search instance. (option)
+            trials: Specifies the number of trials in a single experiment.
         """
 
         if algorithm not in ["grid", "bayes", "random"]:
@@ -71,11 +71,11 @@ class TunerConfigGenerator:
 
     def suggest_categorical(self, name: str, values: List[str]):
         """
-        カテゴリカル変数を探索する為のメソッドです。
+        A method for searching categorical variables.
 
         Args:
-            name: 変数の名前を指定します。
-            values: 探索する変数をしていします。comet.mlの仕様上、文字列のリストを与える必要があります。
+            name: Specify the name of the variable.
+            values: I have a variable to search. Due to the specifications of comet.ml, it is necessary to give a list of strings.
 
         Examples:
             >>> import comet_ml
@@ -134,6 +134,7 @@ class TunerConfigGenerator:
         dtype: Optional[type] = None,
     ):
         """
+        If Integer, independent distribution. else if float the same as uniform.
 
         Args:
             name:
@@ -155,13 +156,13 @@ class TunerConfigGenerator:
         dtype: Optional[type] = None,
     ):
         """
-        変数を一様分布からサンプリングし探索する為のメソッドです。
+        This is a method for sampling and searching variables from a uniform distribution.
 
         Args:
-            name: 変数の名前
-            min_value: 最小値
-            max_value: 最大値
-            dtype: データ型。指定されない場合、`min_value` と `max_value` の値から自動的に推定されます。
+            name: Variable name
+            min_value: minimum value
+            max_value: Maximum value
+            dtype: Data type. If not specified, it is automatically estimated from the values of ``min_value`` and` `max_value``.
 
         Examples:
             >>> import comet_ml
@@ -185,15 +186,15 @@ class TunerConfigGenerator:
         dtype: Optional[type] = None,
     ):
         """
-        変数を正規分布からサンプリングし探索する為のメソッドです。
+        This is a method for sampling and searching variables from a normal distribution.
 
         Args:
-            name: 変数の名前
-            min_value: 最小値
-            max_value: 最大値
-            mu: 正規分布のμ
-            sigma: 正規分布のσ
-            dtype: データ型。指定されない場合、`min_value` と `max_value` の値から自動的に推定されます。
+            name: Variable name
+            min_value: minimum value
+            max_value: Maximum value
+            mu: Normal distribution μ
+            sigma: Normal distribution σ
+            dtype: Data type. If not specified, it is automatically estimated from the values of ``min_value`` and` `max_value``.
 
         Examples:
             >>> import comet_ml
@@ -217,15 +218,15 @@ class TunerConfigGenerator:
         dtype: Optional[type] = None,
     ):
         """
-        変数を対数正規分布からサンプリングし探索する為のメソッドです。
+        A method for sampling and searching variables from a lognormal distribution.
 
         Args:
-            name: 変数の名前
-            min_value: 最小値
-            max_value: 最大値
-            mu: 正規分布のμ
-            sigma: 正規分布のσ
-            dtype: データ型。指定されない場合、`min_value` と `max_value` の値から自動的に推定されます。
+            name: Variable name
+            min_value: minimum value
+            max_value: Maximum value
+            mu: Normal distribution μ
+            sigma: Normal distribution σ
+            dtype: Data type. If not specified, it is automatically estimated from the values of ``min_value`` and` `max_value``.
 
         Examples:
             >>> import comet_ml
@@ -247,13 +248,13 @@ class TunerConfigGenerator:
         dtype: Optional[type] = None,
     ):
         """
-        変数を対数一様分布からサンプリングし探索する為のメソッドです。
+        This is a method for sampling and searching variables from a uniform distribution.
 
         Args:
-            name: 変数の名前
-            min_value: 最小値
-            max_value: 最大値
-            dtype: データ型。指定されない場合、`min_value` と `max_value` の値から自動的に推定されます。
+            name: Variable name
+            min_value: minimum value
+            max_value: Maximum value
+            dtype: Data type. If not specified, it is automatically estimated from the values of ``min_value`` and` `max_value``.
 
         Examples:
             >>> import comet_ml
@@ -269,11 +270,11 @@ class TunerConfigGenerator:
 
     def suggest_discrete(self, name: str, values: List[Union[float, int]]):
         """
-        指定した数値型の変数を探索する為のメソッドです。
+        This method is used to search for the specified numeric type variable.
 
         Args:
-            name: 変数の名前
-            values: 数値型の要素で構成されたリスト
+            name: Variable name
+            values: A list of numeric elements
 
         Examples:
             >>> import comet_ml
@@ -289,7 +290,7 @@ class TunerConfigGenerator:
 
     def generate(self) -> Dict[str, Any]:
         """
-        `comet_ml.Optimizer` 用のConfigを生成する為のメソッドです。
+        A method for generating a Config for ``comet_ml.Optimizer``.
 
         Examples:
             >>> cfg = TunerConfigGenerator()
@@ -308,7 +309,7 @@ class TunerConfigGenerator:
 
     def export(self, filename: str) -> None:
         """
-        作成したConfigをファイルにして保存する為のメソッドです。
+        It is a method to save the created Config as a file.
 
         """
         with open(filename, "w") as f:

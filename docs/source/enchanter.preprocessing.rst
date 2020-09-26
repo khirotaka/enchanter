@@ -8,56 +8,60 @@ Signal
 -------------------------------
 
 Transforms
-~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: enchanter.preprocessing.signal.transforms
 .. currentmodule:: enchanter.preprocessing.signal.transforms
 
-`Compose`
-^^^^^^^^^^^^^^^^
+transforms.Compose
+^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: Compose
     :members:
-    :undoc-members:
     :show-inheritance:
 
+    .. rubric:: Methods
+    .. autosummary::
+        ~insert
+        ~append
+        ~extend
 
-`FixedWindow`
-^^^^^^^^^^^^^^^^
+
+transforms.FixedWindow
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: FixedWindow
     :members:
-    :undoc-members:
     :show-inheritance:
 
 
-`GaussianNoise`
-^^^^^^^^^^^^^^^^
+transforms.GaussianNoise
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: GaussianNoise
     :members:
-    :undoc-members:
     :show-inheritance:
 
-`RandomScaling`
-^^^^^^^^^^^^^^^^
+transforms.RandomScaling
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: RandomScaling
     :members:
-    :undoc-members:
     :show-inheritance:
 
-`Pad`
-^^^^^^^^^^^^^^^^
+
+transforms.Pad
+^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: Pad
     :members:
-    :undoc-members:
     :show-inheritance:
 
 
+
 Functions
-~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+
 
 .. automodule:: enchanter.preprocessing.signal
 .. currentmodule:: enchanter.preprocessing.signal
@@ -67,8 +71,12 @@ Functions
 
 .. autoclass:: FixedSlidingWindow
     :members:
-    :undoc-members:
     :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~transform
+        ~clean
 
 
 `adjust_sequences`

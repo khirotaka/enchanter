@@ -29,7 +29,7 @@ class Swish(nn.Module):
         else:
             self.weight = 1.0
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Apply Swish function.
 
@@ -40,13 +40,13 @@ class Swish(nn.Module):
             >>> y = act(x)
 
         Args:
-            inputs (torch.Tensor):
+            x (torch.Tensor):
 
         Returns:
             Result of applying Swish (torch.Tensor)
 
         """
-        out = inputs * torch.sigmoid(self.weight * inputs)
+        out = x * torch.sigmoid(self.weight * x)
         return out
 
 
@@ -58,7 +58,7 @@ def mish(x: torch.Tensor) -> torch.Tensor:
     Examples:
         >>> import torch
         >>> inputs = torch.randn(2)
-        >>> outouts = mish(inputs)
+        >>> outputs = mish(inputs)
 
     Args:
         x (torch.Tensor): Input Data
@@ -125,6 +125,15 @@ class FReLU1d(nn.Module):
         self.norm = nn.BatchNorm1d(in_features)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Applies the Funnel Activation (FReLU) for 1d inputs such as sensor signals.
+
+        Args:
+            x: torch.Tensor
+
+        Returns:
+
+        """
         out = self.conv(x)
         out = self.norm(out)
         out = torch.max(x, out)
@@ -155,6 +164,15 @@ class FReLU2d(nn.Module):
         self.norm = nn.BatchNorm2d(in_features)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Applies the Funnel Activation (FReLU) for 2d inputs such as images.
+
+        Args:
+            x: torch.Tensor
+
+        Returns:
+
+        """
         out = self.conv(x)
         out = self.norm(out)
         out = torch.max(x, out)
