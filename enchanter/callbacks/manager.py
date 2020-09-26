@@ -26,6 +26,12 @@ class CallbackManager(Callback):
         super(CallbackManager, self).__init__()
         self.callbacks = callbacks
 
+    def set_experiment(self, experiment):
+        self.experiment = experiment
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                callback.experiment = self.experiment
+
     def set_device(self, device):
         self.device = device
         if self.callbacks is not None:

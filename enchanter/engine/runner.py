@@ -469,6 +469,7 @@ class BaseRunner(ABC, RunnerIO):
 
         self.manager.callbacks = self.callbacks
 
+        self.manager.set_experiment(self.experiment)
         self.manager.set_device(self.device)
         self.manager.set_optimizer(self.optimizer)
         self.manager.set_model(self.model)

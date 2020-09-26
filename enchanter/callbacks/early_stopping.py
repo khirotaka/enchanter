@@ -12,7 +12,8 @@ from typing import Any, Dict, Optional, Union
 import torch
 import numpy as np
 from sklearn.svm import SVC
-from sklearn.model_selection import cross_validate, StratifiedKFold
+from sklearn.base import BaseEstimator
+from sklearn.model_selection import cross_validate, StratifiedKFold, BaseCrossValidator
 from .base import Callback
 
 
@@ -39,7 +40,7 @@ class EarlyStopping(Callback):
             min_delta: Minimum value of change determined as improvement for the monitored value.
             patience: If there is no improvement in the monitored value during the specified number of epochs,
                       the training stops.
-            mode: One of {``'auto'``, ``'min'``, ``'max'``} is selected.
+            mode: One of ``{'auto', 'min', 'max'}`` is selected.
 
                 - ``min`` mode ends the training when the decrease in the monitored value stops.
                 - ``max`` mode, the training is terminated when the monitored values stop increasing.
@@ -113,26 +114,51 @@ class EarlyStoppingForTSUS(Callback):
         self,
         data: torch.Tensor,
         target: torch.Tensor,
-        classifier=SVC(),
+        classifier: BaseEstimator = SVC(),
         monitor: str = "accuracy",
-        patience: int = 5,
-        kfold=None,
+        min_delta: float = 0.0,
+        patience: int = 0,
+        kfold: Optional[BaseCrossValidator] = None,
+        mode: str = "auto",
     ):
-        # TODO min_delta
+        """
+
+        Args:
+            data: Data for training a classifier to evaluate the quality of the encoder's output representation.
+            target: Targets for training a classifier to evaluate the quality of the encoder's output representation.
+            classifier: A classifier for evaluating the quality of the output representation of the encoder.
+            monitor:
+            min_delta:
+            patience:
+            kfold:
+            mode:
+
+        """
         super(EarlyStoppingForTSUS, self).__init__()
         self.classifier = classifier
         self.data: torch.Tensor = data
         self.target: torch.Tensor = target
-        self.patience = patience
         self.monitor: str = monitor
+        self.patience = patience
+        self.min_delta = min_delta
         self.best: float = 0.0
         self.wait: int = 0
         self.stopped_epoch: int = 0
 
-        if kfold is not None:
+        if isinstance(kfold, BaseCrossValidator):
             self.kfold = kfold
         else:
             self.kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
+
+        mode_dict = {
+            "min": np.less,
+            "max": np.greater,
+            "auto": np.greater if "acc" in self.monitor else np.less,
+        }
+        if mode not in mode_dict:
+            mode = "auto"
+        self.monitor_op: Any = mode_dict[mode]
+        self.min_delta *= 1 if self.monitor_op == np.greater else -1
 
     def encode(self):
         out = []
@@ -153,14 +179,16 @@ class EarlyStoppingForTSUS(Callback):
     def on_epoch_end(self, epoch, logs: Optional[Dict] = None):
         stop = False
         current_score = self.cross_val()
+        if self.experiment is not None:
+            self.experiment.log_metric("Early Stopping metric", current_score, step=epoch)
 
-        if current_score > self.best:
+        if self.monitor_op(current_score - self.min_delta, self.best):
             self.best = current_score
             self.wait = 0
         else:
-            self.wait += 1
             if self.wait > self.patience:
                 self.stopped_epoch = epoch
                 stop = True
+            self.wait += 1
 
         self.stop_runner = stop

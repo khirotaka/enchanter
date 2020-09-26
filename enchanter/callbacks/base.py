@@ -20,6 +20,7 @@ class Callback(ABC):
         self.model = None
         self.optimizer = None
         self.device = None
+        self.experiment = None
 
     def set_device(self, device):
         self.device = device
