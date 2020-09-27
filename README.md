@@ -184,8 +184,9 @@ train_loader = DataLoader(train_ds, batch_size=32)
 val_loader = DataLoader(val_ds, batch_size=32)
 test_loader = DataLoader(test_ds, batch_size=32)
 
+runner = tasks.ClassificationRunner(model, optimizer, nn.CrossEntropyLoss(), experiment):
 
-with tasks.ClassificationRunner(model, optimizer, nn.CrossEntropyLoss(), experiment) as runner:
+with runner:
     for epoch in tqdm(range(10)):
         with runner.experiment.train():
             for train_batch in train_loader:
