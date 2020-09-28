@@ -30,6 +30,7 @@ from comet_ml import Experiment
 from comet_ml.api import APIExperiment
 from comet_ml.experiment import BaseExperiment
 
+from enchanter.utils.backend import is_scalar
 from enchanter.callbacks import BaseLogger
 from enchanter.callbacks import Callback
 from enchanter.callbacks import CallbackManager
@@ -270,7 +271,8 @@ class BaseRunner(ABC, RunnerIO):
                     key: outputs[key].detach().cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                     for key in outputs.keys()
                 }
-                self.experiment.log_metrics(outputs, step=self.global_step, epoch=epoch)
+                tmp = {k: outputs[k] for k in outputs.keys() if is_scalar(outputs[k])}
+                self.experiment.log_metrics(tmp, step=self.global_step, epoch=epoch)
                 results.append(outputs)
                 self.manager.on_train_step_end(outputs)
 
@@ -314,7 +316,8 @@ class BaseRunner(ABC, RunnerIO):
                         key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                         for key in outputs.keys()
                     }
-                    self.experiment.log_metrics(outputs, step=self.global_step, epoch=epoch)
+                    tmp = {k: outputs[k] for k in outputs.keys() if is_scalar(outputs[k])}
+                    self.experiment.log_metrics(tmp, step=self.global_step, epoch=epoch)
                     results.append(outputs)
                     self.manager.on_validation_step_end(outputs)
 
@@ -359,7 +362,8 @@ class BaseRunner(ABC, RunnerIO):
                         for key in outputs.keys()
                     }
 
-                    self.experiment.log_metrics(outputs)
+                    tmp = {k: outputs[k] for k in outputs.keys() if is_scalar(outputs[k])}
+                    self.experiment.log_metrics(tmp)
                     results.append(outputs)
                     self.manager.on_test_step_end(outputs)
 
