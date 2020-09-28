@@ -55,3 +55,49 @@ def test_slice_axis_3d():
     enc = bf.slice_axis(torch.from_numpy(x.asnumpy()), axis=2, begin=0, end=-4).numpy().astype("float32")
 
     assert np.sum(mx == enc) == 360
+
+
+def test_is_scalar_1():
+    x = 1.0
+    assert bf.is_scalar(x)
+
+
+def test_is_scalar_2():
+    x = np.array(1.0)
+    assert bf.is_scalar(x)
+
+
+def test_is_scalar_3():
+    x = torch.tensor(1.0)
+    assert bf.is_scalar(x)
+
+
+def test_is_scalar_4():
+    x = np.array([1.0])
+    assert bf.is_scalar(x)
+
+
+def test_is_scalar_5():
+    x = torch.tensor([1.0])
+    assert bf.is_scalar(x)
+
+
+def test_is_scalar_6():
+    x = torch.randn(1, 5)
+    assert not bf.is_scalar(x)
+
+
+def test_is_scalar_7():
+    x = np.random.randn(1, 5)
+    assert not bf.is_scalar(x)
+
+
+def test_is_scalar_8():
+    x = np.array([1, 2, 3])
+    assert not bf.is_scalar(x)
+
+
+def test_is_scalar_9():
+    x = torch.tensor([1, 2, 3])
+    assert not bf.is_scalar(x)
+
