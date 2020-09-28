@@ -64,5 +64,5 @@ runner = TimeSeriesUnsupervisedRunner(
 
 runner.train_config(10)
 runner.add_loader("train", train_loader)
-# runner.add_loader("test", test_loader)
+runner.add_loader("val", test_loader)
 runner.run()

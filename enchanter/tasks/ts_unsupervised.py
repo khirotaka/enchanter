@@ -1,7 +1,13 @@
-from typing import List, Dict, Optional, Union
+from typing import List, Dict, Optional, Union, Tuple
+
 import numpy as np
 from comet_ml.experiment import BaseExperiment
 import torch
+from torch.cuda import amp
+from sklearn.svm import SVC
+from sklearn.base import BaseEstimator
+from sklearn.model_selection import cross_validate
+
 from enchanter.engine import BaseRunner
 from enchanter.addons.criterions.ts_triplet_loss import (
     generate_anchor_positive_input,
@@ -35,6 +41,7 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         n_negative_samples: int = 1,
         negative_penalty: int = 1,
         compared_len: Optional[int] = None,
+        evaluator: BaseEstimator = SVC(),
         save_memory: bool = False,
         scheduler: List = None,
         callbacks: Optional[List[Callback]] = None,
@@ -73,6 +80,7 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
             self.scheduler = scheduler
 
         self.callbacks = callbacks
+        self.evaluator = evaluator
 
     def initialize(self) -> None:
         super(TimeSeriesUnsupervisedRunner, self).initialize()
@@ -168,23 +176,24 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
             self.n_negative_samples, batch_size, length, x_train
         )
 
-        anchor_representation: torch.Tensor = self.model(anchor_data)
-        positive_representation: torch.Tensor = self.model(positive_data)
+        with amp.autocast(enabled=isinstance(self.scaler, amp.GradScaler)):
+            anchor_representation: torch.Tensor = self.model(anchor_data)
+            positive_representation: torch.Tensor = self.model(positive_data)
 
-        representation_size: int = anchor_representation.shape[1]
+            representation_size: int = anchor_representation.shape[1]
 
-        anchor_representation = anchor_representation.view(batch_size, 1, representation_size)
-        positive_representation = positive_representation.view(batch_size, representation_size, 1)
+            anchor_representation = anchor_representation.view(batch_size, 1, representation_size)
+            positive_representation = positive_representation.view(batch_size, representation_size, 1)
 
-        loss = positive_criterion_for_triplet_loss(anchor_representation, positive_representation)
+            loss = positive_criterion_for_triplet_loss(anchor_representation, positive_representation)
 
-        if self.save_memory:
-            loss.backward(retain_graph=True)
-            loss = torch.tensor(0.0, device=self.device)
-            del positive_representation
-            torch.cuda.empty_cache()
+            if self.save_memory:
+                loss.backward(retain_graph=True)
+                loss = torch.tensor(0.0, device=self.device)
+                del positive_representation
+                torch.cuda.empty_cache()
 
-        loss = self.calculate_negative_loss(loss, anchor_representation)
+            loss = self.calculate_negative_loss(loss, anchor_representation)
 
         return {"loss": loss}
 
@@ -192,9 +201,33 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         avg_loss = torch.stack([x["loss"] for x in outputs]).mean()
         return {"avg_loss": avg_loss}
 
-    def encode(self, data: np.ndarray) -> np.ndarray:
+    def val_step(self, batch: Tuple) -> Dict[str, torch.Tensor]:
+        x, y = batch
+        with amp.autocast(enabled=isinstance(self.scaler, amp.GradScaler)):
+            encoded = self.model(x)
+        return {"encoded": encoded, "targets": y}
+
+    def val_end(self, outputs: List) -> Dict[str, torch.Tensor]:
         """
-        output encoded data.
+        Perform cross-validation using the encoded validation data and ``evaluator``.
+
+        Args:
+            outputs: outputs of ``self.val_step()``.
+
+        Returns:
+            ``fit_time``, ``score_time``, ``test_score``, ``train_score``
+
+        """
+        data = torch.cat([output["encoded"] for output in outputs]).cpu().numpy()
+        targets = torch.cat([output["targets"] for output in outputs]).cpu().numpy()
+
+        logs = {k: v.mean() for k, v in cross_validate(self.evaluator, data, targets, return_train_score=True).items()}
+
+        return logs
+
+    def encode(self, data: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tensor]:
+        """
+        Output encoded data. The output data has the same data type as the input.
 
         Args:
             data: data
@@ -203,6 +236,24 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
             encoded data
 
         """
-        data = torch.tensor(data, device=self.device)
-        out = self.model(data).cpu().numpy()
+        if isinstance(data, np.ndarray):
+            data = torch.tensor(data, device=self.device)
+            ndarray = True
+
+        elif isinstance(data, torch.Tensor):
+            data = data.to(self.device)
+            ndarray = False
+
+        else:
+            raise ValueError("Unexpected data type.")
+
+        self.model.eval()
+        with torch.no_grad(), amp.autocast(enabled=isinstance(self.scaler, amp.GradScaler)):
+            out: torch.Tensor = self.model(data)
+
+        if ndarray:
+            out: np.ndarray = out.cpu().numpy()
+        else:
+            out: torch.Tensor = out.cpu()
+
         return out
