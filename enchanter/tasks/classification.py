@@ -22,7 +22,6 @@ from comet_ml.experiment import BaseExperiment as BaseExperiment
 from enchanter.engine import BaseRunner
 from enchanter.callbacks import BaseLogger
 from enchanter.callbacks import Callback
-from enchanter.callbacks import CallbackManager
 from enchanter.metrics import calculate_accuracy
 
 
