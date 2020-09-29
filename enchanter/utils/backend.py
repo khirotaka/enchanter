@@ -59,7 +59,28 @@ def slice_axis(data: torch.Tensor, axis: int, begin: int, end: int) -> torch.Ten
 
 
 def is_scalar(data: Union[Number, Union[np.ndarray, torch.Tensor]]) -> bool:
-    if np.isscalar(data):
+    """
+    Returns True if the type of ``data`` is a scalar type.
+
+    Args:
+        data (Union[Number, Union[np.ndarray, torch.Tensor]]): Numerical value
+
+    Returns:
+        True if ``data`` is a scalar type, False if it is not.
+
+    Examples:
+        >>> a = torch.tensor([1.0])
+        >>> is_scalar(a)    # True
+        >>> a = torch.tensor(1.0)
+        >>> is_scalar(a)    # True
+        >>> a = torch.tensor([1, 2, 3])
+        >>> is_scalar(a)    # False
+        >>> a = 1.0
+        >>> is_scalar(a)    # True
+
+
+    """
+    if isinstance(data, Number):
         return True
     else:
         if len(data.shape) == 0:
