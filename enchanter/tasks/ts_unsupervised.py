@@ -5,7 +5,7 @@ from comet_ml.experiment import BaseExperiment
 import torch
 from torch.cuda import amp
 from sklearn.svm import SVC
-from sklearn.base import BaseEstimator
+from sklearn.base import ClassifierMixin, RegressorMixin
 from sklearn.model_selection import cross_validate
 
 from enchanter.engine import BaseRunner
@@ -41,7 +41,7 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         n_negative_samples: int = 1,
         negative_penalty: int = 1,
         compared_len: Optional[int] = None,
-        evaluator: BaseEstimator = SVC(),
+        evaluator: Union[ClassifierMixin, RegressorMixin] = SVC(),
         save_memory: bool = False,
         scheduler: List = None,
         callbacks: Optional[List[Callback]] = None,
@@ -252,8 +252,19 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
             out: torch.Tensor = self.model(data)
 
         if ndarray:
-            out: np.ndarray = out.cpu().numpy()
+            out: np.ndarray = out.cpu().numpy()  # type: ignore
         else:
-            out: torch.Tensor = out.cpu()
+            out: torch.Tensor = out.cpu()  # type: ignore
+
+        return out
+
+    def predict(self, x: Union[torch.Tensor, np.ndarray]) -> np.ndarray:
+        """
+        See Also ``self.encode``
+
+        """
+        out = self.encode(x)
+        if isinstance(out, torch.Tensor):
+            out = out.numpy()
 
         return out
