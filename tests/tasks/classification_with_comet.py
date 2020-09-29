@@ -33,7 +33,7 @@ def test_classification_1():
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        OfflineExperiment(offline_directory="./logs")
+        OfflineExperiment(offline_directory="./logs", display_summary_level=0)
     )
     runner.add_loader("train", train_loader).add_loader("val", val_loader).add_loader("test", test_loader)
     runner.train_config(epochs=1)
@@ -53,7 +53,7 @@ def test_classification_2():
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        OfflineExperiment(offline_directory="../tmp")
+        OfflineExperiment(offline_directory="./logs", display_summary_level=0)
     )
     runner.train_config(epochs=1)
 
@@ -94,7 +94,7 @@ def test_classification_4():
         model,
         optimizer,
         nn.CrossEntropyLoss(),
-        OfflineExperiment(offline_directory="../tmp")
+        OfflineExperiment(offline_directory="./logs", display_summary_level=0)
     )
     runner.add_loader("train", train_loader).add_loader("val", val_loader).add_loader("test", test_loader)
 
