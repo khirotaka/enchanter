@@ -81,7 +81,7 @@ def test_regression_3():
         OfflineExperiment(offline_directory="./logs", display_summary_level=0)
     )
     try:
-        runner.fit(x.astype(np.float32), y.astype(np.float32), batch_size=32, epochs=1)
+        runner.fit(x.astype(np.float32), y.astype(np.float32), batch_size=32, epochs=1, verbose=False)
         is_pass = True
 
     except Exception:

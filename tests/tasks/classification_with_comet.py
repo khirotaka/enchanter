@@ -79,7 +79,7 @@ def test_classification_3():
         OfflineExperiment(offline_directory="../tmp")
     )
     try:
-        runner.fit(x.astype(np.float32), y.astype(np.int64))
+        runner.fit(x.astype(np.float32), y.astype(np.int64), verbose=False, epochs=1, batch_size=32)
         is_pass = True
 
     except Exception as e:
