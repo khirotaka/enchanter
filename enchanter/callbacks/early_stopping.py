@@ -21,6 +21,14 @@ __all__ = ["EarlyStopping", "EarlyStoppingForTSUS"]
 
 
 class EarlyStopping(Callback):
+    """
+    The training ends when the value to be monitored stops changing.
+
+    Examples:
+        >>> from enchanter.tasks import ClassificationRunner
+        >>> runner = ClassificationRunner(callbacks=[ClassificationRunner()])
+
+    """
     def __init__(
         self,
         monitor: str = "val_avg_loss",
@@ -29,7 +37,7 @@ class EarlyStopping(Callback):
         mode: str = "auto",
     ) -> None:
         """
-        The training ends when the value to be monitored stops changing.
+        Initializer
 
         Args:
             monitor: You can choose the return values of ``train_end()``, ``val_end()``, or ``test_end()``.
@@ -107,7 +115,17 @@ class EarlyStopping(Callback):
 
 class EarlyStoppingForTSUS(Callback):
     """
-    Early Stopping for Time Series Unsupervised Runner
+    Early Stopping for Time Series Unsupervised Runner.
+
+    Examples:
+        >>> import torch
+        >>> from enchanter.tasks import TimeSeriesUnsupervisedRunner
+        >>> x_train = torch.randn(32, 3, 128)
+        >>> y_train = torch.randint(0, high=4, size=(128, ))
+        >>> runner = TimeSeriesUnsupervisedRunner(
+        >>>     callbacks=[EarlyStoppingForTSUS(x_train, y_train)]
+        >>> )
+
     """
 
     def __init__(
@@ -122,6 +140,7 @@ class EarlyStoppingForTSUS(Callback):
         mode: str = "auto",
     ):
         """
+        Initializer
 
         Args:
             data: Data for training a classifier to evaluate the quality of the encoder's output representation.
