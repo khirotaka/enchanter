@@ -29,6 +29,7 @@ class EarlyStopping(Callback):
         >>> runner = ClassificationRunner(callbacks=[ClassificationRunner()])
 
     """
+
     def __init__(
         self,
         monitor: str = "val_avg_loss",
