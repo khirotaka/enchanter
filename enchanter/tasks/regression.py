@@ -6,28 +6,27 @@
 # |_____|_| |_|\___|_| |_|\__,_|_| |_|\__\___|_|
 #
 # ***************************************************
+
 from typing import Tuple, List, Union, Optional, Dict
 
-from numpy import ndarray
+import numpy as np
 from sklearn.metrics import r2_score
-from sklearn.base import RegressorMixin
-from torch import Tensor
+import torch
 from torch.nn.modules import Module
 from torch.nn.modules.loss import _Loss
 from torch.optim.optimizer import Optimizer
 from torch.cuda.amp import GradScaler, autocast
-from torch import stack, tensor, no_grad, as_tensor
-from comet_ml.experiment import BaseExperiment as BaseExperiment
+from comet_ml.experiment import BaseExperiment
 
 from enchanter.engine import BaseRunner
 from enchanter.callbacks import BaseLogger
 from enchanter.callbacks import Callback
-from enchanter.callbacks import CallbackManager
+
 
 __all__ = ["RegressionRunner", "AutoEncoderRunner"]
 
 
-class RegressionRunner(BaseRunner, RegressorMixin):
+class RegressionRunner(BaseRunner):
     """
     Runner for regression problems.
 
@@ -91,8 +90,8 @@ class RegressionRunner(BaseRunner, RegressorMixin):
         Returns:
 
         """
-        avg_loss = stack([x["loss"] for x in outputs]).mean()
-        avg_r2 = stack([tensor(x["r2"]) for x in outputs]).mean()
+        avg_loss = torch.stack([x["loss"] for x in outputs]).mean()
+        avg_r2 = torch.stack([torch.tensor(x["r2"]) for x in outputs]).mean()
         return {"avg_loss": avg_loss, "avg_r2": avg_r2}
 
     def train_step(self, batch: Tuple) -> Dict:
@@ -113,10 +112,10 @@ class RegressionRunner(BaseRunner, RegressorMixin):
     def test_end(self, outputs: List) -> Dict:
         return self.general_end(outputs)
 
-    def predict(self, x: Union[Tensor, ndarray]) -> ndarray:
+    def predict(self, x: Union[torch.Tensor, np.ndarray]) -> np.ndarray:
         self.model.eval()
-        with no_grad():
-            x = as_tensor(x, device=self.device)
+        with torch.no_grad():
+            x = torch.as_tensor(x, device=self.device)
             out = self.model(x)
 
         return out.cpu().numpy()
@@ -156,5 +155,5 @@ class AutoEncoderRunner(RegressionRunner):
         Returns:
 
         """
-        avg_loss = stack([x["loss"] for x in outputs]).mean()
+        avg_loss = torch.stack([x["loss"] for x in outputs]).mean()
         return {"avg_loss": avg_loss}

@@ -9,15 +9,13 @@
 
 from typing import Tuple, List, Union, Optional, Dict
 
-from sklearn.base import ClassifierMixin
-from numpy import ndarray
-from torch import Tensor
+import numpy as np
+import torch
 from torch.nn.modules import Module
 from torch.nn.modules.loss import _Loss
 from torch.optim.optimizer import Optimizer
 from torch.cuda.amp import GradScaler, autocast
-from torch import no_grad, stack, tensor, as_tensor, max as torch_max
-from comet_ml.experiment import BaseExperiment as BaseExperiment
+from comet_ml.experiment import BaseExperiment
 
 from enchanter.engine import BaseRunner
 from enchanter.callbacks import BaseLogger
@@ -28,7 +26,7 @@ from enchanter.metrics import calculate_accuracy
 __all__ = ["ClassificationRunner"]
 
 
-class ClassificationRunner(BaseRunner, ClassifierMixin):
+class ClassificationRunner(BaseRunner):
     """
     Runner for classification tasks.
 
@@ -103,8 +101,8 @@ class ClassificationRunner(BaseRunner, ClassifierMixin):
         Returns:
 
         """
-        avg_loss = stack([x["loss"] for x in outputs]).mean()
-        avg_acc = stack([tensor(x["accuracy"]) for x in outputs]).mean()
+        avg_loss = torch.stack([x["loss"] for x in outputs]).mean()
+        avg_acc = torch.stack([torch.tensor(x["accuracy"]) for x in outputs]).mean()
         return {"avg_loss": avg_loss, "avg_acc": avg_acc}
 
     def train_step(self, batch: Tuple) -> Dict:
@@ -125,11 +123,11 @@ class ClassificationRunner(BaseRunner, ClassifierMixin):
     def test_end(self, outputs: List) -> Dict:
         return self.general_end(outputs)
 
-    def predict(self, x: Union[Tensor, ndarray]) -> ndarray:
+    def predict(self, x: Union[torch.Tensor, np.ndarray]) -> np.ndarray:
         self.model.eval()
-        with no_grad():
-            x = as_tensor(x, device=self.device)
+        with torch.no_grad():
+            x = torch.as_tensor(x, device=self.device)
             out = self.model(x)
-            _, predicted = torch_max(out, 1)
+            _, predicted = torch.max(out, 1)
 
         return predicted.cpu().numpy()
