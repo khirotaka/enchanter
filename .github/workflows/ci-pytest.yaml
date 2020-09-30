@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: [3.6, 3.7]
+        python-version: [3.6, 3.7, 3.8]
         os: [ubuntu-latest, macOS-latest]
 
     steps:
@@ -47,3 +47,5 @@ jobs:
            COMET_API_KEY: ${{ secrets.COMET_API_KEY }}
         run: |
           poetry run pytest --durations=10 tests/
+          poetry run pytest --durations=10 tests/tasks/classification_with_comet.py
+          poetry run pytest --durations=10 tests/tasks/regression_with_comet.py
