@@ -46,6 +46,4 @@ jobs:
         env:
            COMET_API_KEY: ${{ secrets.COMET_API_KEY }}
         run: |
-          poetry run pytest tests/
-          poetry run pytest tests/tasks/classification_with_comet.py
-          poetry run pytest tests/tasks/regression_with_comet.py
+          poetry run pytest --durations=10 tests/
