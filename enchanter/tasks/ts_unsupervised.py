@@ -202,10 +202,14 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         return {"avg_loss": avg_loss}
 
     def val_step(self, batch: Tuple) -> Dict[str, torch.Tensor]:
-        x, y = batch
-        with amp.autocast(enabled=isinstance(self.scaler, amp.GradScaler)):
-            encoded = self.model(x)
-        return {"encoded": encoded, "targets": y}
+        try:
+            x, y = batch
+        except ValueError:
+            return {}
+        else:
+            with amp.autocast(enabled=isinstance(self.scaler, amp.GradScaler)):
+                encoded = self.model(x)
+            return {"encoded": encoded, "targets": y}
 
     def val_end(self, outputs: List) -> Dict[str, torch.Tensor]:
         """
@@ -218,10 +222,15 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
             ``fit_time``, ``score_time``, ``test_score``, ``train_score``
 
         """
-        data = torch.cat([output["encoded"] for output in outputs]).cpu().numpy()
-        targets = torch.cat([output["targets"] for output in outputs]).cpu().numpy()
-
-        logs = {k: v.mean() for k, v in cross_validate(self.evaluator, data, targets, return_train_score=True).items()}
+        try:
+            data = torch.cat([output["encoded"] for output in outputs]).cpu().numpy()
+            targets = torch.cat([output["targets"] for output in outputs]).cpu().numpy()
+        except KeyError:
+            return {}
+        else:
+            logs = {
+                k: v.mean() for k, v in cross_validate(self.evaluator, data, targets, return_train_score=True).items()
+            }
 
         return logs
 
