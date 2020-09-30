@@ -8,9 +8,13 @@ readme = "README.md"
 homepage = "https://enchanter.readthedocs.io/"
 repository = "https://github.com/khirotaka/enchanter"
 keywords = ["pytorch", "comet_ml"]
+classifiers = [
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX :: Linux"
+]
 
 [tool.poetry.dependencies]
-python = ">=3.6.5,<3.8"
+python = ">=3.6.5,<3.9"
 torch = "^1.6"
 numpy = "^1.17"
 scikit-learn = "^0.23"
