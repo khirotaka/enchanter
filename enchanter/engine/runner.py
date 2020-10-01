@@ -484,6 +484,7 @@ class BaseRunner(ABC, RunnerIO):
         self.manager.set_model(self.model)
 
         self.model = self.model.to(self.device)
+        self.save_dir = self.configures["checkpoint_path"]
 
     def run(self, phase: str = "all", verbose: bool = True, sleep_time: int = 1):
         """
