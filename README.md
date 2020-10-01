@@ -108,6 +108,14 @@ for experiment in opt.get_experiments():
     )
 
     runner.fit(x, y, epochs=1, batch_size=32)
+    runner.quite()
+
+    # or 
+    # with runner:
+    #   runner.fit(...)
+    # or
+    #   runner.run()
+
 ```
 
 
@@ -184,7 +192,7 @@ train_loader = DataLoader(train_ds, batch_size=32)
 val_loader = DataLoader(val_ds, batch_size=32)
 test_loader = DataLoader(test_ds, batch_size=32)
 
-runner = tasks.ClassificationRunner(model, optimizer, nn.CrossEntropyLoss(), experiment):
+runner = tasks.ClassificationRunner(model, optimizer, nn.CrossEntropyLoss(), experiment)
 
 with runner:
     for epoch in tqdm(range(10)):
