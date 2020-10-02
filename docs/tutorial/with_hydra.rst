@@ -36,17 +36,18 @@ Enchanter with Hydra
 
 .. code-block:: yaml
 
-    # config/model/mlp1.yaml
+    # @package _global_
     model:
       shapes:
         - 4
         - 512
         - 128
         - 3
+    # model1.yaml
 
 .. code-block:: yaml
 
-    # config/model/mlp2.yaml
+    # @package _global_
     model:
       shapes:
         - 4
@@ -54,13 +55,15 @@ Enchanter with Hydra
         - 32
         - 6
         - 3
+    # model2.yaml
 
 .. code-block:: yaml
 
-    # config/optimizer/adam.yaml
+    # @package _global_
     optimizer:
       params:
         lr: 0.001
+    # adam.yaml
 
 
 これで設定ファイルの準備は完了です。次に、Irisデータセットを用いた実験を行いましょう。
@@ -103,8 +106,7 @@ Enchanter with Hydra
             criterion=nn.CrossEntropyLoss(),
             experiment=experiment
         )
-        runner.train_config(epochs=10, checkpoint_path="./checkpoints")
-        runner.fit(x, y)
+        runner.fit(x, y, epochs=10, checkpoint_path="./checkpoints")
         runner.save()
 
 

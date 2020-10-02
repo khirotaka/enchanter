@@ -15,7 +15,7 @@ x = x.astype("float32")
 y = y.astype("int64")
 
 
-@hydra.main("config/config.yaml")
+@hydra.main("config", "config.yaml")
 def main(cfg):
     shapes = cfg.model.shapes
     opt_params = cfg.optimizer.params
@@ -30,8 +30,7 @@ def main(cfg):
         criterion=nn.CrossEntropyLoss(),
         experiment=experiment
     )
-    runner.train_config(epochs=10, checkpoint_path="./checkpoints")
-    runner.fit(x, y)
+    runner.fit(x, y, epochs=10, checkpoint_path="./checkpoints")
     runner.save()
 
 
