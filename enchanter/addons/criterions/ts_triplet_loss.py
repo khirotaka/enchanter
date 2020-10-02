@@ -29,17 +29,17 @@ def generate_sample_indices(
     len_pos_neg: int = np.random.randint(1, length + 1)
 
     # anchor
-    random_len: int = np.random.randint(len_pos_neg, length + 1)  # len of anchors
-    begin_batches: np.ndarray = np.random.randint(0, length - random_len + 1, size=batch_size)
+    len_anchor: int = np.random.randint(len_pos_neg, length + 1)  # len of anchors
+    begin_batches: np.ndarray = np.random.randint(0, length - len_anchor + 1, size=batch_size)
 
-    begin_pos_samples: np.ndarray = np.random.randint(0, random_len - len_pos_neg + 1, size=batch_size)
+    begin_pos_samples: np.ndarray = np.random.randint(0, len_anchor - len_pos_neg + 1, size=batch_size)
     begin_pos: np.ndarray = begin_batches + begin_pos_samples
 
     end_pos: np.ndarray = begin_pos + len_pos_neg
 
     begin_neg_samples: torch.Tensor = torch.randint(0, high=length - len_pos_neg + 1, size=(n_rand_samples, batch_size))
 
-    return begin_batches, random_len, end_pos, len_pos_neg, begin_neg_samples
+    return begin_batches, len_anchor, end_pos, len_pos_neg, begin_neg_samples
 
 
 def generate_anchor_positive_input(
@@ -58,12 +58,12 @@ def generate_anchor_positive_input(
         - positive data (torch.Tensor)
 
     """
-    begin_batches, random_len, end_pos, len_pos_neg, begin_neg_samples = generate_sample_indices(
+    begin_batches, len_anchor, end_pos, len_pos_neg, begin_neg_samples = generate_sample_indices(
         n_rand_samples, batch_size, length
     )
 
     anchor_data = torch.cat(
-        [original_data[j : j + 1, :, begin_batches[j] : begin_batches[j] + random_len] for j in range(batch_size)]
+        [original_data[j : j + 1, :, begin_batches[j] : begin_batches[j] + len_anchor] for j in range(batch_size)]
     )
 
     positive_data = torch.cat(
