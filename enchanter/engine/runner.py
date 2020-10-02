@@ -81,7 +81,7 @@ class BaseRunner(ABC, RunnerIO):
 
         self.global_step: int = 0
         self.non_blocking: bool = True
-        self.configures: Dict[str, Any] = {"epochs": 0}
+        self.configures: Dict[str, Any] = {"epochs": 0, "checkpoint_path": None}
         self.pbar: Union[tqdm, range] = range(self.configures["epochs"])
         self.metrics: Dict = {"train": dict(), "val": dict(), "test": dict()}
         self._loaders: Dict[str, Union[DataLoader, Any]] = dict()
