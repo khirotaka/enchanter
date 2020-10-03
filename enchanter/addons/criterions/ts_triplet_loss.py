@@ -63,9 +63,7 @@ def generate_anchor_positive_input(
         - positive data (torch.Tensor)
 
     """
-    begin_batches, len_anchor, end_pos, len_pos_neg, _ = generate_sample_indices(
-        n_rand_samples, batch_size, length
-    )
+    begin_batches, len_anchor, end_pos, len_pos_neg, _ = generate_sample_indices(n_rand_samples, batch_size, length)
 
     anchor_data = torch.cat(
         [original_data[j : j + 1, :, begin_batches[j] : begin_batches[j] + len_anchor] for j in range(batch_size)]

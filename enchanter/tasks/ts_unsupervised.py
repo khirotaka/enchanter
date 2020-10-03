@@ -149,9 +149,7 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
             np.random.choice(train_size, size=(self.n_negative_samples, batch_size)), dtype=torch.long
         )
 
-        _, _, _, len_pos_neg, begin_neg_samples = generate_sample_indices(
-            self.n_negative_samples, batch_size, length
-        )
+        _, _, _, len_pos_neg, begin_neg_samples = generate_sample_indices(self.n_negative_samples, batch_size, length)
 
         for i in range(self.n_negative_samples):
             negative_loss = self.calculate_negative_loss_per_negative_sample(
