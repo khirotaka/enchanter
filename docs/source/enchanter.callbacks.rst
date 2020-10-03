@@ -38,8 +38,26 @@ EarlyStopping
 
 .. autoclass:: EarlyStopping
     :members:
-    :undoc-members:
     :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~check_metrics
+        ~on_epoch_end
+
+
+`EarlyStoppingForTSUS`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: EarlyStoppingForTSUS
+    :members:
+    :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~cross_val
+        ~encode
+        ~on_epoch_end
 
 
 ------------

@@ -30,7 +30,9 @@ from comet_ml import Experiment
 from comet_ml.api import APIExperiment
 from comet_ml.experiment import BaseExperiment
 
+from enchanter.utils.backend import is_scalar
 from enchanter.callbacks import BaseLogger
+from enchanter.callbacks import Callback
 from enchanter.callbacks import CallbackManager
 from enchanter.engine.saving import RunnerIO
 from enchanter.engine.modules import send, get_dataset, is_tfds, tfds_to_numpy
@@ -73,12 +75,13 @@ class BaseRunner(ABC, RunnerIO):
         self.scheduler: List = list()
         self.experiment: Union[BaseExperiment, BaseLogger] = NotImplemented
         self.manager = CallbackManager()
+        self.callbacks: Optional[List[Callback]] = None
         self.scaler: Optional[amp.GradScaler] = None
         self.api_experiment: Optional[APIExperiment] = None
 
         self.global_step: int = 0
         self.non_blocking: bool = True
-        self.configures: Dict[str, Any] = {"epochs": 0}
+        self.configures: Dict[str, Any] = {"epochs": 0, "checkpoint_path": None}
         self.pbar: Union[tqdm, range] = range(self.configures["epochs"])
         self.metrics: Dict = {"train": dict(), "val": dict(), "test": dict()}
         self._loaders: Dict[str, Union[DataLoader, Any]] = dict()
@@ -268,7 +271,8 @@ class BaseRunner(ABC, RunnerIO):
                     key: outputs[key].detach().cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                     for key in outputs.keys()
                 }
-                self.experiment.log_metrics(outputs, step=self.global_step, epoch=epoch)
+                tmp = {k: outputs[k] for k in outputs.keys() if is_scalar(outputs[k])}
+                self.experiment.log_metrics(tmp, step=self.global_step, epoch=epoch)
                 results.append(outputs)
                 self.manager.on_train_step_end(outputs)
 
@@ -312,7 +316,8 @@ class BaseRunner(ABC, RunnerIO):
                         key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                         for key in outputs.keys()
                     }
-                    self.experiment.log_metrics(outputs, step=self.global_step, epoch=epoch)
+                    tmp = {k: outputs[k] for k in outputs.keys() if is_scalar(outputs[k])}
+                    self.experiment.log_metrics(tmp, step=self.global_step, epoch=epoch)
                     results.append(outputs)
                     self.manager.on_validation_step_end(outputs)
 
@@ -357,7 +362,8 @@ class BaseRunner(ABC, RunnerIO):
                         for key in outputs.keys()
                     }
 
-                    self.experiment.log_metrics(outputs)
+                    tmp = {k: outputs[k] for k in outputs.keys() if is_scalar(outputs[k])}
+                    self.experiment.log_metrics(tmp)
                     results.append(outputs)
                     self.manager.on_test_step_end(outputs)
 
@@ -470,10 +476,15 @@ class BaseRunner(ABC, RunnerIO):
         if self.global_step < 0:
             self.global_step = 0
 
+        self.manager.callbacks = self.callbacks
+
+        self.manager.set_experiment(self.experiment)
+        self.manager.set_device(self.device)
         self.manager.set_optimizer(self.optimizer)
         self.manager.set_model(self.model)
 
         self.model = self.model.to(self.device)
+        self.save_dir = self.configures["checkpoint_path"]
 
     def run(self, phase: str = "all", verbose: bool = True, sleep_time: int = 1):
         """
@@ -543,6 +554,8 @@ class BaseRunner(ABC, RunnerIO):
                     self.manager.on_epoch_end(epoch, self.metrics)
 
                     if self.manager.stop_runner:
+                        if self.manager.best_weight:
+                            self.model.load_state_dict(self.manager.best_weight)
                         if hasattr(self.pbar, "close"):
                             self.pbar.close()  # type: ignore
                         break
@@ -718,11 +731,26 @@ class BaseRunner(ABC, RunnerIO):
         self.experiment.end()
 
     def __enter__(self):
+        """
+        Context API
+
+        Examples:
+            >>> runner: BaseRunner = ...
+            >>> with runner:
+            >>>     runner.add_loader(...)
+            >>>     runner.train_config(...)
+            >>>     runner.run()
+
+        """
         self.initialize()
         self.log_hyperparams()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        At the end of the ``with`` block, the Experiment will end automatically.
+
+        """
         buffer = io.BytesIO()
         torch.save(self.save_checkpoint(), buffer)
         self.experiment.log_asset_data(

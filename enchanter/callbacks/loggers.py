@@ -7,8 +7,10 @@
 #
 # ***************************************************
 
-from typing import Any, Optional, Dict, Union, Iterator
+from typing import Any, Optional, Dict, Union, Iterator, List
+from abc import ABC, abstractmethod
 from contextlib import contextmanager
+
 import numpy as np
 from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
@@ -17,7 +19,7 @@ from torch.utils.tensorboard import SummaryWriter
 __all__ = ["BaseLogger", "TensorBoardLogger"]
 
 
-class BaseLogger:
+class BaseLogger(ABC):
     """
     Provides minimal compatibility with the `comet_ml.Experiment`, which is required to run Runner.
 
@@ -25,6 +27,12 @@ class BaseLogger:
 
     def __init__(self) -> None:
         self.context: Union[str, None] = None
+
+    def add_tag(self, tag: str):
+        pass
+
+    def add_tags(self, tags: List[str]):
+        pass
 
     @contextmanager
     def train(self) -> Iterator:
@@ -53,6 +61,7 @@ class BaseLogger:
 
         self.context = old_state
 
+    @abstractmethod
     def log_metric(
         self,
         name: str,
@@ -80,6 +89,7 @@ class BaseLogger:
         """
         raise NotImplementedError
 
+    @abstractmethod
     def log_metrics(
         self,
         dic: Dict,
@@ -101,6 +111,7 @@ class BaseLogger:
         """
         raise NotImplementedError
 
+    @abstractmethod
     def log_parameter(self, name: str, value: Any, step: Optional[int] = None) -> None:
         """
         Logs a single hyper-parameter.
@@ -116,6 +127,7 @@ class BaseLogger:
         """
         raise NotImplementedError
 
+    @abstractmethod
     def log_parameters(self, dic: Dict, prefix: Optional[str] = None, step: Optional[int] = None) -> None:
         """
         Logs a key, value dictionary of hyper-parameters.
@@ -133,6 +145,7 @@ class BaseLogger:
     def set_model_graph(self, *args: Any, **kwargs: Any) -> None:
         pass
 
+    @abstractmethod
     def end(self):
         """
 

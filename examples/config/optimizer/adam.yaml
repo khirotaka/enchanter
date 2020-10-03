@@ -1,3 +1,4 @@
+# @package _global_
 optimizer:
   params:
     lr: 0.001

@@ -8,6 +8,7 @@ API
 
     enchanter.addons
     enchanter.addons.layers
+    enchanter.addons.ts_triplet_loss
     enchanter.callbacks
     enchanter.engine
     enchanter.metrics

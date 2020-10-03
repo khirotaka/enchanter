@@ -21,6 +21,7 @@ class RunnerIO:
         self.model = NotImplemented
         self.optimizer = NotImplemented
         self.experiment = NotImplemented
+        self.save_dir: Optional[str] = None
 
     def model_name(self) -> str:
         """
@@ -86,6 +87,9 @@ class RunnerIO:
             filename (Optional[str]):
 
         """
+        if directory is None and self.save_dir:
+            directory = self.save_dir
+
         if directory is None:
             if filename is None:
                 raise ValueError("The argument `directory` or `filename` must be specified.")

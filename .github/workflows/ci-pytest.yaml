@@ -10,8 +10,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: [3.6, 3.7]
-        os: [ubuntu-latest, macOS-latest]
+        python-version: [3.6, 3.7, 3.8]
+        os: [ubuntu-20.04, macOS-latest]
 
     steps:
       - name: Checkout
@@ -35,7 +35,7 @@ jobs:
       - name: Lint with flake8
         run: |
           # Pythonの構文エラーもしくは未定義の名前があればビルドを停止
-          poetry run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          poetry run flake8 . --count --select=E9,F63,F7,F82,E203 --show-source --statistics
           # exit-zeroはすべてのエラーを警告として扱う。
           poetry run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
 
@@ -46,6 +46,6 @@ jobs:
         env:
            COMET_API_KEY: ${{ secrets.COMET_API_KEY }}
         run: |
-          poetry run pytest tests/
-          poetry run pytest tests/tasks/classification_with_comet.py
-          poetry run pytest tests/tasks/regression_with_comet.py
+          poetry run pytest --durations=10 tests/
+          poetry run pytest --durations=10 tests/tasks/classification_with_comet.py
+          poetry run pytest --durations=10 tests/tasks/regression_with_comet.py
