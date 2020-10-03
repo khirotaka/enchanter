@@ -67,6 +67,8 @@ class CallbackManager(Callback):
                 callback.on_epoch_end(epoch, logs)
 
                 self.flag_check(callback.stop_runner)
+                if callback.best_weight is not None:
+                    self.best_weight = callback.best_weight
 
     def on_train_step_start(self, logs: Optional[Dict] = None):
         if self.callbacks is not None:

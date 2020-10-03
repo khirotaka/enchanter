@@ -105,6 +105,8 @@ class EarlyStopping(Callback):
                 if self.monitor_op(current - self.min_delta, self.best):
                     self.best = current
                     self.wait = 0
+                    self.best_weight = self.model.state_dict()
+
                 else:
                     self.wait += 1
                     if self.wait > self.patience:
@@ -205,6 +207,7 @@ class EarlyStoppingForTSUS(Callback):
         if self.monitor_op(current_score - self.min_delta, self.best):
             self.best = current_score
             self.wait = 0
+            self.best_weight = self.model.state_dict()
         else:
             if self.wait > self.patience:
                 self.stopped_epoch = epoch

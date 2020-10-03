@@ -21,6 +21,7 @@ class Callback(ABC):
         self.optimizer = None
         self.device = None
         self.experiment = None
+        self.best_weight = None
 
     def set_device(self, device):
         self.device = device
