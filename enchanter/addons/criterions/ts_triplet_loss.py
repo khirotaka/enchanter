@@ -20,6 +20,7 @@ def generate_sample_indices(
     n_rand_samples: int, batch_size: int, length: int
 ) -> Tuple[np.ndarray, int, np.ndarray, int, torch.Tensor]:
     """
+    generate sample indices.
 
     Args:
         n_rand_samples: the number of negative samples
@@ -62,7 +63,7 @@ def generate_anchor_positive_input(
         - positive data (torch.Tensor)
 
     """
-    begin_batches, len_anchor, end_pos, len_pos_neg, begin_neg_samples = generate_sample_indices(
+    begin_batches, len_anchor, end_pos, len_pos_neg, _ = generate_sample_indices(
         n_rand_samples, batch_size, length
     )
 

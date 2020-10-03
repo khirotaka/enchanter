@@ -731,11 +731,26 @@ class BaseRunner(ABC, RunnerIO):
         self.experiment.end()
 
     def __enter__(self):
+        """
+        Context API
+
+        Examples:
+            >>> runner: BaseRunner = ...
+            >>> with runner:
+            >>>     runner.add_loader(...)
+            >>>     runner.train_config(...)
+            >>>     runner.run()
+
+        """
         self.initialize()
         self.log_hyperparams()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        At the end of the ``with`` block, the Experiment will end automatically.
+
+        """
         buffer = io.BytesIO()
         torch.save(self.save_checkpoint(), buffer)
         self.experiment.log_asset_data(
