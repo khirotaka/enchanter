@@ -45,7 +45,7 @@ Let's see how to use the `enchanter.tasks.ClassificationRunner`, which is the ea
 ### Training Neural Network
 
 ```python
-from comet_ml import Experiment
+import comet_ml
 import torch
 import enchanter
 
@@ -56,7 +56,7 @@ runner = enchanter.tasks.ClassificationRunner(
     model, 
     optimizer,
     criterion=torch.nn.CrossEntropyLoss(),
-    experiment=Experiment()
+    experiment=comet_ml.Experiment()
 )
 
 runner.add_loader("train", train_loader)
@@ -65,7 +65,57 @@ runner.run()
 ```
 
 Register a `torch.utils.data.DataLoader` with the `Runner` by using `.add_loader()`.  
-Set up the number of epochs using `.train_config()`, and execute `Runner` with `.run()`. 
+Set up the number of epochs using `.train_config()`, and execute `Runner` with `.run()`.
+
+### Training Unsupervised Time Series Feature Learning
+The wonderful algorithms for unsupervised time series representation learning, adopted at [NeurIPS 2019](https://papers.nips.cc/paper/8713-unsupervised-scalable-representation-learning-for-multivariate-time-series), are now easily available.
+
+Please prepare the following:
+
+1.  PyTorch Model that can output feature vectors of the same length regardless of the input series.
+2.  time series data consisting of `[N, F, L]`.
+3.  (Optional) A teacher label for each sample in `2.`
+
+
+```python
+import comet_ml
+import torch.nn as nn
+import torch.optim as optim
+import enchanter.tasks as tasks
+import enchanter.addons.layers as L
+
+
+class Encoder(nn.Module):
+    def __init__(self, in_features, mid_features, out_features):
+        super(Encoder, self).__init__()
+        self.conv = nn.Sequential(
+            L.CausalConv1d(in_features, mid_features, 3),
+            nn.LeakyReLU(),
+            L.CausalConv1d(mid_features, mid_features, 3),
+            nn.LeakyReLU(),
+            L.CausalConv1d(mid_features, mid_features, 3),
+            nn.LeakyReLU(),
+            nn.AdaptiveMaxPool1d(1)
+        )
+        self.fc = nn.Linear(mid_features, out_features)
+
+    def forward(self, x):
+        batch = x.shape[0]
+        out = self.conv(x).reshape(batch, -1)
+        return self.fc(out)
+
+
+experiment = comet_ml.Experiment()
+model = Encoder(...)
+optimizer = optim.Adam(model.parameters())
+
+runner = tasks.TimeSeriesUnsupervisedRunner(model, optimizer, experiment)
+runner.add_loader("train", ...)
+runner.run()
+```
+
+A teacher label is required for validation. Also, Use `enchanter.callbacks.EarlyStoppingForTSUS` for early stopping. 
+ 
 
 ### Hyper parameter searching using Comet.ml
 
