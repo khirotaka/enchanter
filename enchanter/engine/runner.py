@@ -300,32 +300,31 @@ class BaseRunner(ABC, RunnerIO):
             loader = tfds_to_numpy(loader)
 
         self.model.eval()
-        with self.experiment.validate():
-            with torch.no_grad():
-                for step, batch in enumerate(loader):
-                    batch = send(batch, self.device, self.non_blocking)
-                    self.global_step += 1
-                    # on_step_start()
-                    outputs = self.val_step(batch)  # pylint: disable=E1111
+        with self.experiment.validate(), torch.no_grad():
+            for step, batch in enumerate(loader):
+                batch = send(batch, self.device, self.non_blocking)
+                self.global_step += 1
+                # on_step_start()
+                outputs = self.val_step(batch)  # pylint: disable=E1111
 
-                    if hasattr(self.pbar, "set_postfix"):
-                        per = "{:1.0%}".format(step / loader_size)
-                        self.pbar.set_postfix(OrderedDict(val_batch=per), refresh=True)  # type: ignore
+                if hasattr(self.pbar, "set_postfix"):
+                    per = "{:1.0%}".format(step / loader_size)
+                    self.pbar.set_postfix(OrderedDict(val_batch=per), refresh=True)  # type: ignore
 
-                    outputs = {
-                        key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
-                        for key in outputs.keys()
-                    }
-                    tmp = {k: outputs[k] for k in outputs.keys() if is_scalar(outputs[k])}
-                    self.experiment.log_metrics(tmp, step=self.global_step, epoch=epoch)
-                    results.append(outputs)
-                    self.manager.on_validation_step_end(outputs)
+                outputs = {
+                    key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
+                    for key in outputs.keys()
+                }
+                tmp = {k: outputs[k] for k in outputs.keys() if is_scalar(outputs[k])}
+                self.experiment.log_metrics(tmp, step=self.global_step, epoch=epoch)
+                results.append(outputs)
+                self.manager.on_validation_step_end(outputs)
 
-                dic = self.val_end(results)  # pylint: disable=E1111
+            dic = self.val_end(results)  # pylint: disable=E1111
 
-                if len(dic) != 0:
-                    self.metrics["val"].update(dic)
-                    self.experiment.log_metrics(dic, step=epoch, epoch=epoch)
+            if len(dic) != 0:
+                self.metrics["val"].update(dic)
+                self.experiment.log_metrics(dic, step=epoch, epoch=epoch)
 
     def test_cycle(self, loader: DataLoader) -> None:
         """
@@ -344,34 +343,33 @@ class BaseRunner(ABC, RunnerIO):
             loader = tfds_to_numpy(loader)
 
         self.model.eval()
-        with self.experiment.test():
-            with torch.no_grad():
-                for step, batch in enumerate(loader):
-                    batch = send(batch, self.device, self.non_blocking)
-                    # on_step_start()
-                    outputs = self.test_step(batch)  # pylint: disable=E1111
+        with self.experiment.test(), torch.no_grad():
+            for step, batch in enumerate(loader):
+                batch = send(batch, self.device, self.non_blocking)
+                # on_step_start()
+                outputs = self.test_step(batch)  # pylint: disable=E1111
 
-                    per = "{:1.0%}".format(step / loader_size)
-                    if hasattr(self.pbar, "set_postfix"):
-                        self.pbar.set_postfix(OrderedDict(test_batch=per), refresh=True)  # type: ignore
+                per = "{:1.0%}".format(step / loader_size)
+                if hasattr(self.pbar, "set_postfix"):
+                    self.pbar.set_postfix(OrderedDict(test_batch=per), refresh=True)  # type: ignore
 
-                        self.pbar.update(1)  # type: ignore
+                    self.pbar.update(1)  # type: ignore
 
-                    outputs = {
-                        key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
-                        for key in outputs.keys()
-                    }
+                outputs = {
+                    key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
+                    for key in outputs.keys()
+                }
 
-                    tmp = {k: outputs[k] for k in outputs.keys() if is_scalar(outputs[k])}
-                    self.experiment.log_metrics(tmp)
-                    results.append(outputs)
-                    self.manager.on_test_step_end(outputs)
+                tmp = {k: outputs[k] for k in outputs.keys() if is_scalar(outputs[k])}
+                self.experiment.log_metrics(tmp)
+                results.append(outputs)
+                self.manager.on_test_step_end(outputs)
 
-                dic = self.test_end(results)  # pylint: disable=E1111
+            dic = self.test_end(results)  # pylint: disable=E1111
 
-                if len(dic) != 0:
-                    self.metrics["test"].update(dic)
-                    self.experiment.log_metrics(dic)
+            if len(dic) != 0:
+                self.metrics["test"].update(dic)
+                self.experiment.log_metrics(dic)
 
     def train_config(
         self,
