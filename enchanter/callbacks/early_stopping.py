@@ -15,6 +15,7 @@ from sklearn.svm import SVC
 from sklearn.base import BaseEstimator
 from sklearn.model_selection import cross_validate, StratifiedKFold, BaseCrossValidator
 from .base import Callback
+from ..engine.modules import fetch_state_dict
 
 
 __all__ = ["EarlyStopping", "EarlyStoppingForTSUS"]
@@ -105,7 +106,7 @@ class EarlyStopping(Callback):
                 if self.monitor_op(current - self.min_delta, self.best):
                     self.best = current
                     self.wait = 0
-                    self.best_weight = self.model.state_dict()
+                    self.best_weight = fetch_state_dict(self.model)
 
                 else:
                     self.wait += 1
@@ -207,7 +208,8 @@ class EarlyStoppingForTSUS(Callback):
         if self.monitor_op(current_score - self.min_delta, self.best):
             self.best = current_score
             self.wait = 0
-            self.best_weight = self.model.state_dict()
+            self.best_weight = fetch_state_dict(self.model)
+
         else:
             if self.wait > self.patience:
                 self.stopped_epoch = epoch

@@ -8,13 +8,15 @@
 # ***************************************************
 
 import warnings
-from typing import Union, Tuple, Any
+from copy import deepcopy
+from typing import Union, Tuple, Any, Dict
 from os import environ as os_environ
 from random import seed as std_seed
 
 from numpy import ndarray
 from numpy.random import seed as np_seed
 import torch
+import torch.nn as nn
 from torch.backends import cudnn
 from torch.utils.data import Dataset, TensorDataset
 from torch.cuda import is_available as cuda_is_available
@@ -29,7 +31,16 @@ except ImportError:
     IS_TF_DS_AVAILABLE = False
 
 
-__all__ = ["is_jupyter", "get_dataset", "fix_seed", "send", "is_tfds", "tfds_to_numpy"]
+__all__ = [
+    "is_jupyter",
+    "get_dataset",
+    "fix_seed",
+    "send",
+    "is_tfds",
+    "tfds_to_numpy",
+    "fetch_state_dict",
+    "restore_state_dict",
+]
 
 
 def is_jupyter() -> bool:
@@ -175,3 +186,21 @@ def tfds_to_numpy(loader):
         return tfds.as_numpy(loader)
     else:
         raise RuntimeError
+
+
+def fetch_state_dict(model: nn.Module) -> Dict[str, torch.Tensor]:
+    if isinstance(model, nn.parallel.DataParallel) or isinstance(model, nn.parallel.DistributedDataParallel):
+        weights = model.module.state_dict()
+    else:
+        weights = model.state_dict()
+
+    return deepcopy(weights)
+
+
+def restore_state_dict(model: nn.Module, weights: Dict[str, torch.Tensor], strict: bool = True) -> nn.Module:
+    if isinstance(model, nn.parallel.DataParallel) or isinstance(model, nn.parallel.DistributedDataParallel):
+        model.module.load_state_dict(weights, strict=strict)
+    else:
+        model.load_state_dict(weights, strict=strict)
+
+    return model

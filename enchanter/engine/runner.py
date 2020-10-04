@@ -35,7 +35,7 @@ from enchanter.callbacks import BaseLogger
 from enchanter.callbacks import Callback
 from enchanter.callbacks import CallbackManager
 from enchanter.engine.saving import RunnerIO
-from enchanter.engine.modules import send, get_dataset, is_tfds, tfds_to_numpy
+from enchanter.engine.modules import send, get_dataset, is_tfds, tfds_to_numpy, restore_state_dict
 
 
 __all__ = ["BaseRunner"]
@@ -555,7 +555,7 @@ class BaseRunner(ABC, RunnerIO):
 
                     if self.manager.stop_runner:
                         if self.manager.best_weight:
-                            self.model.load_state_dict(self.manager.best_weight)
+                            self.model = restore_state_dict(self.model, self.manager.best_weight)
                         if hasattr(self.pbar, "close"):
                             self.pbar.close()  # type: ignore
                         break
