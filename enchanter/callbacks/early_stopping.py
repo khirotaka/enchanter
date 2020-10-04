@@ -7,6 +7,7 @@
 #
 # ***************************************************
 
+import re
 from typing import Any, Dict, Optional, Union
 
 import torch
@@ -58,6 +59,9 @@ class EarlyStopping(Callback):
 
         """
         super(EarlyStopping, self).__init__()
+        if re.match("validate", monitor):
+            monitor = monitor.replace("validate", "val")
+
         self.monitor: str = monitor
         self.patience: int = patience
         self.min_delta: float = min_delta
