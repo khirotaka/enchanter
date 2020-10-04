@@ -59,8 +59,8 @@ class EarlyStopping(Callback):
 
         """
         super(EarlyStopping, self).__init__()
-        if re.match("validate", monitor):
-            monitor = monitor.replace("validate", "val")
+        if re.match("^validate_", monitor):
+            monitor = monitor.replace("validate_", "val_")
 
         self.monitor: str = monitor
         self.patience: int = patience
