@@ -3,7 +3,7 @@ from comet_ml import Experiment
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 from tslearn.datasets import UCR_UEA_datasets
 from enchanter.addons import layers as L
 from enchanter.callbacks import EarlyStoppingForTSUS
