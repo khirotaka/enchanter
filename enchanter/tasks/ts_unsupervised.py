@@ -31,6 +31,16 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
     Paper: `Unsupervised Scalable Representation Learning for Multivariate Time Series \
         <https://papers.nips.cc/paper/8713-unsupervised-scalable-representation-learning-for-multivariate-time-series>`_
 
+
+    Examples:
+        >>> experiment: Union[BaseLogger, BaseExperiment] = ...
+        >>> model: torch.nn.Module = ...
+        >>> optimizer: torch.optim.Optimizer = ...
+        >>> runner = TimeSeriesUnsupervisedRunner(model, optimizer, experiment)
+        >>> runner.add_loader("train", ...)
+        >>> runner.train_config(...)
+        >>> runner.run()
+
     """
 
     def __init__(
