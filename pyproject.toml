@@ -31,7 +31,7 @@ tensorflow = "^2.3.0"
 tensorflow-datasets = "^3.2.1"
 sphinx-material = "^0.0.32"
 sphinx-copybutton = "^0.3"
-sphinx-autoapi = "1.5.0"
+sphinx-autoapi = "1.5.1"
 
 
 [tool.black]
