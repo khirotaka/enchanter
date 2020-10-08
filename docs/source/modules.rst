@@ -15,5 +15,4 @@ API
     enchanter.preprocessing
     enchanter.tasks
     enchanter.utils
-    enchanter.wrappers
 
