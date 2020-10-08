@@ -3,7 +3,6 @@ from typing import Tuple
 import numpy as np
 import torch
 import torch.nn.functional as F
-import torch.jit
 
 
 __all__ = [
