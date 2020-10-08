@@ -118,7 +118,7 @@ def generate_negative_input(
 
 @torch.jit.script
 def positive_criterion_for_triplet_loss(anchor: torch.Tensor, positive: torch.Tensor) -> torch.Tensor:
-    """
+    r"""
 
     .. math::
 
@@ -139,7 +139,7 @@ def positive_criterion_for_triplet_loss(anchor: torch.Tensor, positive: torch.Te
 
 @torch.jit.script
 def negative_criterion_for_triplet_loss(anchor: torch.Tensor, positive: torch.Tensor) -> torch.Tensor:
-    """
+    r"""
 
     .. math::
 
@@ -161,7 +161,7 @@ def negative_criterion_for_triplet_loss(anchor: torch.Tensor, positive: torch.Te
 def calculate_triplet_loss(
     positive_loss: torch.Tensor, negative_loss: torch.Tensor, multiplicative_ration: float
 ) -> torch.Tensor:
-    """
+    r"""
 
     .. math::
 

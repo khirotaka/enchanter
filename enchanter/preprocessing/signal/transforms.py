@@ -121,7 +121,7 @@ class FixedWindow:
 
 
 class GaussianNoise:
-    """
+    r"""
     Apply gaussian noise to input data.
 
     Examples:
@@ -144,7 +144,7 @@ class GaussianNoise:
 
 
 class RandomScaling:
-    """
+    r"""
     Scaling the original sequence by a random value in the range `start` and `end` following Eq.
 
     .. math::

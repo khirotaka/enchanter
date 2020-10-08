@@ -5,9 +5,7 @@ __license__ = "Apache-2.0"
 __copyright__ = "Copyright (c) 2020, {}.".format(__author__)
 __homepage__ = "https://github.com/khirotaka/enchanter"
 
-__docs__ = (
-    "Enchanter is a library for machine learning tasks for comet.ml users."
-)
+__docs__ = "Enchanter is a library for machine learning tasks for comet.ml users."
 
 
 from enchanter import addons
@@ -15,6 +13,4 @@ from enchanter import engine
 from enchanter import tasks
 
 
-__all__ = [
-    "addons", "engine", "tasks"
-]
+__all__ = ["addons", "engine", "tasks"]

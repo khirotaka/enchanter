@@ -35,9 +35,9 @@ jobs:
       - name: Lint with flake8
         run: |
           # Pythonの構文エラーもしくは未定義の名前があればビルドを停止
-          poetry run flake8 . --count --select=E9,F63,F7,F82,E203 --show-source --statistics
+          poetry run flake8 enchanter --count --select=E9,F63,F7,F82,E203 --show-source --statistics
           # exit-zeroはすべてのエラーを警告として扱う。
-          poetry run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+          poetry run flake8 enchanter --count --exit-zero --max-complexity=22 --max-line-length=120 --statistics
 
       - name: Check code style with Black
         run : poetry run black --check --diff .
