@@ -1,4 +1,4 @@
-from collections import Iterator
+from collections.abc import Iterator
 import torch
 import numpy as np
 import tensorflow as tf
