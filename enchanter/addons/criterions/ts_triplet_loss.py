@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 from typing import Tuple
 
 import numpy as np
