@@ -552,8 +552,8 @@ class BaseRunner(ABC, RunnerIO):
                     self.manager.on_epoch_end(epoch, self.metrics)
 
                     if self.manager.stop_runner:
-                        if self.manager.best_weight:
-                            self.model = restore_state_dict(self.model, self.manager.best_weight)
+                        if self.manager.params["best_weight"]:
+                            self.model = restore_state_dict(self.model, self.manager.params["best_weight"])
                         if hasattr(self.pbar, "close"):
                             self.pbar.close()  # type: ignore
                         break
