@@ -6,7 +6,7 @@ import torch
 from torch.cuda import amp
 from sklearn.svm import SVC
 from sklearn.base import ClassifierMixin, RegressorMixin, BaseEstimator
-from sklearn.model_selection import cross_validate, GridSearchCV, train_test_split
+from sklearn.model_selection import train_test_split
 
 from enchanter.engine import modules
 from enchanter.engine import BaseRunner
