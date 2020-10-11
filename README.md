@@ -2,6 +2,14 @@
 
 # Enchanter
 
+
+<p align="center">
+  <a href="#Getting-Started">Getting Started</a> •
+  <a href="https://enchanter.readthedocs.io/en/stable/">Docs</a> •
+  <a href="https://enchanter.readthedocs.io/en/stable/tutorial/modules.html">Tutorial</a> •
+  <a href="#License">Licence</a>
+</p>
+
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/84197fb283924f02a1667cea49dd031a)](https://app.codacy.com/manual/KawashimaHirotaka/enchanter?utm_source=github.com&utm_medium=referral&utm_content=khirotaka/enchanter&utm_campaign=Badge_Grade_Dashboard)
 [![CI testing](https://github.com/khirotaka/enchanter/workflows/CI/badge.svg)](https://github.com/khirotaka/enchanter/actions)
 [![Build & Publish](https://github.com/khirotaka/enchanter/workflows/Build%20&%20Publish/badge.svg)](https://github.com/khirotaka/enchanter/actions)
@@ -44,10 +52,6 @@ pip install git+https://github.com/khirotaka/enchanter.git@develop
 Enchanter supports:
 *   macOS 10.15
 *   Ubuntu 18.04
-
-## Documentation
-*   [API Reference](https://enchanter.readthedocs.io/ja/latest/)
-*   [Tutorial](https://enchanter.readthedocs.io/ja/latest/tutorial/modules.html)
 
 ## Getting Started
 Try your first Enchanter Program. To train a neural network written in PyTorch on Enchanter, use the `Runner`.  
