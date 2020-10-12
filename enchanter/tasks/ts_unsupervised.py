@@ -1,15 +1,15 @@
-from typing import List, Dict, Optional, Union, Tuple, Any
+from typing import List, Dict, Optional, Union, Tuple
 
 import numpy as np
 from comet_ml.experiment import BaseExperiment
 import torch
 from torch.cuda import amp
 from sklearn.svm import SVC
-from sklearn.base import ClassifierMixin, RegressorMixin, BaseEstimator
 from sklearn.model_selection import train_test_split
 
 from enchanter.engine import modules
 from enchanter.engine import BaseRunner
+from enchanter.engine.typehint import ScikitModel
 from enchanter.addons.criterions.ts_triplet_loss import (
     generate_anchor_positive_input,
     generate_negative_input,
@@ -52,7 +52,7 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         n_negative_samples: int = 1,
         negative_penalty: int = 1,
         compared_len: Optional[int] = None,
-        evaluator: Union[Union[ClassifierMixin, RegressorMixin], BaseEstimator] = SVC(),
+        evaluator: ScikitModel = SVC(),
         save_memory: bool = False,
         scheduler: List = None,
         callbacks: Optional[List[Callback]] = None,
