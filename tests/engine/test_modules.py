@@ -42,4 +42,4 @@ def test_tfds_to_numpy():
 
     ds = tf.data.Dataset.from_tensor_slices((x, y))
     loader = modules.tfds_to_numpy(ds)
-    assert isinstance(loader, Iterator)
+    assert hasattr(loader, "__iter__")
