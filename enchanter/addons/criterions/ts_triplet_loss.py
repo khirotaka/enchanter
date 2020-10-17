@@ -31,20 +31,24 @@ def generate_sample_indices(
 
 
     """
-    len_pos_neg: int = np.random.randint(1, length + 1)
+    if n_rand_samples > 0 and batch_size > 0 and length > 0:
+        len_pos_neg: int = np.random.randint(1, length + 1)
 
-    # anchor
-    len_anchor: int = np.random.randint(len_pos_neg, length + 1)  # len of anchors
-    begin_batches: np.ndarray = np.random.randint(0, length - len_anchor + 1, size=batch_size)
+        # anchor
+        len_anchor: int = np.random.randint(len_pos_neg, length + 1)  # len of anchors
+        begin_batches: np.ndarray = np.random.randint(0, length - len_anchor + 1, size=batch_size)
 
-    begin_pos_samples: np.ndarray = np.random.randint(0, len_anchor - len_pos_neg + 1, size=batch_size)
-    begin_pos: np.ndarray = begin_batches + begin_pos_samples
+        begin_pos_samples: np.ndarray = np.random.randint(0, len_anchor - len_pos_neg + 1, size=batch_size)
+        begin_pos: np.ndarray = begin_batches + begin_pos_samples
 
-    end_pos: np.ndarray = begin_pos + len_pos_neg
+        end_pos: np.ndarray = begin_pos + len_pos_neg
 
-    begin_neg_samples: torch.Tensor = torch.randint(0, high=length - len_pos_neg + 1, size=(n_rand_samples, batch_size))
+        begin_neg_samples: torch.Tensor = torch.randint(0, high=length - len_pos_neg + 1, size=(n_rand_samples, batch_size))
 
-    return begin_batches, len_anchor, end_pos, len_pos_neg, begin_neg_samples
+        return begin_batches, len_anchor, end_pos, len_pos_neg, begin_neg_samples
+
+    else:
+        raise ValueError("The argument must be greater than or equal to 1.")
 
 
 def generate_anchor_positive_input(
