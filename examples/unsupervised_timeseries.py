@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+from sklearn.svm import SVC
 from tslearn.datasets import UCR_UEA_datasets
 from enchanter.addons import layers as L
 from enchanter.callbacks import EarlyStoppingForTSUS
@@ -26,18 +27,22 @@ y_test = torch.tensor(y_test, dtype=torch.long)
 
 
 class Encoder(nn.Module):
-    def __init__(self, in_features, mid_features, out_features):
+    def __init__(self, in_features, mid_features, out_features, representation_size):
         super(Encoder, self).__init__()
         self.conv = nn.Sequential(
-            L.CausalConv1d(in_features, mid_features, 3),
-            nn.LeakyReLU(),
-            L.CausalConv1d(mid_features, mid_features, 3),
-            nn.LeakyReLU(),
-            L.CausalConv1d(mid_features, mid_features, 3),
-            nn.LeakyReLU(),
-            nn.AdaptiveMaxPool1d(1)
+            L.TemporalConvBlock(in_features, mid_features, 3, dilation=2**0, activation=nn.LeakyReLU()),
+            L.TemporalConvBlock(mid_features, mid_features, 3, dilation=2**1, activation=nn.LeakyReLU()),
+            L.TemporalConvBlock(mid_features, mid_features, 3, dilation=2**2, activation=nn.LeakyReLU()),
+            L.TemporalConvBlock(mid_features, mid_features, 3, dilation=2**3, activation=nn.LeakyReLU()),
+            L.TemporalConvBlock(mid_features, mid_features, 3, dilation=2**4, activation=nn.LeakyReLU()),
+            L.TemporalConvBlock(mid_features, mid_features, 3, dilation=2**5, activation=nn.LeakyReLU()),
+            L.TemporalConvBlock(mid_features, mid_features, 3, dilation=2**6, activation=nn.LeakyReLU()),
+            L.TemporalConvBlock(mid_features, mid_features, 3, dilation=2**7, activation=nn.LeakyReLU()),
+            L.TemporalConvBlock(mid_features, mid_features, 3, dilation=2**8, activation=nn.LeakyReLU()),
+            L.TemporalConvBlock(mid_features, out_features, 3, dilation=2**9, activation=nn.LeakyReLU()),
+            nn.AdaptiveMaxPool1d(1),
         )
-        self.fc = nn.Linear(mid_features, out_features)
+        self.fc = nn.Linear(out_features, representation_size)
 
     def forward(self, x):
         batch = x.shape[0]
@@ -54,12 +59,12 @@ test_ds = TimeSeriesLabeledDataset(x_test, y_test)
 train_loader = DataLoader(train_ds, batch_size=32)
 test_loader = DataLoader(test_ds, batch_size=32)
 
-model = Encoder(x_train.shape[1], 30, 100)
+model = Encoder(x_train.shape[1], 40, 160, 320)
 optimizer = optim.Adam(model.parameters())
 
 runner = TimeSeriesUnsupervisedRunner(
     model, optimizer, experiment, 10, 1,
-    callbacks=[EarlyStoppingForTSUS(x_train, y_train)]
+    callbacks=[EarlyStoppingForTSUS(x_train, y_train, gri)],
 )
 
 runner.train_config(10)

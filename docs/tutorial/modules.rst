@@ -36,6 +36,7 @@ Advanced Usage
     amp
     swalr
     tfds
+    ts_unsupervised
 
 
 Model Optimization
