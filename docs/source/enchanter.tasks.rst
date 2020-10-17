@@ -52,6 +52,25 @@ Regression Task
         ~general_end
 
 
+Time Series Representation Learning Task
+---------------------------------------------
+
+`TimeSeriesUnsupervisedRunner`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: TimeSeriesUnsupervisedRunner
+    :members:
+    :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~calculate_negative_loss_per_negative_sample
+        ~calculate_negative_loss
+        ~encode
+        ~train_step
+        ~train_end
+
+
 Ensemble
 ----------------
 

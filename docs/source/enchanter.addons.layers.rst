@@ -19,6 +19,18 @@ AutoEncoder
 
 
 
+TemporalConvBlock
+--------------------
+.. autoclass:: TemporalConvBlock
+    :members:
+    :show-inheritance:
+
+    .. rubric:: Methods
+    .. autosummary::
+        ~forward
+
+
+
 CausalConv1d
 --------------------
 .. autoclass:: CausalConv1d

@@ -7,8 +7,10 @@
 #
 # ***************************************************
 
-from typing import Any, Optional, Dict, Union, Iterator
+from typing import Any, Optional, Dict, Union, Iterator, List
+from abc import ABC, abstractmethod
 from contextlib import contextmanager
+
 import numpy as np
 from torch import Tensor
 from torch.utils.tensorboard import SummaryWriter
@@ -17,9 +19,20 @@ from torch.utils.tensorboard import SummaryWriter
 __all__ = ["BaseLogger", "TensorBoardLogger"]
 
 
-class BaseLogger:
+class BaseLogger(ABC):
+    """
+    Provides minimal compatibility with the `comet_ml.Experiment`, which is required to run Runner.
+
+    """
+
     def __init__(self) -> None:
         self.context: Union[str, None] = None
+
+    def add_tag(self, tag: str):
+        pass
+
+    def add_tags(self, tags: List[str]):
+        pass
 
     @contextmanager
     def train(self) -> Iterator:
@@ -48,6 +61,7 @@ class BaseLogger:
 
         self.context = old_state
 
+    @abstractmethod
     def log_metric(
         self,
         name: str,
@@ -56,8 +70,26 @@ class BaseLogger:
         epoch: Optional[int] = None,
         include_context: bool = True,
     ) -> None:
+        """
+        Logs a metric.
+
+        Args:
+            name: name of metric
+            value:
+            step:
+            epoch:
+            include_context:
+
+        Returns:
+            None
+
+        Warnings:
+            If you create your own Logger, you will need to implement this method.
+
+        """
         raise NotImplementedError
 
+    @abstractmethod
     def log_metrics(
         self,
         dic: Dict,
@@ -65,18 +97,64 @@ class BaseLogger:
         step: Optional[int] = None,
         epoch: Optional[int] = None,
     ) -> None:
+        """
+
+        Logs a key, value dictionary of metrics.
+
+        See Also:
+            log_metric
+
+
+        Warnings:
+            If you create your own Logger, you will need to implement this method.
+
+        """
         raise NotImplementedError
 
+    @abstractmethod
     def log_parameter(self, name: str, value: Any, step: Optional[int] = None) -> None:
+        """
+        Logs a single hyper-parameter.
+
+        Args:
+            name: name of hyper-parameter
+            value: value
+            step:
+
+        Warnings:
+            If you create your own Logger, you will need to implement this method.
+
+        """
         raise NotImplementedError
 
+    @abstractmethod
     def log_parameters(self, dic: Dict, prefix: Optional[str] = None, step: Optional[int] = None) -> None:
+        """
+        Logs a key, value dictionary of hyper-parameters.
+
+        See Also:
+            log_peramter
+
+
+        Warnings:
+            If you create your own Logger, you will need to implement this method.
+
+        """
         raise NotImplementedError
 
     def set_model_graph(self, *args: Any, **kwargs: Any) -> None:
         pass
 
+    @abstractmethod
     def end(self):
+        """
+
+        Use to indicate that the experiment is complete.
+
+        Warnings:
+            If you create your own Logger, you will need to implement this method.
+
+        """
         raise NotImplementedError
 
     def log_model(self, name, file_or_folder, file_name=None, overwrite=False, metadata=None, copy_to_tmp=True):

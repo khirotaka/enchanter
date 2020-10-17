@@ -1,10 +1,13 @@
-from torch import narrow, Tensor
+from typing import Union
+from numbers import Number
+
+import torch
+import numpy as np
+
+__all__ = ["slice_axis", "is_scalar"]
 
 
-__all__ = ["slice_axis"]
-
-
-def slice_axis(data: Tensor, axis: int, begin: int, end: int) -> Tensor:
+def slice_axis(data: torch.Tensor, axis: int, begin: int, end: int) -> torch.Tensor:
     """
 
     Examples:
@@ -52,4 +55,40 @@ def slice_axis(data: Tensor, axis: int, begin: int, end: int) -> Tensor:
 
     if end < 0:
         end = data.shape[axis] + end
-    return narrow(data, axis, begin, end - begin)
+    return torch.narrow(data, axis, begin, end - begin)
+
+
+def is_scalar(data: Union[Number, Union[np.ndarray, torch.Tensor]]) -> bool:
+    """
+    Returns True if the type of ``data`` is a scalar type.
+
+    Args:
+        data (Union[Number, Union[np.ndarray, torch.Tensor]]): Numerical value
+
+    Returns:
+        True if ``data`` is a scalar type, False if it is not.
+
+    Examples:
+        >>> a = torch.tensor([1.0])
+        >>> is_scalar(a)    # True
+        >>> a = torch.tensor(1.0)
+        >>> is_scalar(a)    # True
+        >>> a = torch.tensor([1, 2, 3])
+        >>> is_scalar(a)    # False
+        >>> a = 1.0
+        >>> is_scalar(a)    # True
+
+
+    """
+    if isinstance(data, Number):
+        return True
+    else:
+        if len(data.shape) == 0:
+            return True
+        else:
+            try:
+                _ = data.item()
+            except ValueError:
+                return False
+            else:
+                return True
