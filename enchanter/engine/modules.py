@@ -23,7 +23,6 @@ from torch.cuda import is_available as cuda_is_available
 
 try:
     import tensorflow as tf
-    import tensorflow_datasets as tfds
 
     IS_TF_DS_AVAILABLE = True
 
@@ -183,7 +182,7 @@ def tfds_to_numpy(loader):
 
     """
     if IS_TF_DS_AVAILABLE:
-        return tfds.as_numpy(loader)
+        return loader.as_numpy_iterator()
     else:
         raise RuntimeError
 
