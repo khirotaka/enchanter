@@ -77,7 +77,7 @@ Training neural network using MNIST
     )
 
 Enchanterでは、``runner`` に使用目的に合わせたDataLoaderを追加していくという方式をとっています。
-また、Epochの回数は ``.train_config()`` メドッドで指定します。
+また、Epochの回数は ``.train_config()`` メソッドで指定します。
 最後に ``.run()`` メソッドでRunnerを実行します。
 
 ::

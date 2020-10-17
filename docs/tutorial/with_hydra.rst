@@ -82,7 +82,8 @@ Enchanter with Hydra
     import enchanter.addons.layers as layers
 
 
-    experiment = Experiment()
+    experiment = Experiment(log_code=False)
+    experiment.set_code(filename=hydra.utils.to_absolute_path(__file__))
     x, y = load_iris(return_X_y=True)
     x = x.astype("float32")
     y = y.astype("int64")
@@ -98,6 +99,7 @@ Enchanter with Hydra
         opt_params = cfg.optimizer.params
 
         experiment.add_tag("with_hydra")
+        experiment.log_parameters({"hydra-cfg": [cfg]})
         model = layers.MLP(shapes)
         optimizer = optim.Adam(model.parameters(), **opt_params)
         runner = tasks.ClassificationRunner(

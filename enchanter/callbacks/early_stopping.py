@@ -7,14 +7,16 @@
 #
 # ***************************************************
 
+import re
 from typing import Any, Dict, Optional, Union
 
 import torch
 import numpy as np
 from sklearn.svm import SVC
 from sklearn.base import BaseEstimator
-from sklearn.model_selection import cross_validate, StratifiedKFold, BaseCrossValidator
+from sklearn.model_selection import cross_validate, StratifiedKFold, BaseCrossValidator, GridSearchCV, train_test_split
 from .base import Callback
+from ..engine.modules import fetch_state_dict
 
 
 __all__ = ["EarlyStopping", "EarlyStoppingForTSUS"]
@@ -57,6 +59,9 @@ class EarlyStopping(Callback):
 
         """
         super(EarlyStopping, self).__init__()
+        if re.match("^validate_", monitor):
+            monitor = monitor.replace("validate_", "val_")
+
         self.monitor: str = monitor
         self.patience: int = patience
         self.min_delta: float = min_delta
@@ -105,7 +110,7 @@ class EarlyStopping(Callback):
                 if self.monitor_op(current - self.min_delta, self.best):
                     self.best = current
                     self.wait = 0
-                    self.best_weight = self.model.state_dict()
+                    self.params["best_weight"] = fetch_state_dict(self.model)
 
                 else:
                     self.wait += 1
@@ -141,6 +146,7 @@ class EarlyStoppingForTSUS(Callback):
         patience: int = 0,
         kfold: Optional[BaseCrossValidator] = None,
         mode: str = "auto",
+        grid_search: Optional[Dict[str, Any]] = None,
     ):
         """
         Initializer
@@ -166,6 +172,7 @@ class EarlyStoppingForTSUS(Callback):
         self.best: float = 0.0
         self.wait: int = 0
         self.stopped_epoch: int = 0
+        self.grid_search = grid_search
 
         if isinstance(kfold, BaseCrossValidator):
             self.kfold = kfold
@@ -193,21 +200,45 @@ class EarlyStoppingForTSUS(Callback):
 
     def cross_val(self):
         features: np.ndarray = self.encode()
-        score = cross_validate(
-            self.classifier, features, self.target.cpu().numpy(), cv=self.kfold, scoring=[self.monitor]
-        )["test_{}".format(self.monitor)].mean()
-        return score
+        targets = self.target.cpu().numpy()
+
+        if self.grid_search is not None:
+            evaluator = GridSearchCV(self.classifier, self.grid_search, cv=5, n_jobs=5)
+            if len(targets) >= 10000:
+                split = train_test_split(features, targets, train_size=10000, random_state=0, stratify=targets)
+                features, targets = split[0], split[2]
+
+            evaluator.fit(features, targets)
+            score = evaluator.best_score_
+            params = evaluator.best_params_
+
+        else:
+            evaluator = self.classifier
+
+            score = cross_validate(
+                evaluator,
+                features,
+                targets,
+                cv=self.kfold,
+                scoring=[self.monitor],
+                n_jobs=self.kfold.n_splits,
+            )["test_{}".format(self.monitor)].mean()
+            params = evaluator.get_params()
+
+        return score, params
 
     def on_epoch_end(self, epoch, logs: Optional[Dict] = None):
         stop = False
-        current_score = self.cross_val()
+        current_score, current_params = self.cross_val()
         if self.experiment is not None:
             self.experiment.log_metric("Early Stopping metric", current_score, step=epoch)
 
         if self.monitor_op(current_score - self.min_delta, self.best):
+            self.params["grid_search"] = current_params
             self.best = current_score
             self.wait = 0
-            self.best_weight = self.model.state_dict()
+            self.params["best_weight"] = fetch_state_dict(self.model)
+
         else:
             if self.wait > self.patience:
                 self.stopped_epoch = epoch

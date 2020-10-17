@@ -60,6 +60,7 @@ comet.mlの仕様上、カテゴリカル変数の場合、探索対象は要素
         y = y.astype("int64")
 
         runner.fit(x, y, epochs=1, batch_size=32)
+        runner.quite()
 
 ここで注意が必要なのは、先ほどの ``.suggest_categorical()`` メソッドで指定した変数についてです。
 comet.mlでは カテゴリカル変数は文字列として与えられ、文字列を返すという仕組みになっています。

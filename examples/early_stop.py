@@ -26,7 +26,7 @@ runner = tasks.ClassificationRunner(
     optimizer=optimizer,
     criterion=nn.CrossEntropyLoss(),
     experiment=experiment,
-    callbacks=[EarlyStopping(min_delta=0.5, patience=2, mode="min")]
+    callbacks=[EarlyStopping(monitor="val_avg_acc", patience=5, mode="max")]
 )
 
 x, y = load_iris(return_X_y=True)
@@ -47,7 +47,7 @@ val_loader = DataLoader(val_ds, batch_size=8)
 test_loader = DataLoader(test_ds, batch_size=8)
 
 runner.add_loader("train", train_loader)
-runner.add_loader("val", val_loader)
+runner.add_loader("val", test_loader)
 runner.add_loader("test", test_loader)
 
 runner.train_config(

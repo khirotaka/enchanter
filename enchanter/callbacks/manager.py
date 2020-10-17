@@ -67,8 +67,8 @@ class CallbackManager(Callback):
                 callback.on_epoch_end(epoch, logs)
 
                 self.flag_check(callback.stop_runner)
-                if callback.best_weight is not None:
-                    self.best_weight = callback.best_weight
+                if "best_weight" in callback.params.keys():
+                    self.params["best_weight"] = callback.params["best_weight"]
 
     def on_train_step_start(self, logs: Optional[Dict] = None):
         if self.callbacks is not None:
@@ -146,6 +146,8 @@ class CallbackManager(Callback):
                 callback.on_test_start(logs)
 
                 self.flag_check(callback.stop_runner)
+                if "grid_search" in callback.params.keys():
+                    self.params["grid_search"] = callback.params["grid_search"]
 
     def on_test_end(self, logs=None):
         if self.callbacks is not None:

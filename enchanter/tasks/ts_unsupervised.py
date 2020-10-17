@@ -5,10 +5,11 @@ from comet_ml.experiment import BaseExperiment
 import torch
 from torch.cuda import amp
 from sklearn.svm import SVC
-from sklearn.base import ClassifierMixin, RegressorMixin
-from sklearn.model_selection import cross_validate
+from sklearn.model_selection import train_test_split
 
+from enchanter.engine import modules
 from enchanter.engine import BaseRunner
+from enchanter.engine.typehint import ScikitModel
 from enchanter.addons.criterions.ts_triplet_loss import (
     generate_anchor_positive_input,
     generate_negative_input,
@@ -31,6 +32,16 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
     Paper: `Unsupervised Scalable Representation Learning for Multivariate Time Series \
         <https://papers.nips.cc/paper/8713-unsupervised-scalable-representation-learning-for-multivariate-time-series>`_
 
+
+    Examples:
+        >>> experiment: Union[BaseLogger, BaseExperiment] = ...
+        >>> model: torch.nn.Module = ...
+        >>> optimizer: torch.optim.Optimizer = ...
+        >>> runner = TimeSeriesUnsupervisedRunner(model, optimizer, experiment)
+        >>> runner.add_loader("train", ...)
+        >>> runner.train_config(...)
+        >>> runner.run()
+
     """
 
     def __init__(
@@ -41,7 +52,7 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         n_negative_samples: int = 1,
         negative_penalty: int = 1,
         compared_len: Optional[int] = None,
-        evaluator: Union[ClassifierMixin, RegressorMixin] = SVC(),
+        evaluator: ScikitModel = SVC(),
         save_memory: bool = False,
         scheduler: List = None,
         callbacks: Optional[List[Callback]] = None,
@@ -81,6 +92,7 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
 
         self.callbacks = callbacks
         self.evaluator = evaluator
+        self.evaluator_params = None
 
     def initialize(self) -> None:
         super(TimeSeriesUnsupervisedRunner, self).initialize()
@@ -165,7 +177,10 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         return positive_loss
 
     def train_step(self, batch) -> Dict[str, torch.Tensor]:
-        x_train = batch[0]
+        if len(batch) == 2:
+            x_train, _ = batch
+        else:
+            x_train = batch[0]
         batch_size: int = x_train.shape[0]
 
         length: int = min(self.compared_len, self.train_ds.data.shape[2])  # type: ignore
@@ -200,37 +215,52 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         return {"avg_loss": avg_loss}
 
     def val_step(self, batch: Tuple) -> Dict[str, torch.Tensor]:
-        try:
-            x, y = batch
-        except ValueError:
-            return {}
-        else:
-            with amp.autocast(enabled=isinstance(self.scaler, amp.GradScaler)):
-                encoded = self.model(x)
-            return {"encoded": encoded, "targets": y}
+        return self.train_step(batch)
 
     def val_end(self, outputs: List) -> Dict[str, torch.Tensor]:
-        """
-        Perform cross-validation using the encoded validation data and ``evaluator``.
+        return self.train_end(outputs)
 
-        Args:
-            outputs: outputs of ``self.val_step()``.
+    def test_step(self, batch: Tuple) -> Dict[str, torch.Tensor]:
+        x, y = batch
+        with amp.autocast(enabled=isinstance(self.scaler, amp.GradScaler)):
+            encoded = self.model(x)
+        return {"encoded": encoded, "targets": y}
 
-        Returns:
-            ``fit_time``, ``score_time``, ``test_score``, ``train_score``
+    def _generate_train_features(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        features = []
+        targets = []
 
-        """
-        try:
-            data = torch.cat([output["encoded"] for output in outputs]).cpu().numpy()
-            targets = torch.cat([output["targets"] for output in outputs]).cpu().numpy()
-        except KeyError:
-            return {}
+        loader = self.loaders["train"]
+        loader = modules.tfds_to_numpy(loader) if modules.is_tfds(loader) else loader
+
+        self.model.eval()
+        with torch.no_grad(), amp.autocast(enabled=isinstance(self.scaler, amp.GradScaler)):
+            for batch in loader:
+                x, y = batch
+                features.append(self.model(x.to(self.device)))
+                targets.append(y)
+
+        return torch.cat(features).cpu().numpy(), torch.cat(targets).cpu().numpy()
+
+    def test_end(self, outputs: List) -> Dict[str, torch.Tensor]:
+        x_train, y_train = self._generate_train_features()
+
+        if "grid_search" in self.manager.params.keys():
+            self.evaluator.set_params(**self.manager.params["grid_search"])
+            if len(y_train) <= 10000:
+                self.evaluator.fit(x_train, y_train)  # type: ignore
+            else:
+                split = train_test_split(x_train, y_train, train_size=10000, random_state=0, stratify=y_train)
+                self.evaluator.fit(split[0], split[2])  # type: ignore
+
+            # self.experiment.log_parameters(search.best_params_, prefix="grid_search_best_params")
         else:
-            logs = {
-                k: v.mean() for k, v in cross_validate(self.evaluator, data, targets, return_train_score=True).items()
-            }
+            self.evaluator.fit(x_train, y_train)  # type: ignore
 
-        return logs
+        x_test = torch.cat([output["encoded"] for output in outputs]).cpu().numpy()
+        y_test = torch.cat([output["targets"] for output in outputs]).cpu().numpy()
+
+        return {"evaluator_score": torch.tensor(self.evaluator.score(x_test, y_test))}
 
     def encode(self, data: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tensor]:
         """
@@ -259,9 +289,7 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
             out: torch.Tensor = self.model(data)
 
         if ndarray:
-            out: np.ndarray = out.cpu().numpy()  # type: ignore
-        else:
-            out: torch.Tensor = out.cpu()  # type: ignore
+            out = out.cpu().numpy()  # type: ignore
 
         return out
 
