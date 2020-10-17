@@ -43,7 +43,9 @@ def generate_sample_indices(
 
         end_pos: np.ndarray = begin_pos + len_pos_neg
 
-        begin_neg_samples: torch.Tensor = torch.randint(0, high=length - len_pos_neg + 1, size=(n_rand_samples, batch_size))
+        begin_neg_samples: torch.Tensor = torch.randint(
+            0, high=length - len_pos_neg + 1, size=(n_rand_samples, batch_size)
+        )
 
         return begin_batches, len_anchor, end_pos, len_pos_neg, begin_neg_samples
 
