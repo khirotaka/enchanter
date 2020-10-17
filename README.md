@@ -2,7 +2,6 @@
 
 # Enchanter
 
-
 <p align="center">
   <a href="#Getting-Started">Getting Started</a> •
   <a href="https://enchanter.readthedocs.io/en/stable/">Docs</a> •
