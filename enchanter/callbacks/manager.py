@@ -1,6 +1,5 @@
 from typing import List, Optional, Dict
 from .base import Callback
-from .early_stopping import EarlyStoppingForTSUS
 
 
 __all__ = ["CallbackManager"]
