@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/_static/images/Enchanter-Logo.png" width="400px">
+
 # Enchanter
 
 <p align="center">
