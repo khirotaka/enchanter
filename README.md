@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/_static/images/Enchanter-Logo.png" width="400px">
+<img src="docs/_static/images/Enchanter-Logo.png" width="200px">
 
 # Enchanter
 
