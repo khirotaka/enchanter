@@ -72,7 +72,7 @@ html_title = "Enchanter documentation"
 html_theme = "sphinx_material"
 html_theme_path = sphinx_material.html_theme_path()
 html_context = sphinx_material.get_html_context()
-html_logo = "_static/images/Enchanter-Logo.png"
+html_logo = "_static/images/Enchanter-Logo-clear.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
