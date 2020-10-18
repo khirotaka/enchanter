@@ -30,10 +30,12 @@ from comet_ml import Experiment
 from comet_ml.api import APIExperiment
 from comet_ml.experiment import BaseExperiment
 
+from enchanter.utils.backend import is_scalar
+from enchanter.callbacks import BaseLogger
+from enchanter.callbacks import Callback
+from enchanter.callbacks import CallbackManager
 from enchanter.engine.saving import RunnerIO
-from enchanter.engine.modules import send, get_dataset, is_tfds, tfds_to_numpy
-from enchanter.callbacks import BaseLogger as BaseLogger
-from enchanter.callbacks import EarlyStopping as EarlyStopping
+from enchanter.engine.modules import send, get_dataset, is_tfds, tfds_to_numpy, restore_state_dict
 
 
 __all__ = ["BaseRunner"]
@@ -72,15 +74,16 @@ class BaseRunner(ABC, RunnerIO):
         self.optimizer: Optimizer = NotImplemented
         self.scheduler: List = list()
         self.experiment: Union[BaseExperiment, BaseLogger] = NotImplemented
-        self.early_stop: Optional[EarlyStopping] = None
+        self.manager = CallbackManager()
+        self.callbacks: Optional[List[Callback]] = None
         self.scaler: Optional[amp.GradScaler] = None
         self.api_experiment: Optional[APIExperiment] = None
 
         self.global_step: int = 0
         self.non_blocking: bool = True
-        self.configures: Dict[str, Any] = {"epochs": 0}
+        self.configures: Dict[str, Any] = {"epochs": 0, "checkpoint_path": None}
         self.pbar: Union[tqdm, range] = range(self.configures["epochs"])
-        self._metrics: Dict = dict()
+        self.metrics: Dict = {"train": dict(), "val": dict(), "test": dict()}
         self._loaders: Dict[str, Union[DataLoader, Any]] = dict()
 
     def backward(self, loss: Tensor) -> None:
@@ -268,14 +271,15 @@ class BaseRunner(ABC, RunnerIO):
                     key: outputs[key].detach().cpu() if isinstance(outputs[key], Tensor) else outputs[key]
                     for key in outputs.keys()
                 }
-                self.experiment.log_metrics(outputs, step=self.global_step, epoch=epoch)
+                tmp = {k: outputs[k] for k in outputs.keys() if is_scalar(outputs[k])}
+                self.experiment.log_metrics(tmp, step=self.global_step, epoch=epoch)
                 results.append(outputs)
-                # on_step_end()
+                self.manager.on_train_step_end(outputs)
 
             dic = self.train_end(results)  # pylint: disable=E1111
 
             if len(dic) != 0:
-                self._metrics.update(dic)
+                self.metrics["train"].update(dic)
                 self.experiment.log_metrics(dic, step=epoch, epoch=epoch)
 
     def val_cycle(self, epoch: int, loader: DataLoader) -> None:
@@ -296,31 +300,31 @@ class BaseRunner(ABC, RunnerIO):
             loader = tfds_to_numpy(loader)
 
         self.model.eval()
-        with self.experiment.validate():
-            with torch.no_grad():
-                for step, batch in enumerate(loader):
-                    batch = send(batch, self.device, self.non_blocking)
-                    self.global_step += 1
-                    # on_step_start()
-                    outputs = self.val_step(batch)  # pylint: disable=E1111
+        with self.experiment.validate(), torch.no_grad():
+            for step, batch in enumerate(loader):
+                batch = send(batch, self.device, self.non_blocking)
+                self.global_step += 1
+                # on_step_start()
+                outputs = self.val_step(batch)  # pylint: disable=E1111
 
-                    if hasattr(self.pbar, "set_postfix"):
-                        per = "{:1.0%}".format(step / loader_size)
-                        self.pbar.set_postfix(OrderedDict(val_batch=per), refresh=True)  # type: ignore
+                if hasattr(self.pbar, "set_postfix"):
+                    per = "{:1.0%}".format(step / loader_size)
+                    self.pbar.set_postfix(OrderedDict(val_batch=per), refresh=True)  # type: ignore
 
-                    outputs = {
-                        key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
-                        for key in outputs.keys()
-                    }
-                    self.experiment.log_metrics(outputs, step=self.global_step, epoch=epoch)
-                    results.append(outputs)
-                    # on_step_end()
+                outputs = {
+                    key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
+                    for key in outputs.keys()
+                }
+                tmp = {k: outputs[k] for k in outputs.keys() if is_scalar(outputs[k])}
+                self.experiment.log_metrics(tmp, step=self.global_step, epoch=epoch)
+                results.append(outputs)
+                self.manager.on_validation_step_end(outputs)
 
-                dic = self.val_end(results)  # pylint: disable=E1111
+            dic = self.val_end(results)  # pylint: disable=E1111
 
-                if len(dic) != 0:
-                    self._metrics.update(dic)
-                    self.experiment.log_metrics(dic, step=epoch, epoch=epoch)
+            if len(dic) != 0:
+                self.metrics["val"].update(dic)
+                self.experiment.log_metrics(dic, step=epoch, epoch=epoch)
 
     def test_cycle(self, loader: DataLoader) -> None:
         """
@@ -339,33 +343,33 @@ class BaseRunner(ABC, RunnerIO):
             loader = tfds_to_numpy(loader)
 
         self.model.eval()
-        with self.experiment.test():
-            with torch.no_grad():
-                for step, batch in enumerate(loader):
-                    batch = send(batch, self.device, self.non_blocking)
-                    # on_step_start()
-                    outputs = self.test_step(batch)  # pylint: disable=E1111
+        with self.experiment.test(), torch.no_grad():
+            for step, batch in enumerate(loader):
+                batch = send(batch, self.device, self.non_blocking)
+                # on_step_start()
+                outputs = self.test_step(batch)  # pylint: disable=E1111
 
-                    per = "{:1.0%}".format(step / loader_size)
-                    if hasattr(self.pbar, "set_postfix"):
-                        self.pbar.set_postfix(OrderedDict(test_batch=per), refresh=True)  # type: ignore
+                per = "{:1.0%}".format(step / loader_size)
+                if hasattr(self.pbar, "set_postfix"):
+                    self.pbar.set_postfix(OrderedDict(test_batch=per), refresh=True)  # type: ignore
 
-                        self.pbar.update(1)  # type: ignore
+                    self.pbar.update(1)  # type: ignore
 
-                    outputs = {
-                        key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
-                        for key in outputs.keys()
-                    }
+                outputs = {
+                    key: outputs[key].cpu() if isinstance(outputs[key], Tensor) else outputs[key]
+                    for key in outputs.keys()
+                }
 
-                    self.experiment.log_metrics(outputs)
-                    results.append(outputs)
-                    # on_step_end()
+                tmp = {k: outputs[k] for k in outputs.keys() if is_scalar(outputs[k])}
+                self.experiment.log_metrics(tmp)
+                results.append(outputs)
+                self.manager.on_test_step_end(outputs)
 
-                dic = self.test_end(results)  # pylint: disable=E1111
+            dic = self.test_end(results)  # pylint: disable=E1111
 
-                if len(dic) != 0:
-                    self._metrics.update(dic)
-                    self.experiment.log_metrics(dic)
+            if len(dic) != 0:
+                self.metrics["test"].update(dic)
+                self.experiment.log_metrics(dic)
 
     def train_config(
         self,
@@ -470,7 +474,15 @@ class BaseRunner(ABC, RunnerIO):
         if self.global_step < 0:
             self.global_step = 0
 
+        self.manager.callbacks = self.callbacks
+
+        self.manager.set_experiment(self.experiment)
+        self.manager.set_device(self.device)
+        self.manager.set_optimizer(self.optimizer)
+        self.manager.set_model(self.model)
+
         self.model = self.model.to(self.device)
+        self.save_dir = self.configures["checkpoint_path"]
 
     def run(self, phase: str = "all", verbose: bool = True, sleep_time: int = 1):
         """
@@ -520,25 +532,31 @@ class BaseRunner(ABC, RunnerIO):
                     if verbose
                     else range(self.configures["epochs"])
                 )
-                # .on_epoch_start()
+
                 for epoch in self.pbar:
-                    # on_train_start()
+                    self.manager.on_epoch_start(epoch, self.metrics)
+
+                    self.manager.on_train_start(self.metrics)
                     self.train_cycle(epoch, self.loaders["train"])
-                    # on_train_end()
+                    self.manager.on_train_end(self.metrics)
 
                     if phase in {"all", "train/val", "debug"}:
                         if "val" in self.loaders:
-                            # on_validation_start()
+                            self.manager.on_validation_start(self.metrics)
                             self.val_cycle(epoch, self.loaders["val"])
-                            # on_validation_end()
+                            self.manager.on_validation_end(self.metrics)
 
                     if self.scheduler:
                         self.update_scheduler(epoch)
 
-                    if self.early_stop:
-                        if self.early_stop.on_epoch_end(epoch, self._metrics):
-                            break
-                        # .on_epoch_end()
+                    self.manager.on_epoch_end(epoch, self.metrics)
+
+                    if self.manager.stop_runner:
+                        if self.manager.params["best_weight"]:
+                            self.model = restore_state_dict(self.model, self.manager.params["best_weight"])
+                        if hasattr(self.pbar, "close"):
+                            self.pbar.close()  # type: ignore
+                        break
 
                     if self.configures["checkpoint_path"]:
                         ops = {
@@ -573,10 +591,10 @@ class BaseRunner(ABC, RunnerIO):
 
         if phase in {"all", "test", "debug"}:
             if "test" in self.loaders:
-                # on_test_start()
+                self.manager.on_test_start(self.metrics)
                 self.pbar = tqdm(total=len(self.loaders["test"]), desc="Evaluating") if verbose else None
                 self.test_cycle(self.loaders["test"])
-                # on_test_end()
+                self.manager.on_test_end(self.metrics)
 
         return self
 
@@ -711,11 +729,26 @@ class BaseRunner(ABC, RunnerIO):
         self.experiment.end()
 
     def __enter__(self):
+        """
+        Context API
+
+        Examples:
+            >>> runner: BaseRunner = ...
+            >>> with runner:
+            >>>     runner.add_loader(...)
+            >>>     runner.train_config(...)
+            >>>     runner.run()
+
+        """
         self.initialize()
         self.log_hyperparams()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        At the end of the ``with`` block, the Experiment will end automatically.
+
+        """
         buffer = io.BytesIO()
         torch.save(self.save_checkpoint(), buffer)
         self.experiment.log_asset_data(

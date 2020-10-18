@@ -1,4 +1,4 @@
-from .functions import *
+from .functions import FixedSlidingWindow, adjust_sequences
 from . import transforms
 
 

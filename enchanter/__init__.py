@@ -1,5 +1,16 @@
-import enchanter.addons
-import enchanter.engine
-import enchanter.tasks
+__version__ = "0.8.0a"
+__author__ = "Hirotaka Kawashima"
+__author_email__ = "khirotaka@vivaldi.net"
+__license__ = "Apache-2.0"
+__copyright__ = "Copyright (c) 2020, {}.".format(__author__)
+__homepage__ = "https://github.com/khirotaka/enchanter"
 
-from .__version__ import __version__
+__docs__ = "Enchanter is a library for machine learning tasks for comet.ml users."
+
+
+from enchanter import addons
+from enchanter import engine
+from enchanter import tasks
+
+
+__all__ = ["addons", "engine", "tasks"]

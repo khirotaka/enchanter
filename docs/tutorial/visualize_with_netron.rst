@@ -3,9 +3,12 @@ Visualize with Netron
 
 ::
 
-    from enchanter.addons.layers import AutoEncoder
+    import torch
+    import enchanter.addons.layers as L
+    from enchanter.utils.visualize import with_netron
+
     x = torch.randn(1, 32)  # [N, in_features]
-    model = AutoEncoder([32, 16, 8, 2])
+    model = L.AutoEncoder([32, 16, 8, 2])
     with_netron(model, (x, ))
 
 

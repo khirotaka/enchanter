@@ -36,17 +36,18 @@ Enchanter with Hydra
 
 .. code-block:: yaml
 
-    # config/model/mlp1.yaml
+    # @package _global_
     model:
       shapes:
         - 4
         - 512
         - 128
         - 3
+    # model1.yaml
 
 .. code-block:: yaml
 
-    # config/model/mlp2.yaml
+    # @package _global_
     model:
       shapes:
         - 4
@@ -54,13 +55,15 @@ Enchanter with Hydra
         - 32
         - 6
         - 3
+    # model2.yaml
 
 .. code-block:: yaml
 
-    # config/optimizer/adam.yaml
+    # @package _global_
     optimizer:
       params:
         lr: 0.001
+    # adam.yaml
 
 
 これで設定ファイルの準備は完了です。次に、Irisデータセットを用いた実験を行いましょう。
@@ -79,7 +82,6 @@ Enchanter with Hydra
     import enchanter.addons.layers as layers
 
 
-    experiment = Experiment()
     x, y = load_iris(return_X_y=True)
     x = x.astype("float32")
     y = y.astype("int64")
@@ -89,12 +91,15 @@ Enchanter with Hydra
 
 ::
 
-    @hydra.main("config/config.yaml")
+    @hydra.main("config", "config.yaml")
     def main(cfg):
         shapes = cfg.model.shapes
         opt_params = cfg.optimizer.params
 
+        experiment = Experiment(log_code=False)
+        experiment.set_code(filename=hydra.utils.to_absolute_path(__file__))
         experiment.add_tag("with_hydra")
+        experiment.log_parameters({"hydra-cfg": [cfg]})
         model = layers.MLP(shapes)
         optimizer = optim.Adam(model.parameters(), **opt_params)
         runner = tasks.ClassificationRunner(
@@ -103,8 +108,7 @@ Enchanter with Hydra
             criterion=nn.CrossEntropyLoss(),
             experiment=experiment
         )
-        runner.train_config(epochs=10, checkpoint_path="./checkpoints")
-        runner.fit(x, y)
+        runner.fit(x, y, epochs=10, checkpoint_path="./checkpoints")
         runner.save()
 
 
