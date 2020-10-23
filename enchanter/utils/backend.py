@@ -7,6 +7,7 @@ import numpy as np
 __all__ = ["slice_axis", "is_scalar"]
 
 
+@torch.jit.script
 def slice_axis(data: torch.Tensor, axis: int, begin: int, end: int) -> torch.Tensor:
     """
 
