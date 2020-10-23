@@ -1,5 +1,8 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+from torch.nn.modules.utils import _single
+from ...utils.backend import slice_axis
 
 
 __all__ = ["CausalConv1d", "TemporalConvBlock"]
@@ -32,9 +35,15 @@ class CausalConv1d(nn.Conv1d):
 
         """
         super(CausalConv1d, self).__init__(
-            in_channels, out_channels, kernel_size, stride, padding=0, dilation=dilation, groups=groups, bias=bias
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            padding=_single((kernel_size - 1) * dilation),
+            dilation=dilation,
+            groups=groups,
+            bias=bias,
         )
-        self.left_padding: int = (kernel_size - 1) * dilation
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -47,8 +56,11 @@ class CausalConv1d(nn.Conv1d):
             [N, out_channels, L]
 
         """
-        x = nn.functional.pad(x, [self.left_padding, 0])
-        return super(CausalConv1d, self).forward(x)
+        out = F.conv1d(x, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
+        if self.kernel_size[0] > 0:
+            out = slice_axis(out, axis=2, begin=0, end=-self.padding[0])
+
+        return out
 
 
 class TemporalConvBlock(nn.Module):
