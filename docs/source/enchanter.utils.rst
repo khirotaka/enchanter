@@ -33,6 +33,16 @@ enchanter.utils.backend
     :show-inheritance:
 
 
+enchanter.utils.datasets
+----------------------------
+
+..  automodule:: enchanter.utils.datasets
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+
 enchanter.utils.visualize
 ----------------------------
 
