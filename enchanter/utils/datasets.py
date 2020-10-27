@@ -13,6 +13,7 @@ class TimeSeriesUnlabeledDataset(Dataset):
         >>> loader = DataLoader(ds)
         >>> data = next(iter(loader))
     """
+
     def __init__(
         self, data: Union[torch.Tensor, np.ndarray], transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None
     ):
@@ -38,6 +39,7 @@ class TimeSeriesLabeledDataset(TimeSeriesUnlabeledDataset):
         >>> loader = DataLoader(ds)
         >>> data, targets = next(iter(loader))
     """
+
     def __init__(
         self,
         data: Union[torch.Tensor, np.ndarray],
