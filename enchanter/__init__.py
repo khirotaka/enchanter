@@ -1,4 +1,4 @@
-__version__ = "0.8.1"
+__version__ = "0.9.0"
 __author__ = "Hirotaka Kawashima"
 __author_email__ = "khirotaka@vivaldi.net"
 __license__ = "Apache-2.0"

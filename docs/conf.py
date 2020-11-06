@@ -111,6 +111,7 @@ html_theme_options = {
         "v0.7.1": "https://enchanter.readthedocs.io/en/v0.7.1/",
         "v0.8.0": "https://enchanter.readthedocs.io/en/v0.8.0/",
         "v0.8.1": "https://enchanter.readthedocs.io/en/v0.8.1/",
+        "v0.9.0": "https://enchanter.readthedocs.io/en/v0.9.0/",
     },
 }
 
