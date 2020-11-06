@@ -1,4 +1,4 @@
-name: CI Linux
+name: CI Windows
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 jobs:
   pytest:
 
-    runs-on: ubuntu-20.04
+    runs-on: windows-2019
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8]
@@ -23,13 +23,13 @@ jobs:
 
       - name: Install Poetry
         run: |
-          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+          (Invoke-WebRequest -Uri https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -UseBasicParsing).Content | python -
       - name: Add path for Poetry
         run: echo "$HOME/.poetry/bin" >> $GITHUB_PATH
       - name: Install Dependencies
         run: |
           poetry run pip install -U pip
-          poetry run pip install -U torch torchvision
+          poetry run pip install -U torch==1.7.0+cpu torchvision==0.8.1+cpu torchaudio===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
           poetry install --no-interaction
 
       - name: Lint with flake8
