@@ -25,7 +25,7 @@ jobs:
         run: |
           (Invoke-WebRequest -Uri https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -UseBasicParsing).Content | python -
       - name: Add path for Poetry
-        run: echo "$HOME/.poetry/bin" >> $GITHUB_PATH
+        run: echo "%USERPROFILE%\.poetry\bin" >> $GITHUB_PATH
       - name: Install Dependencies
         run: |
           poetry run pip install -U pip
