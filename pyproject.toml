@@ -33,7 +33,7 @@ tensorflow-datasets = "^4.0"
 sphinx-material = "^0.0.32"
 sphinx-copybutton = "^0.3"
 sphinx-autoapi = "^1.5"
-mypy = "^0.790"
+mypy = "^0.800"
 tslearn = "^0.4.1"
 hydra-core = "^1.0.3"
 
