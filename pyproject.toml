@@ -34,7 +34,7 @@ sphinx-material = "^0.0.32"
 sphinx-copybutton = "^0.3"
 sphinx-autoapi = "^1.5"
 mypy = "^0.790"
-tslearn = "^0.4.1"
+tslearn = "^0.5.0"
 hydra-core = "^1.0.3"
 
 
