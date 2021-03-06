@@ -5,9 +5,9 @@ from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 
-import enchanter.tasks as tasks
+import enchanter.legacy.tasks as tasks
 import enchanter.addons as addons
-from enchanter.callbacks import TensorBoardLogger
+from enchanter.legacy.callbacks import TensorBoardLogger
 
 x, y = load_iris(return_X_y=True)
 x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=0)

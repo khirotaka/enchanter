@@ -4,13 +4,13 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 import enchanter
-from enchanter.callbacks import TensorBoardLogger
+from enchanter.legacy.callbacks import TensorBoardLogger
 
 X = torch.randn(512, 10).numpy()
 Y = torch.randint(0, 9, (512,)).numpy()
 
 
-class Runner1(enchanter.engine.BaseRunner):
+class Runner1(enchanter.legacy.engine.BaseRunner):
     def __init__(self):
         super(Runner1, self).__init__()
         self.model = nn.Linear(10, 10)
@@ -26,7 +26,7 @@ class Runner1(enchanter.engine.BaseRunner):
         return {"loss": loss}
 
 
-class Runner2(enchanter.engine.BaseRunner):
+class Runner2(enchanter.legacy.engine.BaseRunner):
     def __init__(self):
         super(Runner2, self).__init__()
         self.model = nn.Linear(10, 10)
@@ -58,7 +58,7 @@ class Runner2(enchanter.engine.BaseRunner):
 
 def test_custom_runner_1():
     runner = Runner1()
-    ds = enchanter.engine.modules.get_dataset(X, Y)
+    ds = enchanter.legacy.engine.modules.get_dataset(X, Y)
     loader = DataLoader(ds, batch_size=32)
 
     try:
@@ -76,7 +76,7 @@ def test_custom_runner_1():
 
 def test_custom_runner_2():
     runner = Runner2()
-    ds = enchanter.engine.modules.get_dataset(X, Y)
+    ds = enchanter.legacy.engine.modules.get_dataset(X, Y)
     loader = DataLoader(ds, batch_size=32)
 
     try:
@@ -95,7 +95,7 @@ def test_custom_runner_2():
 def test_custom_runner_3():
     runner = Runner2()
 
-    ds = enchanter.engine.modules.get_dataset(X, Y)
+    ds = enchanter.legacy.engine.modules.get_dataset(X, Y)
     loader = DataLoader(ds, batch_size=32)
 
     try:

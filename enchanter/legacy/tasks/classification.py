@@ -17,10 +17,10 @@ from torch.optim.optimizer import Optimizer
 from torch.cuda.amp import GradScaler, autocast
 from comet_ml.experiment import BaseExperiment
 
-from enchanter.engine import BaseRunner
-from enchanter.callbacks import BaseLogger
-from enchanter.callbacks import Callback
-from enchanter.metrics import calculate_accuracy
+from ..engine import BaseRunner
+from ..callbacks import BaseLogger
+from ..callbacks import Callback
+from ...metrics import calculate_accuracy
 
 
 __all__ = ["ClassificationRunner"]

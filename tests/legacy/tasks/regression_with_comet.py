@@ -1,15 +1,20 @@
+import warnings
+
+from comet_ml import OfflineExperiment
+
 import numpy as np
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader
 from sklearn.datasets import load_boston
 from sklearn.model_selection import train_test_split
+from torch.utils.data import DataLoader
 
-import enchanter.tasks as tasks
+import enchanter.legacy.tasks as tasks
 import enchanter.addons.layers as layers
 from enchanter.addons import Mish
-from enchanter.callbacks import TensorBoardLogger
-from enchanter.engine.modules import get_dataset
+from enchanter.legacy.engine.modules import get_dataset
+
+warnings.simplefilter('ignore')
 
 
 x, y = load_boston(return_X_y=True)
@@ -34,7 +39,7 @@ def test_regression_1():
         model,
         optimizer,
         nn.MSELoss(),
-        TensorBoardLogger("./logs"),
+        OfflineExperiment(offline_directory="./logs", display_summary_level=0)
     )
     runner.add_loader("train", train_loader).add_loader("val", val_loader).add_loader("test", test_loader)
     runner.train_config(epochs=1)
@@ -54,7 +59,7 @@ def test_regression_2():
         model,
         optimizer,
         nn.MSELoss(),
-        TensorBoardLogger("./logs")
+        OfflineExperiment(offline_directory="./logs", display_summary_level=0)
     )
     runner.train_config(epochs=1)
 
@@ -62,7 +67,7 @@ def test_regression_2():
         runner.run(verbose=False)
         is_pass = True
 
-    except Exception:
+    except ValueError:
         is_pass = False
 
     assert is_pass is False
@@ -73,10 +78,10 @@ def test_regression_3():
         model,
         optimizer,
         nn.MSELoss(),
-        TensorBoardLogger("./logs")
+        OfflineExperiment(offline_directory="./logs", display_summary_level=0)
     )
     try:
-        runner.fit(x.astype(np.float32), y.astype(np.float32), batch_size=32, epochs=1)
+        runner.fit(x.astype(np.float32), y.astype(np.float32), batch_size=32, epochs=1, verbose=False)
         is_pass = True
 
     except Exception:

@@ -13,7 +13,7 @@ import numpy as np
 from sklearn.base import BaseEstimator
 from torch import as_tensor, device, Tensor
 from torch.cuda import is_available
-from enchanter.engine.runner import BaseRunner
+from ..engine.runner import BaseRunner
 
 __all__ = ["BaseEnsembleEstimator", "SoftEnsemble", "HardEnsemble"]
 

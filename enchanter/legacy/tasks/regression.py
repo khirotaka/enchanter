@@ -18,9 +18,9 @@ from torch.optim.optimizer import Optimizer
 from torch.cuda.amp import GradScaler, autocast
 from comet_ml.experiment import BaseExperiment
 
-from enchanter.engine import BaseRunner
-from enchanter.callbacks import BaseLogger
-from enchanter.callbacks import Callback
+from ..engine import BaseRunner
+from ..callbacks import BaseLogger
+from ..callbacks import Callback
 
 
 __all__ = ["RegressionRunner", "AutoEncoderRunner"]

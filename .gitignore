@@ -138,3 +138,6 @@ tests/data/
 !/poetry.lock
 docs/savefig/
 poetry.lock
+
+# VSCode
+.vscode/

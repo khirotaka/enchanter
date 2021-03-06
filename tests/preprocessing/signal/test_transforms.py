@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-from enchanter.engine.modules import fix_seed
+from enchanter.legacy.engine.modules import fix_seed
 from enchanter.preprocessing.signal import transforms
 
 fix_seed(0)

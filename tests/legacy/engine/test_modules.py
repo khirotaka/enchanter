@@ -1,9 +1,8 @@
-from typing import Iterator
 import torch
 import numpy as np
 import tensorflow as tf
 from torch.utils.data import Dataset
-import enchanter.engine.modules as modules
+import enchanter.legacy.engine.modules as modules
 
 
 def test_get_dataset_1():

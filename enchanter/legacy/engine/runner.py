@@ -30,12 +30,12 @@ from comet_ml import Experiment
 from comet_ml.api import APIExperiment
 from comet_ml.experiment import BaseExperiment
 
-from enchanter.utils.backend import is_scalar
-from enchanter.callbacks import BaseLogger
-from enchanter.callbacks import Callback
-from enchanter.callbacks import CallbackManager
-from enchanter.engine.saving import RunnerIO
-from enchanter.engine.modules import send, get_dataset, is_tfds, tfds_to_numpy, restore_state_dict
+from ...utils.backend import is_scalar
+from ..callbacks import BaseLogger
+from ..callbacks import Callback
+from ..callbacks import CallbackManager
+from ..engine.saving import RunnerIO
+from ..engine.modules import send, get_dataset, is_tfds, tfds_to_numpy, restore_state_dict
 
 
 __all__ = ["BaseRunner"]

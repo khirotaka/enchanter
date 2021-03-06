@@ -9,8 +9,7 @@ __docs__ = "Enchanter is a library for machine learning tasks for comet.ml users
 
 
 from enchanter import addons
-from enchanter import engine
 from enchanter import tasks
 
 
-__all__ = ["addons", "engine", "tasks"]
+__all__ = ["addons", "tasks"]
