@@ -1,7 +1,6 @@
 from typing import List, Dict, Optional, Union, Tuple
 
 import numpy as np
-from comet_ml.experiment import BaseExperiment
 import torch
 from torch.cuda import amp
 from sklearn.svm import SVC
@@ -18,7 +17,7 @@ from enchanter.addons.criterions.ts_triplet_loss import (
     negative_criterion_for_triplet_loss,
     calculate_triplet_loss,
 )
-from enchanter.callbacks import Callback, BaseLogger
+from enchanter.callbacks import Callback
 from enchanter.utils.datasets import TimeSeriesUnlabeledDataset
 
 
@@ -34,7 +33,7 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
 
 
     Examples:
-        >>> experiment: Union[BaseLogger, BaseExperiment] = ...
+        >>> experiment = ...
         >>> model: torch.nn.Module = ...
         >>> optimizer: torch.optim.Optimizer = ...
         >>> runner = TimeSeriesUnsupervisedRunner(model, optimizer, experiment)
@@ -48,7 +47,7 @@ class TimeSeriesUnsupervisedRunner(BaseRunner):
         self,
         model: torch.nn.Module,
         optimizer: torch.optim.Optimizer,
-        experiment: Union[BaseExperiment, BaseLogger],
+        experiment,
         n_negative_samples: int = 1,
         negative_penalty: int = 1,
         compared_len: Optional[int] = None,
