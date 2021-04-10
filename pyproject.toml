@@ -14,7 +14,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6.5"
+python = "^3.7"
 numpy = "^1.17"
 scikit-learn = ">=0.23,<0.25"
 tqdm = "^4.41"
@@ -42,7 +42,7 @@ comet = ["comet_ml"]
 
 [tool.black]
 line-length = 120
-target-version = ["py36", "py37", "py38"]
+target-version = ["py37", "py38"]
 include = '\.pyi?$'
 exclude = '''
 
