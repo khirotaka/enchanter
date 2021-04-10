@@ -10,6 +10,7 @@ jobs:
     runs-on: macos-10.15
     strategy:
       matrix:
+        comet: [true, false]
         python-version: [3.7, 3.8, 3.9]
 
     steps:
@@ -26,11 +27,20 @@ jobs:
           curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
       - name: Add path for Poetry
         run: echo "$HOME/.poetry/bin" >> $GITHUB_PATH
+
       - name: Install Dependencies
+        if: "matrix.comet == false"
         run: |
           poetry run pip install -U pip
           poetry run pip install -U torch torchvision
           poetry install --no-interaction
+
+      - name: Install Dependencies with Comet.ml
+        if: "matrix.comet == true"
+        run: |
+          poetry run pip install -U pip
+          poetry run pip install -U torch torchvision
+          poetry install --no-interaction --extras comet
 
       - name: Lint with flake8
         run: |

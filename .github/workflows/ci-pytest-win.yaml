@@ -10,6 +10,7 @@ jobs:
     runs-on: windows-2019
     strategy:
       matrix:
+        comet: [true, false]
         python-version: [3.7, 3.8, 3.9]
 
     steps:
@@ -31,11 +32,21 @@ jobs:
         shell: bash
         
       - name: Install Dependencies
+        if: "matrix.comet == false"
         run: |
           echo "$env:USERPROFILE\.poetry\bin" >> $GITHUB_PATH
           poetry run pip install -U pip
           poetry run pip install -U torch==1.7.0+cpu torchvision==0.8.1+cpu torchaudio===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
           poetry install --no-interaction
+        shell: bash
+
+      - name: Install Dependencies with Comet.ml
+        if: "matrix.comet == true"
+        run: |
+          echo "$env:USERPROFILE\.poetry\bin" >> $GITHUB_PATH
+          poetry run pip install -U pip
+          poetry run pip install -U torch==1.7.0+cpu torchvision==0.8.1+cpu torchaudio===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
+          poetry install --no-interaction --extras comet
         shell: bash
         
       - name: Lint with flake8
