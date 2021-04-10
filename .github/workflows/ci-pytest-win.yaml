@@ -36,7 +36,7 @@ jobs:
         run: |
           echo "$env:USERPROFILE\.poetry\bin" >> $GITHUB_PATH
           poetry run pip install -U pip
-          poetry run pip install -U torch==1.7.0+cpu torchvision==0.8.1+cpu torchaudio===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
+          poetry run pip install -U torch torchvision
           poetry install --no-interaction
         shell: bash
 
@@ -45,7 +45,7 @@ jobs:
         run: |
           echo "$env:USERPROFILE\.poetry\bin" >> $GITHUB_PATH
           poetry run pip install -U pip
-          poetry run pip install -U torch==1.7.0+cpu torchvision==0.8.1+cpu torchaudio===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
+          poetry run pip install -U torch torchvision
           poetry install --no-interaction --extras comet
         shell: bash
         
