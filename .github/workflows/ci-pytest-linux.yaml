@@ -53,9 +53,13 @@ jobs:
         run : poetry run black --check --diff .
 
       - name: Test with pytest
+        run: |
+          poetry run pytest --durations=10 tests/
+
+      - name: Test when using Comet
+        if: "matrix.comet == true"
         env:
            COMET_API_KEY: ${{ secrets.COMET_API_KEY }}
         run: |
-          poetry run pytest --durations=10 tests/
           poetry run pytest --durations=10 tests/tasks/classification_with_comet.py
           poetry run pytest --durations=10 tests/tasks/regression_with_comet.py
