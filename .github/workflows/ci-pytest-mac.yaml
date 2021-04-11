@@ -63,3 +63,4 @@ jobs:
         run: |
           poetry run pytest --durations=10 tests/tasks/classification_with_comet.py
           poetry run pytest --durations=10 tests/tasks/regression_with_comet.py
+          poetry run pytest --durations=10 tests/utils/comet_support.py
