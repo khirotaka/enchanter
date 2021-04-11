@@ -20,7 +20,7 @@ scikit-learn = ">=0.23,<0.25"
 tqdm = "^4.41"
 tensorboard = "^2.1"
 pandas = "^1.0"
-netron = "^4.5"
+netron = { version = "^4.5", optional = true }
 comet_ml = { version = "^3.1.3", optional = true }
 
 [tool.poetry.dev-dependencies]
@@ -38,6 +38,7 @@ hydra-core = "^1.0.3"
 
 [tool.poetry.extras]
 comet = ["comet_ml"]
+netron = ["netron"]
 
 [tool.black]
 line-length = 120
