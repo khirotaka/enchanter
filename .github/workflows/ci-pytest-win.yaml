@@ -10,7 +10,8 @@ jobs:
     runs-on: windows-2019
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        comet: [true, false]
+        python-version: [3.7, 3.8, 3.9]
 
     steps:
       - name: Checkout
@@ -31,11 +32,21 @@ jobs:
         shell: bash
         
       - name: Install Dependencies
+        if: "matrix.comet == false"
         run: |
           echo "$env:USERPROFILE\.poetry\bin" >> $GITHUB_PATH
           poetry run pip install -U pip
-          poetry run pip install -U torch==1.7.0+cpu torchvision==0.8.1+cpu torchaudio===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
+          poetry run pip install -U torch==1.8.1+cpu torchvision==0.9.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
           poetry install --no-interaction
+        shell: bash
+
+      - name: Install Dependencies with Comet.ml
+        if: "matrix.comet == true"
+        run: |
+          echo "$env:USERPROFILE\.poetry\bin" >> $GITHUB_PATH
+          poetry run pip install -U pip
+          poetry run pip install -U torch==1.8.1+cpu torchvision==0.9.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
+          poetry install --no-interaction --extras comet
         shell: bash
         
       - name: Lint with flake8
@@ -54,11 +65,17 @@ jobs:
         shell: bash
         
       - name: Test with pytest
-        env:
-           COMET_API_KEY: ${{ secrets.COMET_API_KEY }}
         run: |
           echo "$env:USERPROFILE\.poetry\bin" >> $GITHUB_PATH
           poetry run pytest --durations=10 tests/
+        shell: bash
+
+      - name: Test when using Comet
+        if: "matrix.comet == true"
+        env:
+          COMET_API_KEY: ${{ secrets.COMET_API_KEY }}
+        run: |
           poetry run pytest --durations=10 tests/tasks/classification_with_comet.py
           poetry run pytest --durations=10 tests/tasks/regression_with_comet.py
+          poetry run pytest --durations=10 tests/utils/comet_support.py
         shell: bash
