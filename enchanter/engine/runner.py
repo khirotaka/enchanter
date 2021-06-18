@@ -21,7 +21,7 @@ from numpy import floor, ndarray
 
 import torch
 from torch.nn import Module
-from torch.tensor import Tensor
+from torch import Tensor
 from torch.cuda import is_available, amp
 from torch.optim.optimizer import Optimizer
 from torch.utils.data import DataLoader, SubsetRandomSampler

@@ -33,6 +33,7 @@ jobs:
         run: |
           poetry run pip install -U pip
           poetry run pip install -U torch torchvision
+          poetry run pip install tensorflow tensorflow-datasets mxnet
           poetry install --no-interaction
 
       - name: Install Dependencies with Comet.ml
@@ -40,6 +41,7 @@ jobs:
         run: |
           poetry run pip install -U pip
           poetry run pip install -U torch torchvision
+          poetry run pip install tensorflow tensorflow-datasets mxnet
           poetry install --no-interaction --extras comet
 
       - name: Lint with flake8

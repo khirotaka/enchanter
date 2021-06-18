@@ -12,7 +12,7 @@ from typing import Tuple, List, Union, Optional, Dict
 import numpy as np
 from sklearn.metrics import r2_score
 import torch
-from torch.nn.modules import Module
+from torch.nn import Module
 from torch.nn.modules.loss import _Loss
 from torch.optim.optimizer import Optimizer
 from torch.cuda.amp import GradScaler, autocast
