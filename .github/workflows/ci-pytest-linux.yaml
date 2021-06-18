@@ -42,7 +42,7 @@ jobs:
           poetry run pip install -U pip
           poetry run pip install -U torch torchvision
           poetry run pip install tensorflow tensorflow-datasets
-          poetry install --no-interaction --extras comet
+          poetry install --no-interaction --extras comet mxnet
 
       - name: Lint with flake8
         run: |
