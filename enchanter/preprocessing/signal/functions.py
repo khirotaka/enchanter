@@ -147,6 +147,7 @@ def adjust_sequences(
                 ``fill=["ffill" or int or float]``
 
         dtype:  Specify the data type of NumPy. The data type of the output series is determined based on this value.
+                ``dtype`` must be a float.
 
     Examples:
         >>> import numpy as np

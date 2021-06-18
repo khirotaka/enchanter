@@ -63,8 +63,8 @@ def test_adjust_sequences_4():
         np.random.randn(100, 5),
     ]
 
-    new = signal.adjust_sequences(x, dtype=np.int64)
-    assert new.dtype == np.int64
+    new = signal.adjust_sequences(x, dtype=np.float32)
+    assert new.dtype == np.float32
 
 
 def test_adjust_sequences_5():
