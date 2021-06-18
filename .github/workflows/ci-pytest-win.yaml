@@ -35,9 +35,9 @@ jobs:
         if: "matrix.comet == false"
         run: |
           echo "$env:USERPROFILE\.poetry\bin" >> $GITHUB_PATH
-          poetry run pip install -U --user pip
-          poetry run pip install --user tensorflow tensorflow-datasets mxnet
-          poetry run pip install -U --user torch torchvision
+          poetry run pip install -U pip
+          poetry run pip install tensorflow tensorflow-datasets mxnet
+          poetry run pip install -U torch torchvision
           poetry install --no-interaction
         shell: bash
 
