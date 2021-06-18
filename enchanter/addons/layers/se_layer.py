@@ -1,4 +1,4 @@
-from torch.tensor import Tensor
+from torch import Tensor
 from torch import nn
 
 
