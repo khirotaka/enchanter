@@ -21,17 +21,21 @@ from numpy import floor, ndarray
 
 import torch
 from torch.nn import Module
-from torch.tensor import Tensor
+from torch import Tensor
 from torch.cuda import is_available, amp
 from torch.optim.optimizer import Optimizer
 from torch.utils.data import DataLoader, SubsetRandomSampler
 
-from comet_ml import Experiment
-from comet_ml.api import APIExperiment
-from comet_ml.experiment import BaseExperiment
+try:
+    from comet_ml import Experiment
+    from comet_ml.api import APIExperiment
+
+    _COMET_AVAILABLE = True
+
+except ImportError:
+    _COMET_AVAILABLE = False
 
 from enchanter.utils.backend import is_scalar
-from enchanter.callbacks import BaseLogger
 from enchanter.callbacks import Callback
 from enchanter.callbacks import CallbackManager
 from enchanter.engine.saving import RunnerIO
@@ -73,11 +77,11 @@ class BaseRunner(ABC, RunnerIO):
         self.model: Module = NotImplemented
         self.optimizer: Optimizer = NotImplemented
         self.scheduler: List = list()
-        self.experiment: Union[BaseExperiment, BaseLogger] = NotImplemented
+        self.experiment = NotImplemented
         self.manager = CallbackManager()
         self.callbacks: Optional[List[Callback]] = None
         self.scaler: Optional[amp.GradScaler] = None
-        self.api_experiment: Optional[APIExperiment] = None
+        self.api_experiment: Optional = None
 
         self.global_step: int = 0
         self.non_blocking: bool = True
@@ -411,7 +415,7 @@ class BaseRunner(ABC, RunnerIO):
             else:
                 self.configures["monitor"] = monitor
 
-            if not isinstance(self.experiment, Experiment):
+            if _COMET_AVAILABLE and not isinstance(self.experiment, Experiment):
                 raise TypeError(
                     "To use `.train_config(, monitor='....')`, you need an `Experiment` object. `experiment` is {}.\
                     ".format(
@@ -468,7 +472,7 @@ class BaseRunner(ABC, RunnerIO):
         if self.scheduler and not isinstance(self.scheduler, list):
             raise ValueError("`scheduler` must be a list object.")
 
-        if isinstance(self.experiment, Experiment):
+        if _COMET_AVAILABLE and isinstance(self.experiment, Experiment):
             self.api_experiment = APIExperiment(previous_experiment=self.experiment.id, cache=False)
 
         if self.global_step < 0:

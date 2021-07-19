@@ -15,10 +15,8 @@ from torch.nn.modules import Module
 from torch.nn.modules.loss import _Loss
 from torch.optim.optimizer import Optimizer
 from torch.cuda.amp import GradScaler, autocast
-from comet_ml.experiment import BaseExperiment
 
 from enchanter.engine import BaseRunner
-from enchanter.callbacks import BaseLogger
 from enchanter.callbacks import Callback
 from enchanter.metrics import calculate_accuracy
 
@@ -55,14 +53,14 @@ class ClassificationRunner(BaseRunner):
         model: Module,
         optimizer: Optimizer,
         criterion: _Loss,
-        experiment: Union[BaseExperiment, BaseLogger],
+        experiment,
         scheduler: Optional[List] = None,
         callbacks: Optional[List[Callback]] = None,
     ) -> None:
         super(ClassificationRunner, self).__init__()
         self.model: Module = model
         self.optimizer: Optimizer = optimizer
-        self.experiment: Union[BaseExperiment, BaseLogger] = experiment
+        self.experiment = experiment
         self.criterion: _Loss = criterion
         if scheduler is None:
             self.scheduler: List = list()

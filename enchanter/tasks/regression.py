@@ -12,14 +12,12 @@ from typing import Tuple, List, Union, Optional, Dict
 import numpy as np
 from sklearn.metrics import r2_score
 import torch
-from torch.nn.modules import Module
+from torch.nn import Module
 from torch.nn.modules.loss import _Loss
 from torch.optim.optimizer import Optimizer
 from torch.cuda.amp import GradScaler, autocast
-from comet_ml.experiment import BaseExperiment
 
 from enchanter.engine import BaseRunner
-from enchanter.callbacks import BaseLogger
 from enchanter.callbacks import Callback
 
 
@@ -45,7 +43,7 @@ class RegressionRunner(BaseRunner):
         model: Module,
         optimizer: Optimizer,
         criterion: _Loss,
-        experiment: Union[BaseExperiment, BaseLogger],
+        experiment,
         scheduler: Optional[List] = None,
         callbacks: Optional[List[Callback]] = None,
     ) -> None:
@@ -53,7 +51,7 @@ class RegressionRunner(BaseRunner):
         self.model: Module = model
         self.optimizer: Optimizer = optimizer
         self.criterion: _Loss = criterion
-        self.experiment: Union[BaseExperiment, BaseLogger] = experiment
+        self.experiment = experiment
         if scheduler is None:
             self.scheduler: List = list()
         else:
