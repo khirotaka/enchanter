@@ -12,6 +12,7 @@ Enchanter is a library for machine learning tasks for comet.ml users.
   <a href="LICENSE">Licence</a>
 </p>
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/163d7df85c2548169a247bdaf576cb83)](https://app.codacy.com/gh/khirotaka/enchanter?utm_source=github.com&utm_medium=referral&utm_content=khirotaka/enchanter&utm_campaign=Badge_Grade_Settings)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/84197fb283924f02a1667cea49dd031a)](https://app.codacy.com/manual/KawashimaHirotaka/enchanter?utm_source=github.com&utm_medium=referral&utm_content=khirotaka/enchanter&utm_campaign=Badge_Grade_Dashboard)
 [![Build & Publish](https://github.com/khirotaka/enchanter/workflows/Build%20&%20Publish/badge.svg)](https://github.com/khirotaka/enchanter/actions)
 [![PyPI](https://img.shields.io/pypi/v/enchanter?color=brightgreen)](https://pypi.org/project/enchanter/)
