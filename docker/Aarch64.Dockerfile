@@ -1,4 +1,4 @@
-FROM khirotaka0122/torch:1.8.0-aarch64-py3.8.8
+FROM khirotaka0122/torch:1.9.0-aarch64-py3.8.8
 
 SHELL ["/bin/bash", "-c"]
 
