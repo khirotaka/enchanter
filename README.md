@@ -17,7 +17,6 @@ Enchanter is a library for machine learning tasks for comet.ml users.
 [![PyPI](https://img.shields.io/pypi/v/enchanter?color=brightgreen)](https://pypi.org/project/enchanter/)
 [![Documentation Status](https://readthedocs.org/projects/enchanter/badge/?version=latest)](https://enchanter.readthedocs.io/)
 
-[![CI macOS](https://github.com/khirotaka/enchanter/workflows/CI%20macOS/badge.svg)](https://github.com/khirotaka/enchanter/actions?query=workflow%3A%22CI+macOS%22)
 [![CI Linux](https://github.com/khirotaka/enchanter/workflows/CI%20Linux/badge.svg)](https://github.com/khirotaka/enchanter/actions?query=workflow%3A%22CI+Linux%22)
 [![license](https://img.shields.io/github/license/khirotaka/enchanter?color=light)](LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
