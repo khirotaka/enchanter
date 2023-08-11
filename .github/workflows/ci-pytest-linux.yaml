@@ -34,7 +34,7 @@ jobs:
           poetry run pip install -U pip
           poetry run pip install -U torch torchvision
           poetry run pip install tensorflow tensorflow-datasets mxnet
-          poetry install --no-interaction
+          poetry install --no-interaction --with dev
 
       - name: Install Dependencies with Comet.ml
         if: "matrix.comet == true"
@@ -42,7 +42,7 @@ jobs:
           poetry run pip install -U pip
           poetry run pip install -U torch torchvision
           poetry run pip install tensorflow tensorflow-datasets mxnet
-          poetry install --no-interaction --extras comet
+          poetry install --no-interaction --extras comet --with dev
 
       - name: Lint with flake8
         run: |
